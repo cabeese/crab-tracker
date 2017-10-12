@@ -1,2 +1,2 @@
 # crab-tracker
-Track invasive crab species via acoustic signals
+Track invasive crab species via acoustic signals.
