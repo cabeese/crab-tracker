@@ -1,0 +1,11 @@
+{signal: [
+  {name: 'Tx1', wave: '01.0.|..1.0'},
+  {name: 'Tx2', wave: '0.1.0|.1.0.'},
+  {},
+  {name: 'Sum', wave: '03..0|.3..0', 'data': ["rx", "rx"]},
+  {name: 'id',  wave: 'd5...|.d...', 'data': ["delay"]}
+],
+  config: {
+  hscale: 1
+  }
+}
