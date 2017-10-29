@@ -71,12 +71,46 @@ of the consecutive signals. See Figure 1 for an illustration.
 the rising edges of the two pings from $Tx1$.}
 \end{figure}
 
-While this method may be reliable with just a single receiver, it does not work
-so well when multiple transmitters are brought into play.
+Each transmission of an ID by a transmitter (that is, the sequence of a
+ping, a delay, and another ping) will happen regularly around some average
+interval.
+Because there is no synchronization between transmitters, the interval
+between each broadcast will vary randomly within a given range.
+For example, the delay may be 30 seconds, $\pm$5 seconds, with the random
+variation recalculated after every broadcast.
 
-\section{Problem}
+The motivation behind the randomly-varying schedule is to decrease the
+likelihood of simultaneous transmissions by two different receivers.
+However, the random interval only functions to reduce the likelihood of
+two \emph{consecutive} overlapping transmissions.
+Without an inter-receiver collision-detection solution, there will always
+be the possibility that two transmissions overlap.
 
-\subsection{Details}
+\section{Possibility for Collisions}
+
+As discussed above,
+when two transmitters are present in the receiving range, and there is no
+synchronization between the two (i.e. they may transmit their IDs at any
+time, regardless of when the other transmits), it is possible for the two
+transmissions to be broadcast at similar times, thereby overlapping.
+The signals may overlap in countless different ways depending on when
+both transmissions start and where the transmitters are in relation to
+each other and to the receiver.
+
+\subsection{Example Scenarios}
+
+\begin{figure}[h]
+	\centering
+		\includegraphics[scale=0.7]{collision1}
+		
+		\caption{An example collision. The computed delay $d$ is
+		measured as the time difference between the rising edge of
+		$Tx1$'s first ping and $Tx2$'s second ping.}
+\end{figure}
+
+
+\section{Statistical Probability of Collisions}
+
 
 \end{document}
 
