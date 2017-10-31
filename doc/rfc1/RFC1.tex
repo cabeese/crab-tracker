@@ -172,6 +172,24 @@ software would unknowingly present incorrect information.
 		actually encoded by $Tx1$ or $Tx2$.}
 \end{figure}
 
+\subsubsection{A Series of Overlapping Broadcasts}
+
+In an extreme case, it may be possible for multiple transmitters to all begin
+broadcasting at very similar times such that all of their pings overlap and are
+registered as a single (extremely long) ping.
+For instance, if $n$ transmitters send out pings perfectly sequentially,
+it is conceivable
+that the receiver receives $B_1$, $B_2$, $\dots$, $B_n$ in order with so little
+temporal separation that no falling edges are registered by the receiving
+hardware.
+In other words, the receiver hears one long, solid tone, as opposed to a series
+of quick pings. It is theoretically possible that this single perceived tone
+is so long that the ending pings of one or more transmitters may be hidden.
+
+This is an extreme case, but is nonetheless a possibility given significant
+transmitter density in the receiving range, sufficiently long pings, and
+sufficiently low delay $d_n$ values for the transmitters in play.
+
 \subsubsection{Mutually Distant Transmitters}
 
 In general, though the above situations are quite possible, it is more likely
@@ -183,7 +201,8 @@ ways.
 Such scenarios are much more difficult to illustrate, but suffice it to say
 that they will also cause problems with invalid or confusing data.
 As before, some collisions can be detected and compensated for with a
-sufficiently complex algorithm, but not all cases are solvable with the current protocol.
+sufficiently complex algorithm, but not all cases are solvable with the current
+protocol.
 
 \section{Potential Solutions}
 
@@ -211,8 +230,8 @@ be 42 kHz.
 	\item This method would not scale to $>2$ transmitters overlapping. 
 		Situations analogous to 3.1.2 but with 3 or more transmitters would
 		still cause problems.
-		However, the likelihood of such events occurring is extremely low in
-		almost any reasonable configuration.
+		However, giving our initial estimates of crab densities, this may be
+		highly unlikely.
 \end{itemize}
 
 \subsection{Attempt to Detect Anomalies Through Statistical Reasoning}
@@ -226,6 +245,26 @@ Further investigation into this suggestion is needed.
 However, one initial problem with that is that in order for such a technique
 to be effective, the software must know the location and movement of the
 receiver (via GPS or a similar technology).
+
+\subsection{Detect Falling Edges of Transmissions}
+
+Our original protocol assumes that the receiving system only detects the rising
+edges of every transmission. Adding the ability to detect the falling edges may
+help counteract some of the aforementioned problems. Specifically, it would
+potentially allow the system to detect when two nearly-simultaneous (though
+not truly simultaneous) transmissions overlap, as this technique would give
+the system
+the ability to detect when a ping lasts longer than the expected ping length.
+Unfortunately, such scenarios are only a small subset of the problems identified
+above.
+
+Additionally, adding this ability may be somewhat difficult from a hardware
+perspective. It would require precise tuning of the hardware integrator, which
+could be difficult since the effective amplitude of each ping can vary based on
+a number of factors (including transmitter strength, aquatic conditions, objects
+interfering with the signal, and more).
+It was also mentioned at one point that communicating a falling-edge event to
+the receiving computer is not entirely simple.
 
 \section{Statistical Probability of Collisions}
 
