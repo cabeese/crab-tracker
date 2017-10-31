@@ -159,6 +159,8 @@ correspond to any transmitter actually transmitting.
 The software will then report that there are two signals coming from a
 specific direction, but the IDs that it thinks these correspond to will
 be incorrect.
+As in the previous example, there is no way to detect when this happens, so the
+software would unknowingly present incorrect information.
 
 \begin{figure}[h]
 	\centering
@@ -170,7 +172,24 @@ be incorrect.
 		actually encoded by $Tx1$ or $Tx2$.}
 \end{figure}
 
+\subsubsection{Mutually Distant Transmitters}
+
+In general, though the above situations are quite possible, it is more likely
+that two or more transmitters in the receiving range will be in different
+directions from the receiving station.
+When two or more transmitters that are in different areas around the receiver
+broadcast at similar times, the overlaps will interfere in even more complex
+ways.
+Such scenarios are much more difficult to illustrate, but suffice it to say
+that they will also cause problems with invalid or confusing data.
+As before, some collisions can be detected and compensated for with a
+sufficiently complex algorithm, but not all cases are solvable.
+
 \section{Potential Solutions}
+
+Some early solutions that do not entirely change the original protocol have
+been proposed. They are discussed briefly below. This section may be expanded
+in the future as we discuss more options.
 
 \subsection{Use Two Frequencies To Differentiate Pings}
 
@@ -196,7 +215,7 @@ be 42 kHz.
 		almost any reasonable configuration.
 \end{itemize}
 
-\subsection{Attempt to Detect Anomalies Through Statistics}
+\subsection{Attempt to Detect Anomalies Through Statistical Reasoning}
 
 Another proposal is to make the software smart enough to remember where a
 signal comes from every time a transmission is received. It keeps track of
@@ -204,6 +223,9 @@ where it thinks all the known transmitters are and compares that data with
 incoming data whenever a transmitter is detected.
 
 Further investigation into this suggestion is needed.
+However, one initial problem with that is that in order for such a technique
+to be effective, the software must know the location and movement of the
+receiver (via GPS or a similar technology).
 
 \section{Statistical Probability of Collisions}
 
