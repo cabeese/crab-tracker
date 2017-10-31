@@ -32,7 +32,7 @@
 
 \section{Introduction}
 
-The protocol proposed for this project encodes an unique identification number
+The protocol proposed for this project encodes a unique identification number
 in the transmitted signal by the delay between two consecutive pings.
 While this method is easy to implement in hardware, and works well in the case
 of only a signal transmitter, the addition of multiple transmitters within range
@@ -42,22 +42,22 @@ In some cases, the collisions may be undetectable, leading to incorrect
 reporting of nearby crab IDs.
 Completely solving this problem will require a change to the underlying
 protocol.
-However, the likelihood of such collisions may be low enough that we move
+However, the likelihood of such collisions may be low enough that we can move
 forward with this known flaw in the protocol.
 
 \section{Original Protocol}
 
 In the current iteration of our detection and identification protocol, every
-transmitter will transmit at the exact same frequency, likely somewhere around
+transmitter will transmit at the exact same frequency, somewhere around
 40kHz. This is ideal from a hardware perspective, as the piezoelectric
 equipment can be tuned to work on a single frequency with a high degree of
 accuracy.
 
 Every transmitter will periodically send out two quick ``pings,'' each separated
 by some delay $d$. The value of $d$ will encode the ID of the transmitter.
-For example, $d=42$ms may correspond to ID 30, and a delay of $50.5$ms may
+For example, $d=42$ms may correspond to ID 30, while $d=50.5$ms may
 correspond to an ID of 38.
-Note that these numbers are only examples.
+Note that these numbers are only for illustration purposes.
 Because the receiving hardware can easily detect the two pings, it can measure
 the value of $d$ by calculating the time difference between the rising edges
 of the consecutive signals. See Figure 1 for an illustration.
@@ -113,7 +113,7 @@ If $Tx1$ is a transmitter, then $d_1$ is the delay time between
 the two pings for $Tx1$; that is, $d_1$ encodes the unique ID for $Tx1$.
 We'll also use $B_1$ to denote the first ping from $Tx1$
 (the {\bf B}eginning of the encoding) and $E_1$ to denote the second
-({\bf E}nd) ping.
+({\bf E}nd of the encoding) ping.
 
 \subsubsection{Close Proximity, Similar Start}
 
@@ -127,7 +127,7 @@ pings. That is, the second ping for $Tx2$ begins just before the second ping
 for $Tx1$. See Figure 2 for an illustration.
 
 {\bf Potential Effect:}
-Should this happen, the receiver will register two pings, just as it may if
+Should this happen, the receiver will register two pings, just as it would if
 only one transmitter broadcasts. However, the measured delay
 $d_{measured}$ will not equal $d_1$ or $d_2$.
 Thus the software will report the ID corresponding to $d_{measured}$, and
@@ -183,7 +183,7 @@ ways.
 Such scenarios are much more difficult to illustrate, but suffice it to say
 that they will also cause problems with invalid or confusing data.
 As before, some collisions can be detected and compensated for with a
-sufficiently complex algorithm, but not all cases are solvable.
+sufficiently complex algorithm, but not all cases are solvable with the current protocol.
 
 \section{Potential Solutions}
 
