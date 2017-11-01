@@ -266,9 +266,48 @@ interfering with the signal, and more).
 It was also mentioned at one point that communicating a falling-edge event to
 the receiving computer is not entirely simple.
 
+\subsection{Adjust Ping Length ($p$) Relative to Delay ($d$) Time}
+
+In our original protocol, the duration of every transmitter's ping was fixed.
+This solution proposes that we instead allow the ping's duration to vary
+on a per-transmitter basis.
+The ping length should be a function of the delay time, and therefore also a
+function of the unique ID,
+so that every unique ID has an associated unique ping duration $p$ and unique
+delay time $d$.
+For example, we might require that $p=\frac{1}{2}d$; that is, every ping
+is half as long as the delay between rising edges of ping pairs.
+
+This method creates some redundancy be encoding the unique ID up to three times
+in a single transmission
+(the first ping's duration, the delay length, and the second ping's duration).
+Though this redundancy doesn't provide us any improved accuracy or detection,
+it would allow the software to reliably determine whenever a collision occurs.
+A further discussion of why this method allow for collision detection is
+forthcoming.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% TODO - discuss examples, explanation, etc.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+This solution does have some potential difficulties associated with it.
+The biggest is that we would need well-tuned detection hardware so that we can
+reliably note the rising a falling edges of every signal.
+In practice, the software should probably compensate for some inaccuracy here
+depending on how successful our tuning efforts are.
+For example, weaker signals may not register strongly enough for the hardware
+integrator to report accurate rising and falling edges.
+Such problems require more research.
+
+% Newly proposed, this seems like the most viable option yet.
+
 \section{Statistical Probability of Collisions}
 
+This section forthcoming.
+
 \section{Discussion}
+
+This section forthcoming.
 
 \end{document}
 
