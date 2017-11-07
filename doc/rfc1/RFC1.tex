@@ -22,6 +22,8 @@
 	Chloe Yugawa
 }
 
+\date{v1.1 -- \today}
+
 \begin{document}
 
 \maketitle
@@ -297,9 +299,15 @@ In practice, the software should probably compensate for some inaccuracy here
 depending on how successful our tuning efforts are.
 For example, weaker signals may not register strongly enough for the hardware
 integrator to report accurate rising and falling edges.
-Such problems require more research.
-
-% Newly proposed, this seems like the most viable option yet.
+Fortunately, as Dr. Lund points out, we could instead opt to have the system
+compare the ping lengths across the receiving hydrophones.
+Regardless of signal strength, transmitter distance, or other factors that
+may cause the measurement of the ping duration to differ from the actual
+ping duration, the ping duration measured by all four receivers should be
+nearly identical. That is, the signal won't decay by a significant amount
+in the short travel from one end of the receiving station to the other.
+If the measured ping lengths differ between any of the hydrophones,
+we can be confident that a collision occurred.
 
 \section{Statistical Probability of Collisions}
 
@@ -307,7 +315,12 @@ This section forthcoming.
 
 \section{Discussion}
 
-This section forthcoming.
+All involved parties seem to agree that this problem is worth some attention,
+despite its expected low likelihood.
+We will move forward with implementing a falling-edge based solution such as
+those proposed in section 4.4.
+Specific implementation details will be written up in a new document as they
+are decided on.
 
 \end{document}
 
