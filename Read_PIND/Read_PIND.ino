@@ -1,56 +1,63 @@
-uint8_t prevpinval = PIND;
+uint8_t prevpinval = PIND & B11110000; //TODO: explain why the bit mask
+uint8_t pinval;
+uint8_t xorpins;
 extern volatile unsigned long timer0_overflow_count;
 unsigned long time_elapsed;
-int output[255][2];
+
+// longs are 32 bits, so the array can only hold 218 values
+unsigned long output[218][2];
 
 void setup() {
-  // put your setup code here, to run once:
-  Serial.begin(9600);
+
+//  for debugging  
+//  Serial.begin(9600);
+
+  // sets all D pins to input,
+  // may be unnecessary 
+  DDRD = 0B00000000;
+
 }
-
-
 
 int i = 0;
 void loop() {
-
-  uint8_t pinval = PIND;
-
-  //for debugging
-//  Serial.println(prevpinval, BIN);
-//  Serial.println(pinval, BIN);
-
-  uint8_t xorpins = (prevpinval ^ pinval);
   
-//  Serial.println(xorpins, BIN);
-//  Serial.println(xorpins >> 1, BIN);
-//  Serial.println("times: ");
-    time_elapsed = ((timer0_overflow_count << 8) + TCNT0) * 4;
- //Serial.println(((timer0_overflow_count << 8) + TCNT0) * 4); //what is happening here?
- // Serial.println(micros()); //less accurate, has function acall overhead
+  // reads high or low value of register at once
+  pinval = PIND & B11110000; // TODO: explain why the bit mask
+  xorpins = (prevpinval ^ pinval);
 
-  
-  
 
+  // recreates the functionality of the micors() function
+  // without the overhead of a function call
+  time_elapsed = ((timer0_overflow_count << 8) + TCNT0) * 4;
+  
   if (xorpins != 0) {
-    Serial.println();
-    Serial.println("we have input");
+
+//    for debugging: check values of pins before storing    
+//    Serial.println(); 
 //    Serial.print("previous pin value: ");
 //    Serial.println(prevpinval, BIN);
 //    Serial.print("current pin value: ");
 //    Serial.println(pinval, BIN);
-//    Serial.println(time_elapsed); 
-    output[i][0] = (pinval);
-    
-    output[i][1] = time_elapsed;
+//    Serial.print("time_elaspsed: ");
+//    Serial.println(time_elapsed);
 
-    Serial.println(output[i][0],BIN);
-    Serial.println(output[i][1],DEC);
-    Serial.println(i);
-//    Serial.print("xored value: ");
-//    Serial.println(xorpins, BIN);
+
+    // stores high pins and timestamp
+    output[i][0] = (pinval >> 4); //TODO: explain why the bit shift
+    output[i][1] = time_elapsed;
+    
+//    for debugging: confirm that expected values are stored
+//    Serial.print("stored pin value: ");
+//    Serial.println(output[i][0], BIN);
+//    Serial.print("stored time: ");
+//    char buff[15];
+//    sprintf(buff, "%lu", output[i][1]);
+//    Serial.println(buff);
+//    Serial.println(output[i][1], DEC);
+//    Serial.print("value of i: ");
+//    Serial.println(i);
+
     i++;
   }
-
-  //Serial.println();
   prevpinval = pinval;
 }
