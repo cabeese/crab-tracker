@@ -8,6 +8,7 @@
  letterpaper, left=20mm, right=20mm,  top=20mm,
  }
 \usepackage{graphicx}
+\graphicspath{ {graphics/} }
 \usepackage{amssymb}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -93,9 +94,15 @@ unique transmission pattern (UTP), will consist of two pings (short, continuous
 transmissions of the carrier frequency), separated by some delay time $d$.
 The duration of the two pings will be identical. The duration of the pings and
 the delay time $d$ will be functions of the transmitter's UID.
-% See \ref{utp-graphic} for an example of a UTP.
+See Figure \ref{fig:utp} for an example of a UTP.
 
-% TODO - insert UTP picture (Figure 3.1)
+\begin{figure}[h]
+\centering
+\includegraphics[scale=0.5]{utp}
+
+\caption{A Unique Transmission Pattern}\label{fig:utp}
+\end{figure}
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
