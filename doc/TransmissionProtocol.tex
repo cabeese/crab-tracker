@@ -11,14 +11,14 @@
 \usepackage{amssymb}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\title{Transmission Protocol}
+\title{Transmission Protocol --- iCRAB}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \author{
 	Noah Strong
 }
 
-\date{v1.0 -- \today}
+\date{\today\ -- v1.0-wip}
 
 \begin{document}
 
@@ -65,17 +65,53 @@ please see RFC 1.
 
 \section{Background} \label{background}
 
-\section{Protocol Definition} \label{protocol-def}
+For a thorough background on some of the challenges faced in designing this
+protocol, please refer to the RFC-1 ``Collision Detection'' document.
+
+To satisfy the requirements of this project, we are designing a new protocol.
+This protocol will encode the UID of each transmitter in such a way that
+collisions (multiple simultaneous transmissions by different transmitters) can
+be detected by a receiving station and discarded.
+The protocol is a simple
+series of rising and falling edges in an audio signal operating at a predefined
+frequency. (The specific frequency to be used will be documented elsewhere
+on the hardware engineering side of things.)
+The series of ``pings'' and the separation between them will be organized in a
+specific pattern based on the UID of the given transmitter, known as the
+Unique Transmission Pattern (or UTP for short).
+
+We label this protocol the id-correlated rhythmic audio broadcast protocol,
+or iCRAB for short.
+
+\section{iCRAB Protocol Definition} \label{protocol-def}
+
+Occasionally, on a randomly varying interval, each transmitter will broadcast
+a single burst of information.
+This burst of data, transmitted via acoustic waves, will encode the unique
+identifier of the given transmitter. The burst, hereafter referred to as a
+unique transmission pattern (UTP), will consist of two pings (short, continuous
+transmissions of the carrier frequency), separated by some delay time $d$.
+The duration of the two pings will be identical. The duration of the pings and
+the delay time $d$ will be functions of the transmitter's UID.
+% See \ref{utp-graphic} for an example of a UTP.
+
+% TODO - insert UTP picture (Figure 3.1)
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \appendix
 \section{Glossary of Terms} \label{glossary}
 
 {\bf Delay:}
-	in the context of ID encoding, the space between the rising
-	edges of two consecutive pings in the same {\bf UTP}.
+	in the context of ID encoding, the space between the falling edge of one
+	{\bf ping} and the rising of the next within a single {\bf UTP}.
 
 {\bf Delay Time ({\em d}):}
 	the duration (generally in milliseconds) of a given {\bf delay}.
+
+{\bf iCRAB (id-correlated rhythmic audio broadcast) protocol:}
+	the protocol designed by the members of the Crab Tracker project and
+	described in detail in this document.
 
 {\bf Interval:}
 	the time between two consecutive broadcasts of {\bf UTP}. Measured by the
