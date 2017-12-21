@@ -1,0 +1,121 @@
+\documentclass[12pt]{article}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{2mm}
+
+\usepackage{geometry}
+ \geometry{
+ letterpaper, left=20mm, right=20mm,  top=20mm,
+ }
+\usepackage{graphicx}
+\graphicspath{ {graphics/} }
+\usepackage{amssymb}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\title{RFC 2 - Boolean Value Encoding in Transmission Protocol}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\author{
+	Noah Strong
+}
+
+\date{\today\ -- v1.0-wip}
+
+\begin{document}
+
+\maketitle
+
+\tableofcontents{}
+
+\section{Introduction}
+
+We would like to find a way to encode a binary value in each transmission
+along with the UID.
+The encoding must not interfere with our current collision detection work
+and should not require a massive overhall of the transmission protocol as it
+currently stands.
+
+\section{Background}
+
+Patrick has requested that we look into adding the ability for a transmitter to
+broadcast some additional detail about the crab it is paired with.
+Specifically, Patrick is interested in attaching accelerometers to the tagged
+crabs so that we can determine if a given crab is ``inert,'' perhaps because it
+has molted its shell or because it has died. We would encode this as an
+additional binary value in the transmission signal.
+
+Patrick has stated that this is a highly desirable feature, but not absolutely
+critical to the end product.
+
+\section{Requirements and Concerns}
+
+We want to be able to encode both a UID and some binary value in each
+transmission without losing the work we've done to ensure that all collisions
+are detectable. Additionally, in the event that we decide not to include this
+feature in the final product, the changes made to the iCRAB protocol must not
+interfere with our original goals. That is, if we scrap this requirement, it
+should cost little or no extra work to continue on our original path.
+
+We have already created a protocol that will encode a UID and is robust against
+collisions (that is, they are detectable).
+Some methods for adding binary encoding may interfere with the this collision
+detection work, and we would prefer that such solutions be avoided.
+In other words, collisions should still be detectable, at least in most cases,
+even if addition information is encoded in the signal.
+
+\section{Potential Solutions}
+
+In the case that the given boolean value that we wish to express is
+{\bf false}, we may broadcast the original signal with no adjustments.
+We next propose alterations we could make in the case that the given boolean
+value we with to express is {\bf true}.
+
+\subsection{Add Additional Ping}
+
+In this solution, a single UTP would be represented as a sequence such as
+{\em P\_P\_P} where $P$ is a ping and $\_$ is a delay.
+
+While this would work in the general case, it adds some additional complexity
+to the receiver's detection code.
+Worse, it may cause collisions to be undetectable under certain circumstances.
+We will not discuss these situations, but they are easily discoverable and
+therefore left as an exercise to the interested reader.
+
+\subsection{Adjust Duration of Both Pings}
+
+One variation of this is essentially double the number of IDs we can encode.
+Half of the IDs are unchanged.
+The other half of IDs (eg the larger IDs, or the even-numbered IDs, or
+something along those lines) are reserved for transmitters to use when their
+boolean value has become TRUE.
+
+For example, suppose we have 500 unique IDs, but choose to only assign the
+even-numbered IDs.
+The odd-numbered IDs could then be used for existing transmitters when their
+boolean value $B$ is TRUE.
+Then transmitter 42, for example, would transmit the number 42 while $b$ was
+false.
+Once $b$ becomes true, that transmitter will start transmitting the value 43.
+Since 43 is an odd number, the receiver could easily deduce that transmitter
+42's $b$ value was TRUE.
+
+Alternatively, suppose we have, for example, 500 IDs, and we assign 0-499 to
+transmitters.
+We then use values in the range 500-999 only when $b$ is TRUE.
+That is, transmitter 42 would transmit 42 when $b=$ FALSE and 500+42=542 when
+$b=$ TRUE.
+
+This method requires very little adjustment to the encoding protocol.
+Instead, it would require only a small adjustment to how we interpret ID values
+as they are detected.
+
+However, this method does double the number of IDs we need to be able to
+encode, which means that the max UTP duration will be much higher.
+This could potentially lead to more collisions.
+This solution is also potentially confusing, as the encoding is not obvious
+and it may rely on magic numbers.
+
+\subsection{Adjust Duration of Only One Ping}
+
+\end{document}
+
