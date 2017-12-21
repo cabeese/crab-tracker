@@ -74,26 +74,42 @@ This protocol will encode the UID of each transmitter in such a way that
 collisions (multiple simultaneous transmissions by different transmitters) can
 be detected by a receiving station and discarded.
 The protocol is a simple
-series of rising and falling edges in an audio signal operating at a predefined
+series of HIGH and LOW audio signals operating at a predefined
 frequency. (The specific frequency to be used will be documented elsewhere
 on the hardware engineering side of things.)
 The series of ``pings'' and the separation between them will be organized in a
 specific pattern based on the UID of the given transmitter, known as the
 Unique Transmission Pattern (or UTP for short).
 
+Additionally, we may want to have the ability to detect when a transmitter
+has stopped moving, possibly because the crab molted its shell or died.
+In this case, we want each broadcast to not only encode the UID of the
+transmitter, but also some boolean value (such as $isInert$).
+To this end, we introduce a potential second encoding for each signal that
+will be used only if this boolean value is true.
+While the boolean value could theoretically represent any piece of data about
+the transmitter, we will assume herein that it refers to the $isInert$
+variable.
+
 We label this protocol the id-correlated rhythmic audio broadcast protocol,
 or iCRAB for short.
 
 \section{iCRAB Protocol Definition} \label{protocol-def}
 
-Occasionally, on a randomly varying interval, each transmitter will broadcast
-a single burst of information.
+\subsection{Overview}
+
+%Occasionally, on a randomly varying interval, each transmitter will broadcast
+%a single burst of information.
+At the core of this protocol is a single bust of information which is
+transmitted repeatedly on some randomly-varying interval.
 This burst of data, transmitted via acoustic waves, will encode the unique
 identifier of the given transmitter. The burst, hereafter referred to as a
 unique transmission pattern (UTP), will consist of two pings (short, continuous
 transmissions of the carrier frequency), separated by some delay time $d$.
-The duration of the two pings will be identical. The duration of the pings and
-the delay time $d$ will be functions of the transmitter's UID.
+The duration of the pings and the delay time $d$ will be functions of the
+transmitter's UID.
+The interval between UTPs will be random, and each transmitter will recalculate
+the interval time after each UTP according to a shared formula.
 See Figure \ref{fig:utp} for an example of a UTP.
 
 \begin{figure}[h]
@@ -103,7 +119,13 @@ See Figure \ref{fig:utp} for an example of a UTP.
 \caption{A Unique Transmission Pattern}\label{fig:utp}
 \end{figure}
 
+In the general case, he duration of the two pings will be identical.
+In the case that the crab is inert, the lengths of the two pings in a given
+UTP will differ or one may omitted entirely.
+This part of the protocol is still under development.
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% APPENDIX
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \appendix
@@ -119,6 +141,13 @@ See Figure \ref{fig:utp} for an example of a UTP.
 {\bf iCRAB (id-correlated rhythmic audio broadcast) protocol:}
 	the protocol designed by the members of the Crab Tracker project and
 	described in detail in this document.
+
+{\bf Inert:}
+	A transmitter will be marked as {\bf inert} if it is determined that the
+	transmitter has not moved ``enough'' in a given period of time.
+	This definition is subject to changes and hardware constraints, and
+	refers to an experimental addition to the project's requirements that
+	has yet to be implemented or fully defined in writing.
 
 {\bf Interval:}
 	the time between two consecutive broadcasts of {\bf UTP}. Measured by the
