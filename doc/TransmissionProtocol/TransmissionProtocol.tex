@@ -39,7 +39,9 @@
 
 \maketitle
 
-%\tableofcontents{}
+\tableofcontents{}
+
+\newpage
 
 \section{Introduction} \label{introduction}
 
@@ -198,7 +200,7 @@ Finally, we formally define the behavior of a transmitter in pseudo-code
 (see Listing \ref{lst:tx}.)
 The functions {\em HIGH} and {\em LOW} cause the physical transmitter to begin
 or cease transmitting, respectively.
-The {\em sleep()} function simply causes execution of teh code to stop for a
+The {\em sleep()} function simply causes execution of the code to stop for a
 given number of milliseconds.
 
 \newpage
@@ -211,7 +213,7 @@ formulae, and other definitions.
 \centering
 \begin{tabular}{|l|l|}
 \hline
-Variable & Value \\
+Constant & Value \\
 \hline
 MIN\_INTERVAL	&	25 ms	\\
 MAX\_INTERVAL	&	35 ms	\\
@@ -226,9 +228,9 @@ STEP\_SIZE		&	0.1	ms	\\
 
 \begin{table}[ht]
 \centering
-\begin{tabular}{|c|l|}
+\begin{tabular}{|r|l|}
 \hline
-Function Name & Expression \\
+Name & Definition \\
 \hline
 ping(id)		&	$(id \times STEP\_SIZE)+MIN\_PING\_DUR$	\\
 delay(id)	&	$(id \times STEP\_SIZE)+MIN\_DELAY\_DUR$	\\
