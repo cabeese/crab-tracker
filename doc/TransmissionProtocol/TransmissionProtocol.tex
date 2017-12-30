@@ -10,6 +10,15 @@
 \usepackage{graphicx}
 \graphicspath{ {graphics/} }
 \usepackage{amssymb}
+\usepackage[labelfont=bf]{caption}
+\usepackage{listings}
+\lstdefinestyle{standard}{
+    numbers=left,
+    tabsize=2,
+    captionpos=b,
+    language=C
+}
+\lstset{style=standard}
 
 % Remove the following 3 lines when no longer in draft form
 \usepackage{draftwatermark}
@@ -124,15 +133,140 @@ See Figure \ref{fig:utp} for an example of a UTP.
 \caption{A Unique Transmission Pattern}\label{fig:utp}
 \end{figure}
 
-In the general case, he duration of the two pings will be identical.
-In the case that the crab is inert, the lengths of the two pings in a given
-UTP will differ or one may omitted entirely.
-This part of the protocol is still under development.
+In general, he duration of the two pings will be identical.
+However, this may change depending on how we encode an additional boolean
+value in the signal.
+See RFC 2 for more details.
+
+\subsection{Rationale and Related Information} \label{rationale}
+
+Based on John's rough estimate early in the project, we will initially
+comply with the following constraints.
+
+\begin{enumerate} \itemsep -2pt
+	\item The minimum ping duration should be 1 millisecond.
+	\item The ``step size'' (i.e. smallest difference in duration between
+		any two pings) should be 0.1 milliseconds.
+	\item The minimum delay duration should be 10 milliseconds.
+	\item The ``step size'' for the delay should also be 0.1 milliseconds.
+\end{enumerate}
+
+Additionally, we expect that transmitting every 30 seconds should provide
+the user with frequent enough location updates to be practical, but that
+transmissions will also be
+infrequent enough that the expected number of collisions is very low.
+For more information on collision statistics, see the document titled
+{\em RFC1\_stats.pdf}.
+
+Observe, however, that if every transmitter transmitted on a fixed interval,
+then we could theoretically encounter a situation in which two transmitters
+transmit at almost exactly the same time for the entire duration of their
+deployment.
+In other words, their transmissions would always collide, and the receiver
+would never be able to reliably determine the location of either one.
+To remedy this, we will instead randomly vary the interval between broadcasts.
+That way, if two transmitters happen to transmit at the same time,
+they won't necessarily collide the second time around.
+The random adjustment will need to be recalculated for each interval in order
+to reduce our chances of collisions.
+
+Finally, this protocol will be capable of uniquely encoding up to 500*
+identifiers.
+Each ID will be a number in the range $[0, MAX\_UID)$.
+
+* Note: this number may change based on the boolean encoding method we choose
+to use. See RFC 2.
+
+\subsection{Preamble to Definitions and Specifications} \label{preamble}
+
+Each Unique Transmission Pattern (UTP) will be formed by a ping, a delay,
+and another ping, in that order.
+Each transmitter will broadcast a UTP and will then wait for some interval
+before transmitting a UTP again.
+This process loops infinitely throughout the transmitter's lifetime.
+
+Defined in Table \ref{table:constants}) are the constants that we will use for
+the various aspects of this protocol.
+This section of the document will be updated as needed if these values
+change.
+
+Table \ref{table:formulae} lists the various mathematical formulae we will
+use for encoding.
+Some functions are passed a single integer value, which is a UID.
+
+Finally, we formally define the behavior of a transmitter in pseudo-code
+(see Listing \ref{lst:tx}.)
+The functions {\em HIGH} and {\em LOW} cause the physical transmitter to begin
+or cease transmitting, respectively.
+The {\em sleep()} function simply causes execution of teh code to stop for a
+given number of milliseconds.
+
+\newpage
+\subsection{iCRAB Definitions and Specifications} \label{specs}
+
+This section aims to be the developer's one-stop shop for relevant constants,
+formulae, and other definitions.
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{|l|l|}
+\hline
+Variable & Value \\
+\hline
+MIN\_INTERVAL	&	25 ms	\\
+MAX\_INTERVAL	&	35 ms	\\
+MAX\_ID			&	499		\\
+MIN\_PING\_DUR	&	1.0 ms	\\
+MIN\_DELAY\_DUR	&	10.0 ms	\\
+STEP\_SIZE		&	0.1	ms	\\
+\hline
+\end{tabular}
+\caption{Constants to be used for the iCRAB Protocol}\label{table:constants}
+\end{table}
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{|c|l|}
+\hline
+Function Name & Expression \\
+\hline
+ping(id)		&	$(id \times STEP\_SIZE)+MIN\_PING\_DUR$	\\
+delay(id)	&	$(id \times STEP\_SIZE)+MIN\_DELAY\_DUR$	\\
+interval()	&	$randInRange(MIN\_INTERVAL, MAX\_INTERVAL)$	\\
+\hline
+\end{tabular}
+\caption{Formulae to be used for the iCRAB Protocol}\label{table:formulae}
+\end{table}
+
+
+\begin{lstlisting}[caption={Transmitter Behavior},label={lst:tx}]
+void doPing(int id){
+	HIGH()
+	sleep(ping(id))
+	LOW()
+}
+
+void loop(id){
+	doPing(id)
+	sleep(delay(id))
+	doPing(id)
+	sleep(interval())
+}
+\end{lstlisting}
+
+\begin{figure}[h]
+\centering
+\includegraphics[scale=0.5]{interval}
+
+\caption{For reference, pictured are two UTPs separated by an interval}
+\label{fig:interval}
+\end{figure}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % APPENDIX
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+\newpage
 \appendix
 \section{Glossary of Terms} \label{glossary}
 
