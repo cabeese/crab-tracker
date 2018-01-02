@@ -14,4 +14,17 @@ keyboard + monitor to the shell.
 
 5. Change your default password by running the `passwd` command!
 
+Additionally, it may be useful to **enable SSH over a USB connection**.
+
+6. Open `/boot/config.txt` again and add `dtoverlay=dwc2` at the bottom.
+
+7. Open `/boot/cmdline.txt`. After `rootwait` (the last word on the first line),
+add a space and then `modules-load=dwc2,g_ether`.
+
+8. You can now connect the pi to a host computer via USB (be sure to use the
+port labelled "USB," not "PWR") and ssh as usual (`ssh pi@raspberrypi.local`).
+
+For more info on SSH over USB, see
+[this article](https://learn.adafruit.com/turning-your-raspberry-pi-zero-into-a-usb-gadget/ethernet-gadget)
+
 This document will be updated as more configuration is added.
