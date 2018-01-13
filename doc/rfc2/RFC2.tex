@@ -19,7 +19,7 @@
 	Noah Strong
 }
 
-\date{\today\ -- v1.0}
+\date{\today\ -- v1.1}
 
 \begin{document}
 
@@ -88,7 +88,7 @@ therefore left as an exercise to the interested reader.
 the receiver may reasonably assume that it detected two collision-free pings
 and would therefore report a standard, non-inert transmissions.)
 
-\subsection{Adjust Duration of Both Pings}
+\subsection{Adjust Duration of Both Pings} \label{adj-both-pings}
 
 One variation of this is essentially double the number of IDs we can encode.
 Half of the IDs are unchanged.
@@ -192,15 +192,21 @@ receiver, though the same may be said of {\em almost} any other alternative.
 
 \section{Discussion}
 
-With these potential methods now described (specifically 4.2 and 4.3),
-we can confidently say that encoding a binary value in the broadcast of a
-transmitter's ID is possible.
-We now must decide on which method is most appropriate, and incorporate that
-solution into the formal definition of the iCRAB protocol.
+The development team has come to the consensus that option \ref{adj-both-pings}
+is the most advisable choice for this project.
+The appeal of this method is largely its simplicity:
+it requires no additional calculations on the part of the receiver, as it
+utilizes the existing encoding scheme that will already be implemented.
 
-As of revision 1.0 of this document, the subject of which method to choose
-is up for debate.
-This document may be updated with a summary of the ensuing discussion.
+The only thing left to determine is how divide the UTP space between the two
+values.
+The suggestion of this author is to use the first $MAX\_ID$ values exactly as
+they otherwise would be used (with the boolean value FALSE)
+and to reserve the values in the range $(MAX\_ID,\ 2 \times MAX\_ID]$ for
+use when the boolean value is TRUE.
+However, {\em this is not a formal definition};
+see the official iCRAB Transmission Protocol Definition document for accurate
+details.
 
 \end{document}
 
