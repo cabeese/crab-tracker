@@ -16,7 +16,10 @@
     numbers=left,
     tabsize=2,
     captionpos=b,
-    language=C
+    language=C,
+    frame=tb
+    % Center listing - breaks caption centering, though
+    % xleftmargin=.2\textwidth, xrightmargin=.2\textwidth
 }
 \lstset{style=standard}
 
@@ -153,9 +156,12 @@ comply with the following constraints.
 	\item The ``step size'' for the delay should also be 0.1 milliseconds.
 \end{enumerate}
 
-Additionally, we expect that transmitting every 30 seconds should provide
-the user with frequent enough location updates to be practical, but that
-transmissions will also be
+Each transmitter will periodically broadcast a signal that the receiving
+system can detect.
+The receiving station will process the data encoded in the broadcast and
+also determine the direction, relative to the system, of that transmitter.
+The UTP broadcasts should be frequent enough for location updates to be
+practical to the user, while also being
 infrequent enough that the expected number of collisions is very low.
 For more information on collision statistics, see the document titled
 {\em RFC1\_stats.pdf}.
@@ -172,12 +178,34 @@ they won't necessarily collide the second time around.
 The random adjustment will need to be recalculated for each interval in order
 to reduce our chances of collisions.
 
-Finally, this protocol will be capable of uniquely encoding up to 500*
-identifiers.
-Each ID will be a number in the range $[0, MAX\_UID)$.
+The iCRAB protocol is expected to support only a finite number of transmitter
+UIDs.
+The upper bound selected is fairly arbitrary but based on the client's expected
+needs for the project's research.
 
-* Note: this number may change based on the boolean encoding method we choose
-to use. See RFC 2.
+Finally, this protocol is also expected to be able to encode (along with the
+ID of a given transmitter) a boolean value.
+For the purposes of the project, this value will be \texttt{true}
+if and only if a given  transmitter is inert.
+This generally indicates that the crab died or molted its shell.
+We will encode this boolean value by effectively doubling the number of IDs
+that can be encoded.
+Half of the IDs are to be used when the boolean value is \texttt{false},
+and the other half are used when it is \texttt{true}.
+Specifically, values in the range $[0, MAX\_UID)$ are to be used when
+\texttt{inert=false}.
+There is no additional mapping when IDs are in this range.
+For all values in the range $[MAX\_UID, 2*MAX\_UID)$, the value encoded is
+actually $MAX\_UID$ bigger than the ID that is encoded, and
+\texttt{inert=true}.
+
+For example, if a signal encodes the value 42, the receiver should report
+this as transmitter 42 with \texttt{inert=false}.
+However, if the value 542 is received, assuming that $MAX\_UID=500$,
+the receiver should interpret this as transmitter 42 but with
+\texttt{inert=true}.
+
+For more background on the topic of boolean value encoding, see RFC 2.
 
 \subsection{Preamble to Definitions and Specifications} \label{preamble}
 
@@ -187,7 +215,7 @@ Each transmitter will broadcast a UTP and will then wait for some interval
 before transmitting a UTP again.
 This process loops infinitely throughout the transmitter's lifetime.
 
-Defined in Table \ref{table:constants}) are the constants that we will use for
+Defined in Table \ref{table:constants} are the constants that we will use for
 the various aspects of this protocol.
 This section of the document will be updated as needed if these values
 change.
@@ -203,11 +231,20 @@ or cease transmitting, respectively.
 The {\em sleep()} function simply causes execution of the code to stop for a
 given number of milliseconds.
 
+Section \ref{specs}, on the following page,
+aims to be the developer's one-stop shop for relevant constants,
+formulae, and other definitions.
+
+\vfill
+
+\begin{center}
+The remainder of this page is intentionally left blank.
+\end{center}
+
+\vfill
+
 \newpage
 \subsection{iCRAB Definitions and Specifications} \label{specs}
-
-This section aims to be the developer's one-stop shop for relevant constants,
-formulae, and other definitions.
 
 \begin{table}[ht]
 \centering
@@ -239,7 +276,6 @@ interval()	&	$randInRange(MIN\_INTERVAL, MAX\_INTERVAL)$	\\
 \end{tabular}
 \caption{Formulae to be used for the iCRAB Protocol}\label{table:formulae}
 \end{table}
-
 
 \begin{lstlisting}[caption={Transmitter Behavior},label={lst:tx}]
 void doPing(int id){
@@ -286,9 +322,8 @@ void loop(id){
 {\bf Inert:}
 	A transmitter will be marked as {\bf inert} if it is determined that the
 	transmitter has not moved ``enough'' in a given period of time.
-	This definition is subject to changes and hardware constraints, and
-	refers to an experimental addition to the project's requirements that
-	has yet to be implemented or fully defined in writing.
+	This definition is subject to change based on hardware constraints,
+	and its complete definition is outside the scope of this document.
 
 {\bf Interval:}
 	the time between two consecutive broadcasts of {\bf UTP}. Measured by the
