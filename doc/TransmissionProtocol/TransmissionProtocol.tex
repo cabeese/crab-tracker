@@ -25,8 +25,8 @@
 
 % Remove the following 3 lines when no longer in draft form
 \usepackage{draftwatermark}
-\SetWatermarkText{DRAFT}
-\SetWatermarkScale{5}
+\SetWatermarkText{UNDER REVIEW}
+\SetWatermarkScale{3}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \title{Transmission Protocol --- iCRAB}
@@ -224,6 +224,13 @@ Table \ref{table:formulae} lists the various mathematical formulae we will
 use for encoding.
 Some functions are passed a single integer value, which is a UID.
 
+Between each UTP broadcast, every transmitter should wait for some amount
+of time.
+As mentioned previously, this interval should include some random variation
+that is recalculated each time.
+The length of each interval should be a number of seconds in the range\\
+$[MIN\_INTERVAL,\ MAX\_INTERVAL]$.
+
 Finally, we formally define the behavior of a transmitter in pseudo-code
 (see Listing \ref{lst:tx}.)
 The functions {\em HIGH} and {\em LOW} cause the physical transmitter to begin
@@ -252,8 +259,8 @@ The remainder of this page is intentionally left blank.
 \hline
 Constant & Value \\
 \hline
-MIN\_INTERVAL	&	25 ms	\\
-MAX\_INTERVAL	&	35 ms	\\
+MIN\_INTERVAL	&	15 s		\\
+MAX\_INTERVAL	&	20 s		\\
 MAX\_ID			&	499		\\
 MIN\_PING\_DUR	&	1.0 ms	\\
 MIN\_DELAY\_DUR	&	10.0 ms	\\
@@ -271,7 +278,7 @@ Name & Definition \\
 \hline
 ping(id)		&	$(id \times STEP\_SIZE)+MIN\_PING\_DUR$	\\
 delay(id)	&	$(id \times STEP\_SIZE)+MIN\_DELAY\_DUR$	\\
-interval()	&	$randInRange(MIN\_INTERVAL, MAX\_INTERVAL)$	\\
+%interval()	&	$randInRange(MIN\_INTERVAL, MAX\_INTERVAL)$	\\
 \hline
 \end{tabular}
 \caption{Formulae to be used for the iCRAB Protocol}\label{table:formulae}
