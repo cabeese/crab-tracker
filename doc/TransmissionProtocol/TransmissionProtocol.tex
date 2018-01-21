@@ -36,7 +36,7 @@
 	Noah Strong
 }
 
-\date{\today\ -- v1.0-wip}
+\date{\today\ -- v1.1 (Under Review)}
 
 \begin{document}
 
@@ -70,13 +70,18 @@ One of the major requirements of this project is the ability for each
 individual transmitter to be uniquely identifiable. Therefore, we must encode
 the device's unique identifier (herein referred to as the ID or UID) in each
 signal that the device broadcasts.
-% TODO - add reference to appropriate section
-We will discuss this in section $<\dots>$.%\ref{background}.
+Additionally, we may want to encode some accelerometer data to indicate that a
+given transmitter has stopped moving.
+This data will be encoded as a boolean value, which we refer to as
+\texttt{inert}.
 
-Additionally, because all transmitters transmit at the same audio frequency
-(baseband signaling), it is possible for multiple transmitters to transmit
-simultaneously. We want such collisions to be detectable by the receiver
-so that invalid data is never presented to the user. Simple implementations
+Finally, because all transmitters transmit at the same audio frequency
+and their broadcasts are uncoordinated (no transmitter is aware of the
+broadcasts of adjacent transmitters),
+it is possible for two or more transmissions to overlap.
+In the event that two or more broadcasts are received simultaneously,
+the receiving software should always be able to detect this collision.
+Simple implementations
 of an encoding protocol can lead to situations in which collisions are not
 detectable, but the protocol proposed in this document aims to prevent the
 possibility of undetectable collisions. For a further discussion on how
@@ -85,8 +90,10 @@ please see RFC 1.
 
 \section{Background} \label{background}
 
-For a thorough background on some of the challenges faced in designing this
-protocol, please refer to the RFC-1 ``Collision Detection'' document.
+For more background on some of the challenges, motivations, and decisions
+that have come up in the creation of this protocol, see
+RFC 1 (a discussion of collision possibilities and remedies) and
+RFC 2 (an examination of ways to encode a boolean value).
 
 To satisfy the requirements of this project, we are designing a new protocol.
 This protocol will encode the UID of each transmitter in such a way that
@@ -97,20 +104,18 @@ series of HIGH and LOW audio signals operating at a predefined
 frequency. (The specific frequency to be used will be documented elsewhere
 on the hardware engineering side of things.)
 The series of ``pings'' and the separation between them will be organized in a
-specific pattern based on the UID of the given transmitter, known as the
+specific pattern based on the UID of the given transmitter.
+We'll generally refer to this pattern as the
 Unique Transmission Pattern (or UTP for short).
 
 Additionally, we may want to have the ability to detect when a transmitter
 has stopped moving, possibly because the crab molted its shell or died.
 In this case, we want each broadcast to not only encode the UID of the
-transmitter, but also some boolean value (such as $isInert$).
-To this end, we introduce a potential second encoding for each signal that
-will be used only if this boolean value is true.
-While the boolean value could theoretically represent any piece of data about
-the transmitter, we will assume herein that it refers to the $isInert$
-variable.
+transmitter, but also some boolean value.
 
-We label this protocol the id-correlated rhythmic audio broadcast protocol,
+Given the nature of the protocol and the project itself, we have named
+this specification
+the {\em id-correlated rhythmic audio broadcast} protocol,
 or iCRAB for short.
 
 \section{iCRAB Protocol Definition} \label{protocol-def}
@@ -121,8 +126,9 @@ or iCRAB for short.
 %a single burst of information.
 At the core of this protocol is a single bust of information which is
 transmitted repeatedly on some randomly-varying interval.
-This burst of data, transmitted via acoustic waves, will encode the unique
-identifier of the given transmitter. The burst, hereafter referred to as a
+All transmitters have a unique identifier (an integer number) associated with
+them, and each burst of data will encode that identifier.
+The burst, hereafter referred to as a
 unique transmission pattern (UTP), will consist of two pings (short, continuous
 transmissions of the carrier frequency), separated by some delay time $d$.
 The duration of the pings and the delay time $d$ will be functions of the
@@ -138,14 +144,9 @@ See Figure \ref{fig:utp} for an example of a UTP.
 \caption{A Unique Transmission Pattern}\label{fig:utp}
 \end{figure}
 
-In general, he duration of the two pings will be identical.
-However, this may change depending on how we encode an additional boolean
-value in the signal.
-See RFC 2 for more details.
-
 \subsection{Rationale and Related Information} \label{rationale}
 
-Based on John's rough estimate early in the project, we will initially
+Based on John's rough estimates early in the project, we will initially
 comply with the following constraints.
 
 \begin{enumerate} \itemsep -2pt
@@ -170,11 +171,12 @@ Observe, however, that if every transmitter transmitted on a fixed interval,
 then we could theoretically encounter a situation in which two transmitters
 transmit at almost exactly the same time for the entire duration of their
 deployment.
-In other words, their transmissions would always collide, and the receiver
+In other words, every single one of their transmissions would collide
+until one of the transmitters depleted its battery charge, and the receiver
 would never be able to reliably determine the location of either one.
 To remedy this, we will instead randomly vary the interval between broadcasts.
-That way, if two transmitters happen to transmit at the same time,
-they won't necessarily collide the second time around.
+That way, if two transmitters happen to transmit at the same time in one
+instance, they won't necessarily collide the second time around.
 The random adjustment will need to be recalculated for each interval in order
 to reduce our chances of collisions.
 
@@ -213,7 +215,7 @@ Each Unique Transmission Pattern (UTP) will be formed by a ping, a delay,
 and another ping, in that order.
 Each transmitter will broadcast a UTP and will then wait for some interval
 before transmitting a UTP again.
-This process loops infinitely throughout the transmitter's lifetime.
+This process loops indefinitely throughout the transmitter's lifetime.
 
 Defined in Table \ref{table:constants} are the constants that we will use for
 the various aspects of this protocol.
