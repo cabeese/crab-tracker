@@ -1,4 +1,4 @@
-\documentclass[12pt]{article}
+\documentclass[12pt,hidelinks]{article}
 
 \setlength{\parindent}{0pt}
 \setlength{\parskip}{2mm}
@@ -12,6 +12,7 @@
 \usepackage{amssymb}
 \usepackage[labelfont=bf]{caption}
 \usepackage{listings}
+\usepackage{hyperref}
 \lstdefinestyle{standard}{
     numbers=left,
     tabsize=2,
@@ -27,6 +28,9 @@
 \usepackage{draftwatermark}
 \SetWatermarkText{UNDER REVIEW}
 \SetWatermarkScale{3}
+
+% A hack to avoid using a bibliography package for now
+\newcommand{\fastcite}[1]{\textsuperscript{\ref{#1}}}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \title{Transmission Protocol --- iCRAB}
@@ -86,14 +90,15 @@ of an encoding protocol can lead to situations in which collisions are not
 detectable, but the protocol proposed in this document aims to prevent the
 possibility of undetectable collisions. For a further discussion on how
 collisions may arise, proposed solutions, and other background information,
-please see RFC 1.
+please see RFC 1\fastcite{ref-rfc1}.
 
 \section{Background} \label{background}
 
 For more background on some of the challenges, motivations, and decisions
 that have come up in the creation of this protocol, see
-RFC 1 (a discussion of collision possibilities and remedies) and
-RFC 2 (an examination of ways to encode a boolean value).
+RFC 1\fastcite{ref-rfc1}
+(a discussion of collision possibilities and remedies) and
+RFC 2\fastcite{ref-rfc2} (an examination of ways to encode a boolean value).
 
 To satisfy the requirements of this project, we are designing a new protocol.
 This protocol will encode the UID of each transmitter in such a way that
@@ -124,7 +129,7 @@ or iCRAB for short.
 
 %Occasionally, on a randomly varying interval, each transmitter will broadcast
 %a single burst of information.
-At the core of this protocol is a single bust of information which is
+At the core of this protocol is a single burst of information which is
 transmitted repeatedly on some randomly-varying interval.
 All transmitters have a unique identifier (an integer number) associated with
 them, and each burst of data will encode that identifier.
@@ -144,9 +149,10 @@ See Figure \ref{fig:utp} for an example of a UTP.
 \caption{A Unique Transmission Pattern}\label{fig:utp}
 \end{figure}
 
-\subsection{Rationale and Related Information} \label{rationale}
+\subsection{Requirements, Rationale and Related Information} \label{rationale}
 
-Based on John's rough estimates early in the project, we will initially
+Based on the rough estimates given to us by our colleague in Electrical
+Engineering early in the project's history, we will initially
 comply with the following constraints.
 
 \begin{enumerate} \itemsep -2pt
@@ -157,6 +163,16 @@ comply with the following constraints.
 	\item The ``step size'' for the delay should also be 0.1 milliseconds.
 \end{enumerate}
 
+The remainder of this section provides details about requirements of the
+protocol, some reasoning for our choices, and other relevant information.
+However, this is meant to be a general look at the protocol;
+all specifics, including timing information, ID encoding ranges, and other
+constants, are detailed in Section \ref{specs}.
+The motivation for leaving the information in this section
+(Section \ref{rationale}) somewhat unspecific is that requirements may change
+as we test and prototype our technology, and we'd prefer to have one single
+source of truth for all numerical values so as to reduce confusion.
+
 Each transmitter will periodically broadcast a signal that the receiving
 system can detect.
 The receiving station will process the data encoded in the broadcast and
@@ -164,8 +180,8 @@ also determine the direction, relative to the system, of that transmitter.
 The UTP broadcasts should be frequent enough for location updates to be
 practical to the user, while also being
 infrequent enough that the expected number of collisions is very low.
-For more information on collision statistics, see the document titled
-{\em RFC1\_stats.pdf}.
+For more information on collision statistics, see
+RFC Stats\fastcite{ref-rfc-stats}.
 
 Observe, however, that if every transmitter transmitted on a fixed interval,
 then we could theoretically encounter a situation in which two transmitters
@@ -207,7 +223,8 @@ However, if the value 542 is received, assuming that $MAX\_UID=500$,
 the receiver should interpret this as transmitter 42 but with
 \texttt{inert=true}.
 
-For more background on the topic of boolean value encoding, see RFC 2.
+For more background on the topic of boolean value encoding, see
+RFC 2\fastcite{ref-rfc2}.
 
 \subsection{Preamble to Definitions and Specifications} \label{preamble}
 
@@ -241,8 +258,11 @@ The {\em sleep()} function simply causes execution of the code to stop for a
 given number of milliseconds.
 
 Section \ref{specs}, on the following page,
-aims to be the developer's one-stop shop for relevant constants,
-formulae, and other definitions.
+aims to include relevant constants, formulae, and other definitions
+that developers will need while programming the components of this project.
+This section is our single source of truth for the values used in the iCRAB
+protocol, and it will be updated as needed throughout the prototyping and
+testing phases of the project.
 
 \vfill
 
@@ -310,10 +330,35 @@ void loop(id){
 \end{figure}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% APPENDIX
+% REFERENCES
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \newpage
+\section{References} \label{references}
+
+\begin{enumerate}
+\item \label{ref-rfc1}
+	Strong, N.
+	{\em RFC 1: Collisions in Delay-Based ID Encoding Protocol.}
+	2017. PDF.\\
+	\url{https://github.com/cabeese/crab-tracker/blob/master/doc/rfc1/RFC1.pdf}
+\item \label{ref-rfc2}
+	Strong, N.
+	{\em RFC 2: Boolean Value Encoding in Transmission Protocol.}
+	2018. PDF.\\
+	\url{https://github.com/cabeese/crab-tracker/blob/master/doc/rfc2/RFC2.pdf}
+\item \label{ref-rfc-stats}
+	Yugawa, C.
+	{\em RFC Stats.}
+	2017. PDF.\\
+	\url{https://github.com/cabeese/crab-tracker/blob/collision-statistics/doc/rfc1/RFC1_stats.pdf}
+\end{enumerate}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% APPENDIX
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%\newpage
 \appendix
 \section{Glossary of Terms} \label{glossary}
 
