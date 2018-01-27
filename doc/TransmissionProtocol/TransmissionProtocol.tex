@@ -1,0 +1,399 @@
+\documentclass[12pt,hidelinks]{article}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{2mm}
+
+\usepackage{geometry}
+ \geometry{
+ letterpaper, left=20mm, right=20mm,  top=20mm,
+ }
+\usepackage{graphicx}
+\graphicspath{ {graphics/} }
+\usepackage{amssymb}
+\usepackage[labelfont=bf]{caption}
+\usepackage{listings}
+\usepackage{hyperref}
+\lstdefinestyle{standard}{
+    numbers=left,
+    tabsize=2,
+    captionpos=b,
+    language=C,
+    frame=tb
+    % Center listing - breaks caption centering, though
+    % xleftmargin=.2\textwidth, xrightmargin=.2\textwidth
+}
+\lstset{style=standard}
+
+% Remove the following 3 lines when no longer in draft form
+\usepackage{draftwatermark}
+\SetWatermarkText{UNDER REVIEW}
+\SetWatermarkScale{3}
+
+% A hack to avoid using a bibliography package for now
+\newcommand{\fastcite}[1]{\textsuperscript{\ref{#1}}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\title{Transmission Protocol --- iCRAB}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\author{
+	Noah Strong
+}
+
+\date{\today\ -- v1.1 (Under Review)}
+
+\begin{document}
+
+\maketitle
+
+\tableofcontents{}
+
+\newpage
+
+\section{Introduction} \label{introduction}
+
+The Crab Tracker project aims to provide a simple, efficient, reliable, and
+cost-effective method for tracking crabs underwater. There are no accepted
+standards that we're aware of for achieving the results we hope to achieve,
+and to base our work too heavily off the work of existing products would
+violate the clauses in the licenses of those products that protect against
+reverse engineering.
+For these reasons and more, we must define our own technologies and protocols.
+Central to the project is the protocol that will be used to relay information
+from transmitters (attached to crabs) to the central receiver (affixed to a
+water-going vessel, such as a kayak).
+Documented herein is that protocol, as well as the motivations and requirements
+for many of the decisions behind it.
+As of this writing, {\bf the protocol is still subject to change.}
+We may find shortcomings or other problems with the protocol during
+the prototyping stage of the product, at which point adjustments will be made.
+This document will be updated as needed to reflect these changes,
+and should always be treated as the official documentation for the protocol.
+
+One of the major requirements of this project is the ability for each
+individual transmitter to be uniquely identifiable. Therefore, we must encode
+the device's unique identifier (herein referred to as the ID or UID) in each
+signal that the device broadcasts.
+Additionally, we may want to encode some accelerometer data to indicate that a
+given transmitter has stopped moving.
+This data will be encoded as a boolean value, which we refer to as
+\texttt{inert}.
+
+Finally, because all transmitters transmit at the same audio frequency
+and their broadcasts are uncoordinated (no transmitter is aware of the
+broadcasts of adjacent transmitters),
+it is possible for two or more transmissions to overlap.
+In the event that two or more broadcasts are received simultaneously,
+the receiving software should always be able to detect this collision.
+Simple implementations
+of an encoding protocol can lead to situations in which collisions are not
+detectable, but the protocol proposed in this document aims to prevent the
+possibility of undetectable collisions. For a further discussion on how
+collisions may arise, proposed solutions, and other background information,
+please see RFC 1\fastcite{ref-rfc1}.
+
+\section{Background} \label{background}
+
+For more background on some of the challenges, motivations, and decisions
+that have come up in the creation of this protocol, see
+RFC 1\fastcite{ref-rfc1}
+(a discussion of collision possibilities and remedies) and
+RFC 2\fastcite{ref-rfc2} (an examination of ways to encode a boolean value).
+
+To satisfy the requirements of this project, we are designing a new protocol.
+This protocol will encode the UID of each transmitter in such a way that
+collisions (multiple simultaneous transmissions by different transmitters) can
+be detected by a receiving station and discarded.
+The protocol is a simple
+series of HIGH and LOW audio signals operating at a predefined
+frequency. (The specific frequency to be used will be documented elsewhere
+on the hardware engineering side of things.)
+The series of ``pings'' and the separation between them will be organized in a
+specific pattern based on the UID of the given transmitter.
+We'll generally refer to this pattern as the
+Unique Transmission Pattern (or UTP for short).
+
+Additionally, we may want to have the ability to detect when a transmitter
+has stopped moving, possibly because the crab molted its shell or died.
+In this case, we want each broadcast to not only encode the UID of the
+transmitter, but also some boolean value.
+
+Given the nature of the protocol and the project itself, we have named
+this specification
+the {\em id-correlated rhythmic audio broadcast} protocol,
+or iCRAB for short.
+
+\section{iCRAB Protocol Definition} \label{protocol-def}
+
+\subsection{Overview}
+
+%Occasionally, on a randomly varying interval, each transmitter will broadcast
+%a single burst of information.
+At the core of this protocol is a single burst of information which is
+transmitted repeatedly on some randomly-varying interval.
+All transmitters have a unique identifier (an integer number) associated with
+them, and each burst of data will encode that identifier.
+The burst, hereafter referred to as a
+unique transmission pattern (UTP), will consist of two pings (short, continuous
+transmissions of the carrier frequency), separated by some delay time $d$.
+The duration of the pings and the delay time $d$ will be functions of the
+transmitter's UID.
+The interval between UTPs will be random, and each transmitter will recalculate
+the interval time after each UTP according to a shared formula.
+See Figure \ref{fig:utp} for an example of a UTP.
+
+\begin{figure}[h]
+\centering
+\includegraphics[scale=0.5]{utp}
+
+\caption{A Unique Transmission Pattern}\label{fig:utp}
+\end{figure}
+
+\subsection{Requirements, Rationale and Related Information} \label{rationale}
+
+Based on the rough estimates given to us by our colleague in Electrical
+Engineering early in the project's history, we will initially
+comply with the following constraints.
+
+\begin{enumerate} \itemsep -2pt
+	\item The minimum ping duration should be 1 millisecond.
+	\item The ``step size'' (i.e. smallest difference in duration between
+		any two pings) should be 0.1 milliseconds.
+	\item The minimum delay duration should be 10 milliseconds.
+	\item The ``step size'' for the delay should also be 0.1 milliseconds.
+\end{enumerate}
+
+The remainder of this section provides details about requirements of the
+protocol, some reasoning for our choices, and other relevant information.
+However, this is meant to be a general look at the protocol;
+all specifics, including timing information, ID encoding ranges, and other
+constants, are detailed in Section \ref{specs}.
+The motivation for leaving the information in this section
+(Section \ref{rationale}) somewhat unspecific is that requirements may change
+as we test and prototype our technology, and we'd prefer to have one single
+source of truth for all numerical values so as to reduce confusion.
+
+Each transmitter will periodically broadcast a signal that the receiving
+system can detect.
+The receiving station will process the data encoded in the broadcast and
+also determine the direction, relative to the system, of that transmitter.
+The UTP broadcasts should be frequent enough for location updates to be
+practical to the user, while also being
+infrequent enough that the expected number of collisions is very low.
+For more information on collision statistics, see
+RFC Stats\fastcite{ref-rfc-stats}.
+
+Observe, however, that if every transmitter transmitted on a fixed interval,
+then we could theoretically encounter a situation in which two transmitters
+transmit at almost exactly the same time for the entire duration of their
+deployment.
+In other words, every single one of their transmissions would collide
+until one of the transmitters depleted its battery charge, and the receiver
+would never be able to reliably determine the location of either one.
+To remedy this, we will instead randomly vary the interval between broadcasts.
+That way, if two transmitters happen to transmit at the same time in one
+instance, they won't necessarily collide the second time around.
+The random adjustment will need to be recalculated for each interval in order
+to reduce our chances of collisions.
+
+The iCRAB protocol is expected to support only a finite number of transmitter
+UIDs.
+The upper bound selected is fairly arbitrary but based on the client's expected
+needs for the project's research.
+
+Finally, this protocol is also expected to be able to encode (along with the
+ID of a given transmitter) a boolean value.
+For the purposes of the project, this value will be \texttt{true}
+if and only if a given  transmitter is inert.
+This generally indicates that the crab died or molted its shell.
+We will encode this boolean value by effectively doubling the number of IDs
+that can be encoded.
+Half of the IDs are to be used when the boolean value is \texttt{false},
+and the other half are used when it is \texttt{true}.
+Specifically, values in the range $[0, MAX\_UID)$ are to be used when
+\texttt{inert=false}.
+There is no additional mapping when IDs are in this range.
+For all values in the range $[MAX\_UID, 2*MAX\_UID)$, the value encoded is
+actually $MAX\_UID$ bigger than the ID that is encoded, and
+\texttt{inert=true}.
+
+For example, if a signal encodes the value 42, the receiver should report
+this as transmitter 42 with \texttt{inert=false}.
+However, if the value 542 is received, assuming that $MAX\_UID=500$,
+the receiver should interpret this as transmitter 42 but with
+\texttt{inert=true}.
+
+For more background on the topic of boolean value encoding, see
+RFC 2\fastcite{ref-rfc2}.
+
+\subsection{Preamble to Definitions and Specifications} \label{preamble}
+
+Each Unique Transmission Pattern (UTP) will be formed by a ping, a delay,
+and another ping, in that order.
+Each transmitter will broadcast a UTP and will then wait for some interval
+before transmitting a UTP again.
+This process loops indefinitely throughout the transmitter's lifetime.
+
+Defined in Table \ref{table:constants} are the constants that we will use for
+the various aspects of this protocol.
+This section of the document will be updated as needed if these values
+change.
+
+Table \ref{table:formulae} lists the various mathematical formulae we will
+use for encoding.
+Some functions are passed a single integer value, which is a UID.
+
+Between each UTP broadcast, every transmitter should wait for some amount
+of time.
+As mentioned previously, this interval should include some random variation
+that is recalculated each time.
+The length of each interval should be a number of seconds in the range\\
+$[MIN\_INTERVAL,\ MAX\_INTERVAL]$.
+
+Finally, we formally define the behavior of a transmitter in pseudo-code
+(see Listing \ref{lst:tx}.)
+The functions {\em HIGH} and {\em LOW} cause the physical transmitter to begin
+or cease transmitting, respectively.
+The {\em sleep()} function simply causes execution of the code to stop for a
+given number of milliseconds.
+
+Section \ref{specs}, on the following page,
+aims to include relevant constants, formulae, and other definitions
+that developers will need while programming the components of this project.
+This section is our single source of truth for the values used in the iCRAB
+protocol, and it will be updated as needed throughout the prototyping and
+testing phases of the project.
+
+\vfill
+
+\begin{center}
+The remainder of this page is intentionally left blank.
+\end{center}
+
+\vfill
+
+\newpage
+\subsection{iCRAB Definitions and Specifications} \label{specs}
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{|l|l|}
+\hline
+Constant & Value \\
+\hline
+MIN\_INTERVAL	&	15 s		\\
+MAX\_INTERVAL	&	20 s		\\
+MAX\_ID			&	499		\\
+MIN\_PING\_DUR	&	1.0 ms	\\
+MIN\_DELAY\_DUR	&	10.0 ms	\\
+STEP\_SIZE		&	0.1	ms	\\
+\hline
+\end{tabular}
+\caption{Constants to be used for the iCRAB Protocol}\label{table:constants}
+\end{table}
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{|r|l|}
+\hline
+Name & Definition \\
+\hline
+ping(id)		&	$(id \times STEP\_SIZE)+MIN\_PING\_DUR$	\\
+delay(id)	&	$(id \times STEP\_SIZE)+MIN\_DELAY\_DUR$	\\
+%interval()	&	$randInRange(MIN\_INTERVAL, MAX\_INTERVAL)$	\\
+\hline
+\end{tabular}
+\caption{Formulae to be used for the iCRAB Protocol}\label{table:formulae}
+\end{table}
+
+\begin{lstlisting}[caption={Transmitter Behavior},label={lst:tx}]
+void doPing(int id){
+	HIGH()
+	sleep(ping(id))
+	LOW()
+}
+
+void loop(id){
+	doPing(id)
+	sleep(delay(id))
+	doPing(id)
+	sleep(interval())
+}
+\end{lstlisting}
+
+\begin{figure}[h]
+\centering
+\includegraphics[scale=0.5]{interval}
+
+\caption{For reference, pictured are two UTPs separated by an interval}
+\label{fig:interval}
+\end{figure}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% REFERENCES
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newpage
+\section{References} \label{references}
+
+\begin{enumerate}
+\item \label{ref-rfc1}
+	Strong, N.
+	{\em RFC 1: Collisions in Delay-Based ID Encoding Protocol.}
+	2017. PDF.\\
+	\url{https://github.com/cabeese/crab-tracker/blob/master/doc/rfc1/RFC1.pdf}
+\item \label{ref-rfc2}
+	Strong, N.
+	{\em RFC 2: Boolean Value Encoding in Transmission Protocol.}
+	2018. PDF.\\
+	\url{https://github.com/cabeese/crab-tracker/blob/master/doc/rfc2/RFC2.pdf}
+\item \label{ref-rfc-stats}
+	Yugawa, C.
+	{\em RFC Stats.}
+	2017. PDF.\\
+	\url{https://github.com/cabeese/crab-tracker/blob/collision-statistics/doc/rfc1/RFC1_stats.pdf}
+\end{enumerate}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% APPENDIX
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%\newpage
+\appendix
+\section{Glossary of Terms} \label{glossary}
+
+{\bf Delay:}
+	in the context of ID encoding, the space between the falling edge of one
+	{\bf ping} and the rising of the next within a single {\bf UTP}.
+
+{\bf Delay Time ({\em d}):}
+	the duration (generally in milliseconds) of a given {\bf delay}.
+
+{\bf iCRAB (id-correlated rhythmic audio broadcast) protocol:}
+	the protocol designed by the members of the Crab Tracker project and
+	described in detail in this document.
+
+{\bf Inert:}
+	A transmitter will be marked as {\bf inert} if it is determined that the
+	transmitter has not moved ``enough'' in a given period of time.
+	This definition is subject to change based on hardware constraints,
+	and its complete definition is outside the scope of this document.
+
+{\bf Interval:}
+	the time between two consecutive broadcasts of {\bf UTP}. Measured by the
+	distance between the final falling edge of one ping and the first rising
+	edge of the next.
+
+{\bf Ping:}
+	a single, continuous transmission of signal.
+
+{\bf Ping Duration:}
+	the length of time between the rising and falling edges of a continuous
+	transmission (a {\bf ping}).
+
+{\bf Unique Transmission Pattern, UTP:}
+	a sequence of two {\bf ping}s separated by some {\bf delay} used to
+	encode the unique identifier of a transmitter.
+
+\end{document}
+
