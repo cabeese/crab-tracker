@@ -1,4 +1,5 @@
 /*
+*Author: John Lund 
 *Crab Tracker Simulator
 *
 *            |a
