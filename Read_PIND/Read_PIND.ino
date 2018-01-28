@@ -1,27 +1,31 @@
 /*
-* A proper header goes here
+* 
+* 
+* Hydrophones a,b,c, d will correspond to pins 3,4,5,6, respectively.
+*  Digital pin 7 corresponds to the duration indicator. 
 *
 */
 
 // Masks off digital pins 0, 1, and 2. 
-// Hydrophones a,b,c, d will correspond to pins 3,4,5,6, respectively.
-// Digital pin 7 corresponds to the duration indicator. 
 // Most significant bit of register corresponds to dignital pin 7
-uint8_t prevpinval = PIND & B11111000;
+uint8_t bitMask = B11111000;
+
+
+uint8_t prevpinval = PIND & bitMask;
 uint8_t pinval;
 uint8_t xorpins;
 extern volatile unsigned long timer0_overflow_count;
 unsigned long time_elapsed;
 
-// longs are 32 bits, so the array can only hold 218 values
+// longs are 32 bits, so the array can only hold 210 values
 // will likely need to hold fewer values when SPI code is 
 // integrated in to the code
-unsigned long output[218][2]; 
+unsigned long output[210][2]; 
 
 void setup() {
 
  //  for debugging  
- //  Serial.begin(9600);
+//   Serial.begin(9600);
 
   // sets all D pins to input,
   // may be unnecessary 
@@ -32,9 +36,9 @@ void setup() {
 int i = 0;
 void loop() {
 
- 
+  
   // reads high or low value of register at once
-  pinval = PIND & B11111000; 
+  pinval = PIND & bitMask; 
   xorpins = (prevpinval ^ pinval);
   
   // recreates the functionality of the micors() function
