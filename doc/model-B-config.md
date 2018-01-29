@@ -18,11 +18,6 @@ https://www.raspberrypi.org/downloads/raspbian/
 - Install `emacs` and `vim` (because we respect all beliefs on this team)
   with `sudo apt-get install emacs vim git`
 
-- Enable SSH over USB (optional)
-  - Open `/boot/config.txt` again and add `dtoverlay=dwc2` at the bottom
-  - Open `/boot/cmdline.txt`. After `rootwait` (the last word on the first
-      line), add a space and then `modules-load=dwc2,g_ether`.
-
 - Enable SPI
   - Open `/boot/config.txt` and uncomment the line `dtparam=spi=on`.
   - Reboot
