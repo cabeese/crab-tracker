@@ -16,7 +16,7 @@ https://www.raspberrypi.org/downloads/raspbian/
 - Change the default password by running `passwd`
 
 - Install `emacs` and `vim` (because we respect all beliefs on this team)
-  with `sudo apt-get install emacs vim git`
+  with `sudo apt-get install emacs vim`
 
 - Enable SPI
   - Open `/boot/config.txt` and uncomment the line `dtparam=spi=on`.
