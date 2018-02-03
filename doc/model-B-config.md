@@ -17,11 +17,13 @@ https://www.raspberrypi.org/downloads/raspbian/
 
 - Install `emacs` and `vim` (because we respect all beliefs on this team)
   with `sudo apt-get install emacs vim`
+### Enable SPI
+- Open `/boot/config.txt` and uncomment the line `dtparam=spi=on`.
 
-- Enable SPI
-  - Open `/boot/config.txt` and uncomment the line `dtparam=spi=on`.
-  - Reboot
-  - The device `/dev/spidev0.0` should appear
+- Reboot
+
+- The device `/dev/spidev0.0` should appear
+### Install screen tools
 
 - Update packages for RasPi screen
 ```bash
@@ -32,6 +34,21 @@ sudo apt-get install raspberrypi-ui-mods
 sudo apt-get install raspberrypi-net-mods
 ```
 
-- Attach the screen (if not already connected) and reboot (with `reboot`)
+- Attach the screen (if not already connected) and reboot (with `reboot`).
+**Note:** An image of the SD card that configured up to this point is stored.
+### Change Hostname
 
-An image of the SD card that configured up to this point is stored.
+- Run `hostname` to see the current hostname (optional).
+
+- Run `sudo hostnamectl set-hostname ct-pi-N` and replace `N` with an
+    appropriate digit based on which device you have.
+    (We started counting up from 0.)
+### Set up SSH Keys and Clone Repo
+
+- Generate a new key with `ssh-keygen -t rsa -b 4096 -C ""`
+
+- Run `cat ~/.ssh/id_rsa.pub` and copy the whole key
+
+- Add this at https://github.com/cabeese/crab-tracker/settings/keys/new (may need admin/owner access to repo)
+
+- On the Pi, run `git clone git@github.com:cabeese/crab-tracker.git`
