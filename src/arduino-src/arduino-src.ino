@@ -18,6 +18,7 @@ int output_end; /* Store here when reading pins */
 unsigned long output[64][2];
 
 
+
 uint8_t prevpinval = PIND & bitMask;
 uint8_t pinval;
 uint8_t xorpins;
@@ -27,7 +28,7 @@ unsigned long time_elapsed;
 /* ======================== SPI Variables ======================== */
 unsigned char hello[] = {'H','e','l','l','o',' ',
 						 'R','a','s','p','i','\n'};
-byte marker = 0;
+byte marker = 0; /* Index into `long` timestamp in output array */
 
 uint8_t tmp_state           = 123;
 unsigned long tmp_timestamp = 123456789;
@@ -43,6 +44,7 @@ void setup (void) {
 
     /* PIN_D Setup - Sets all D pins to input; may be unnecessary */
     DDRD = 0B00000000;
+    output[0][1] = 0xff00ff00;
 }
 
 /***************************************************************
@@ -57,10 +59,11 @@ void loop (void){
   /* SPI TRANSFER */
 	if((SPSR & (1 << SPIF)) != 0){
 //		SPDR = hello[marker];
-    SPDR = tmp_state;
-		marker++;
+//    SPDR = tmp_state;
+    SPDR = output[0][1] >> marker;
+		marker+=8;
 
-		if(marker > sizeof(hello)){
+		if(marker > 24){
 			marker = 0;
 		}
 	}
@@ -68,21 +71,21 @@ void loop (void){
 
   /* Read PIN_D values */
   // reads high or low value of register at once
-  pinval = PIND & bitMask;
-  xorpins = (prevpinval ^ pinval);
-  
-  // recreates the functionality of the micors() function
-  // without the overhead of a function call
-  time_elapsed = ((timer0_overflow_count << 8) + TCNT0) * 4;
-  
-  if (xorpins != 0) {
-    // stores high pins and timestamp
-    output[i][0] = (pinval >> 3);
-    output[i][1] = time_elapsed;
-    
-    count++;
-  }
-  prevpinval = pinval;
+//  pinval = PIND & bitMask;
+//  xorpins = (prevpinval ^ pinval);
+//  
+//  // recreates the functionality of the micors() function
+//  // without the overhead of a function call
+//  time_elapsed = ((timer0_overflow_count << 8) + TCNT0) * 4;
+//  
+//  if (xorpins != 0) {
+//    // stores high pins and timestamp
+//    output[output_end][0] = (pinval >> 3);
+//    output[output_end][1] = time_elapsed;
+//    
+//    output_end++;
+//  }
+//  prevpinval = pinval;
 
 }
 /******************************************************************************/

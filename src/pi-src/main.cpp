@@ -54,7 +54,8 @@ int main (void) {
 
     while (1){
         result = spi_getbyte();
-        cout << result;
+        printf("%d\n", result);
+        // cout << result;
         // usleep (10); /* Why 10?? */
         cout << "\nEnter a char to continue\n";
         getchar();
