@@ -60,17 +60,14 @@ void loop() {
 
 
     // stores high pins and timestamp
-    output[i][0] = (pinval >> 3); //TODO: explain why the bit shift
+    output[i][0] = (pinval >> 3); 
     output[i][1] = time_elapsed;
     
 //    for debugging: confirm that expected values are stored
 //    Serial.print("stored pin value: ");
 //    Serial.println(output[i][0], BIN);
 //    Serial.print("stored time: ");
-//    char buff[15];
-//    sprintf(buff, "%lu", output[i][1]);
-//    Serial.println(buff);
-//   Serial.println(output[i][1], DEC);
+//    Serial.println(output[i][1], DEC);
 //    Serial.print("value of i: ");
 //    Serial.println(i);
 //    Serial.println();
