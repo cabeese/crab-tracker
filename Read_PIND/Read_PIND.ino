@@ -55,7 +55,7 @@ void loop() {
 //    Serial.println(pinval, BIN);
 //    Serial.print("time_elaspsed: ");
 //    Serial.println(time_elapsed);
-//    Serial.print("bit shift: ");
+//    Serial.print("pinval: ");
 //    Serial.println((pinval >> 3), BIN);
 
 
@@ -70,9 +70,10 @@ void loop() {
 //    char buff[15];
 //    sprintf(buff, "%lu", output[i][1]);
 //    Serial.println(buff);
-//    Serial.println(output[i][1], DEC);
+//   Serial.println(output[i][1], DEC);
 //    Serial.print("value of i: ");
 //    Serial.println(i);
+//    Serial.println();
  
     i++;
   }
