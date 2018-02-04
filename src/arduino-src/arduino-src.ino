@@ -3,21 +3,40 @@ Crab Tracker - Arduino Code
 
 Reads in data from the pins (attached to Hydrophones) and transfers that data
 via SPI to another device.
+
+Data is sent in a specific sequence with SPI. Each time a pin state changes, we
+store a new set of pin values along with a timestamp for when the change
+occurred. The `pinval` is an 8-bit integer (though only the lower 5 bits
+correspond to actual receivers/hydrophones). The timestamp is a 32-bit `long`.
+By default, SPI only sends 8 bits at a time. For simplicity's sake, we will only
+ever send 8 bits at a time. This means that we must send the data in chunks,
+like so:
+    [pinvals, timestamp_part, timestamp_part, timestamp_part, timestamp_part]
+where each `timestamp_part` is only 8 of the 32 bits in the integer.
 *******************************************************************************/
+
+const int BB_LEN = 64; /* number of items in the bounded buffer */
 
 /* ======================= PIN_D Variables ======================= */
 // Masks off digital pins 0, 1, and 2.
 // Most significant bit of register corresponds to digital pin 7
 uint8_t bitMask = B11111000;
-int output_start; /* Read out for SPI */
-int output_end; /* Store here when reading pins */
 
-/* longs are 32 bits, so the array can only hold 210 values
-   will likely need to hold fewer values when SPI code is
-   integrated in to the code */
-unsigned long output[64][2];
-
-
+/*
+ * Pin values and corresponding timestamps are stored in this 2D array,
+ * which is treated like a bounded buffer. As pin values are read in,
+ * the 'end' is moved ahead. When data is sent to the SPI master device,
+ * the 'beginning' is moved ahead, so long as it doesn't overtake 'end'.
+ *
+ * Note that 'end' may overtake 'beginning' if data is being detected
+ * more rapidly than it is being sent by SPI; this may result in loss
+ * of data! Similarly, if SPI is polled too quickly, redundant data may
+ * be sent as the 'beginning' will not be advanced until new data is
+ * available.
+ */
+unsigned long output[BB_LEN][2]; /* Note: longs are 32 bits */
+int bb_beg; /* Start of bounded buffer. SPI reads here */
+int bb_end; /*   End of bounded buffer. PIN_D code writes here*/
 
 uint8_t prevpinval = PIND & bitMask;
 uint8_t pinval;
@@ -26,81 +45,101 @@ extern volatile unsigned long timer0_overflow_count;
 unsigned long time_elapsed;
 
 /* ======================== SPI Variables ======================== */
-unsigned char hello[] = {'H','e','l','l','o',' ',
-						 'R','a','s','p','i','\n'};
 byte marker = 0; /* Index into `long` timestamp in output array */
+byte send_pinvals = 1; /* Send 'pinvals' first */
 
-uint8_t tmp_state           = 123;
-unsigned long tmp_timestamp = 123456789;
-
-/***************************************************************
- Setup SPI in slave mode (1) define MISO pin as output (2) set
- enable bit of the SPI configuration register
-****************************************************************/
+/**
+ * This function runs once when the board boots.
+ * Initial configuration is done here.
+ */
 void setup (void) {
-    /* SPI Setup - Sets pin mode on MISO and does...? */
-	pinMode(MISO, OUTPUT);
-	SPCR |= _BV(SPE);
-
-    /* PIN_D Setup - Sets all D pins to input; may be unnecessary */
-    DDRD = 0B00000000;
-    output[0][1] = 0xff00ff00;
+  /* SPI Setup */
+  pinMode(MISO, OUTPUT); /* Set "Master In/Slave Out" pin as output */
+  SPCR |= _BV(SPE); /* Set 'enable' bit of SPI config register */
+  
+  /* PIN_D Setup - Sets all D pins to input; may be unnecessary */
+  DDRD = 0B00000000;
+  output[0][0] = 0x0;
+  output[0][1] = 0x55555555;
 }
 
-/***************************************************************
- Loop until the SPI End of Transmission Flag (SPIF) is set
- indicating a byte has been received.  When a byte is
- received, load the next byte in the Hello[] array into SPDR
- to be transmitted to the Raspberry Pi, and increment the marker.
- If the end of the Hell0[] array has been reached, reset
- marker to 0.
-****************************************************************/
-void loop (void){
-  /* SPI TRANSFER */
-	if((SPSR & (1 << SPIF)) != 0){
-//		SPDR = hello[marker];
-//    SPDR = tmp_state;
-    SPDR = output[0][1] >> marker;
-		marker+=8;
+/* ======================= Helper Functions ======================= */
+/**
+ * Advance the beginning of the bounded buffer, looping back to the beginning
+ * if needed. Won't advance the counter if it overtakes 'end'.
+ */
+void bb_adv_beg(){
+  if(bb_beg == bb_end) return;
+  bb_beg++;
+  if(bb_beg >= BB_LEN) bb_beg = 0;
+}
 
-		if(marker > 24){
-			marker = 0;
-		}
+/**
+ * Advance the end of the bounded buffer, looping back to the beginning
+ * if needed.
+ */
+void bb_adv_end(){
+  bb_end++;
+  if(bb_end >= BB_LEN) bb_end = 0;
+}
+
+/**
+ * The main loop. This code runs indefinitely while the device
+ * is powered on. It handles SPI communication and input pin
+ * reading/change detection.
+ */
+void loop (void){
+  /* ================= SPI TRANSFER =================
+   * SPSR = SPI Status Register
+   * SPDR = SPI Data Register
+   * SPIF = SPI End of Transmission Flag
+   * 
+   * When the SPIF flag is set, this indicates that a byte has
+   * been received. At this point, we can load a new value into
+   * the data register. This will be sent to the master.
+   * 
+   * We send the timestamp in 4 chunks, as it is 32 bytes and
+   * we only send 8 bytes at a time.
+   */
+	if((SPSR & (1 << SPIF)) != 0){
+    if(send_pinvals){
+      /* Send the pin values */
+      SPDR = output[bb_beg][0];
+      send_pinvals = 0;
+    } else {
+      /* Send the timestamp, 8 bits at a time */
+      SPDR = output[0][1] >> (8 * marker);
+      marker++;
+  
+      if(marker > 3){
+        marker = 0;
+        send_pinvals = 1;
+        bb_adv_beg();
+      }
+    }
 	}
 
 
-  /* Read PIN_D values */
-  // reads high or low value of register at once
-//  pinval = PIND & bitMask;
-//  xorpins = (prevpinval ^ pinval);
-//  
-//  // recreates the functionality of the micors() function
-//  // without the overhead of a function call
-//  time_elapsed = ((timer0_overflow_count << 8) + TCNT0) * 4;
-//  
-//  if (xorpins != 0) {
-//    // stores high pins and timestamp
-//    output[output_end][0] = (pinval >> 3);
-//    output[output_end][1] = time_elapsed;
-//    
-//    output_end++;
-//  }
-//  prevpinval = pinval;
+  /* Read PIN_D values
+   * reads high or low value of register at once
+   * Hydrophones a,b,c,d will correspond to pins 3,4,5,6, respectively.
+   * Digital pin 7 corresponds to the duration indicator.
+   */
+  pinval = PIND & bitMask;
+  xorpins = (prevpinval ^ pinval);
+  
+  // recreates the functionality of the micors() function
+  // without the overhead of a function call
+  time_elapsed = ((timer0_overflow_count << 8) + TCNT0) * 4;
+  
+  if (xorpins != 0) {
+    // stores high pins and timestamp
+    output[bb_end][0] = (pinval >> 3); /* Lowest 3 bits unused */
+    output[bb_end][1] = time_elapsed;
+    
+    bb_adv_end();
+  }
+  prevpinval = pinval;
 
 }
-/******************************************************************************/
-/*
-*
-*
-* Hydrophones a,b,c, d will correspond to pins 3,4,5,6, respectively.
-*  Digital pin 7 corresponds to the duration indicator.
-*
-*/
 
-
-
-// int i = 0;
-// void loop() {
-//
-//
-// }
