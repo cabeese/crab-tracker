@@ -17,19 +17,23 @@ Code taken from http://robotics.hobbizine.com/raspiduino.html
 #include <stdio.h>
 using namespace std;
 
+struct spi_rawblock {
+    unsigned long timestamp;
+    uint8_t pinvals;
+};
 
 /**********************************************************
 Declare Global Variables
 ***********************************************************/
-
 int fd;
 unsigned char result;
 
 /**********************************************************
 Declare Functions
 ***********************************************************/
-
 int spi_getbyte();
+int spi_getblock(spi_rawblock*);
+void spi_dispblock(spi_rawblock);
 
 
 /**********************************************************
@@ -44,7 +48,7 @@ Main
 ***********************************************************/
 int main (void) {
     fd = open("/dev/spidev0.0", O_RDWR);
-    char buf[1000];
+    spi_rawblock block;
     /*
     We need to send an 8-bit state/bitmask, then a 32-bit long timestamp
      */
@@ -52,13 +56,23 @@ int main (void) {
     unsigned int speed = 1000000;
     ioctl (fd, SPI_IOC_WR_MAX_SPEED_HZ, &speed);
 
+    /* For some reason, we get some junk data on the first byte we grab.
+        TODO: find out why this happens! Could by SPI thing or could just be
+          some dumb thing in the Arduino code I did.
+    */
+    spi_getbyte(); /* Throw away the first byte */
+
     while (1){
-        result = spi_getbyte();
-        printf("%d\n", result);
+        cout << "Enter a char to get more data via SPI. ";
+        getchar();
+
+        /* Get and display a block of data from the pi */
+        result = spi_getblock(&block);
+        spi_dispblock(block);
+        // result = spi_getbyte();
+        // printf("%d\n", result);
         // cout << result;
         // usleep (10); /* Why 10?? */
-        cout << "\nEnter a char to continue\n";
-        getchar();
     }
 }
 
@@ -85,5 +99,30 @@ int spi_getbyte(){
 
     ioctl (fd, SPI_IOC_MESSAGE(1), &spi);
 
+    printf(" [raw=0x%x]\n", rxDat);
     return rxDat;
+}
+
+int spi_getblock(spi_rawblock *data){
+    uint8_t pinvals;
+    unsigned long timestamp = 0;
+
+    /* Get pinvals */
+    pinvals = spi_getbyte();
+
+    /* Get timestamp (in 4 parts) */
+    for(int i=0; i<4; i++){
+        timestamp |= spi_getbyte() << (i * 8);
+        // printf("  timestamp now: 0x%x\n", timestamp);
+    }
+
+    data->pinvals = pinvals;
+    data->timestamp = timestamp;
+    return 1;
+}
+
+void spi_dispblock(spi_rawblock data){
+    printf("--- SPI Raw Data Block ---\n");
+    printf("pinvals: 0x%x\n", data.pinvals);
+    printf("timestamp: 0x%x\n", data.timestamp);
 }

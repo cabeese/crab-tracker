@@ -35,8 +35,17 @@ uint8_t bitMask = B11111000;
  * available.
  */
 unsigned long output[BB_LEN][2]; /* Note: longs are 32 bits */
-int bb_beg; /* Start of bounded buffer. SPI reads here */
-int bb_end; /*   End of bounded buffer. PIN_D code writes here*/
+int bb_beg = 0; /* Start of bounded buffer. SPI reads here */
+/* TODO - change back to zero. this is for testing purposes */
+/* TODO - currently, the first block of data will be sent via SPI
+ *  before it's actually valid (immediately, in fact).
+ *  Figure out some clean way to prevent this until output[0]
+ *  actually has something valid in it.
+ *  Could just set it manually to be all zeroes, but then it might
+ *  get overwritten (perhaps simultaneously - race condition!)
+ *  when first data blip comes in.
+ */
+int bb_end = 2; /*   End of bounded buffer. PIN_D code writes here*/
 
 uint8_t prevpinval = PIND & bitMask;
 uint8_t pinval;
@@ -46,7 +55,7 @@ unsigned long time_elapsed;
 
 /* ======================== SPI Variables ======================== */
 byte marker = 0; /* Index into `long` timestamp in output array */
-byte send_pinvals = 1; /* Send 'pinvals' first */
+byte send_pinvals = 1; /* Send 'pinvals' first, so initialize to 1 */
 
 /**
  * This function runs once when the board boots.
@@ -59,8 +68,13 @@ void setup (void) {
   
   /* PIN_D Setup - Sets all D pins to input; may be unnecessary */
   DDRD = 0B00000000;
-  output[0][0] = 0x0;
-  output[0][1] = 0x55555555;
+  /* TEMPORARY - TESTING DATA ONLY */
+  output[0][0] = 0x00; // 0
+  output[0][1] = 0x0;
+  output[1][0] = 0x10; // 1
+  output[1][1] = 0x0;
+  output[2][0] = 0x20; // 2
+  output[2][1] = 0x0;
 }
 
 /* ======================= Helper Functions ======================= */
@@ -100,6 +114,14 @@ void loop (void){
    * 
    * We send the timestamp in 4 chunks, as it is 32 bytes and
    * we only send 8 bytes at a time.
+   * 
+   * TODO: since we have to read some data in from the master
+   * anyway, perhaps we can treat some values as a 'reset'.
+   * For example, if we get some magic number from the master,
+   * we'll set 'send_pinvals' to true and start over.
+   * This may be useful for cases where the two devices may be
+   * out of sync, and the master expects the pinvals while the
+   * slave is sending parts of the timestamp.
    */
 	if((SPSR & (1 << SPIF)) != 0){
     if(send_pinvals){
@@ -125,21 +147,21 @@ void loop (void){
    * Hydrophones a,b,c,d will correspond to pins 3,4,5,6, respectively.
    * Digital pin 7 corresponds to the duration indicator.
    */
-  pinval = PIND & bitMask;
-  xorpins = (prevpinval ^ pinval);
-  
-  // recreates the functionality of the micors() function
-  // without the overhead of a function call
-  time_elapsed = ((timer0_overflow_count << 8) + TCNT0) * 4;
-  
-  if (xorpins != 0) {
-    // stores high pins and timestamp
-    output[bb_end][0] = (pinval >> 3); /* Lowest 3 bits unused */
-    output[bb_end][1] = time_elapsed;
-    
-    bb_adv_end();
-  }
-  prevpinval = pinval;
+//  pinval = PIND & bitMask;
+//  xorpins = (prevpinval ^ pinval);
+//  
+//  // recreates the functionality of the micors() function
+//  // without the overhead of a function call
+//  time_elapsed = ((timer0_overflow_count << 8) + TCNT0) * 4;
+//  
+//  if (xorpins != 0) {
+//    // stores high pins and timestamp
+//    output[bb_end][0] = (pinval >> 3); /* Lowest 3 bits unused */
+//    output[bb_end][1] = time_elapsed;
+//    
+//    bb_adv_end();
+//  }
+//  prevpinval = pinval;
 
 }
 
