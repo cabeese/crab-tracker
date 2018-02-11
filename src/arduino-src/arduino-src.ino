@@ -11,8 +11,10 @@ correspond to actual receivers/hydrophones). The timestamp is a 32-bit `long`.
 By default, SPI only sends 8 bits at a time. For simplicity's sake, we will only
 ever send 8 bits at a time. This means that we must send the data in chunks,
 like so:
-    [pinvals, timestamp_part, timestamp_part, timestamp_part, timestamp_part]
-where each `timestamp_part` is only 8 of the 32 bits in the integer.
+    [pinvals, timestamp_part1, timestamp_part2, timestamp_part3, timestamp_part4]
+where each `timestamp_part` is only 8 of the 32 bits in the integer. The low-order
+(least significant) bits are sent first, followed by the next 8 bits, and then
+eventually the highest order bits.
 *******************************************************************************/
 
 const int BB_LEN = 64; /* number of items in the bounded buffer */
@@ -37,7 +39,6 @@ uint8_t bitMask = B11111000;
  */
 unsigned long output[BB_LEN][2]; /* Note: longs are 32 bits */
 int bb_beg = 0; /* Start of bounded buffer. SPI reads here */
-/* TODO - change back to zero. this is for testing purposes */
 /* TODO - currently, the first block of data will be sent via SPI
  *  before it's actually valid (immediately, in fact).
  *  Figure out some clean way to prevent this until output[0]
@@ -46,6 +47,7 @@ int bb_beg = 0; /* Start of bounded buffer. SPI reads here */
  *  get overwritten (perhaps simultaneously - race condition!)
  *  when first data blip comes in.
  */
+/* TODO - change back to zero. this is for testing purposes */
 int bb_end = 2; /*   End of bounded buffer. PIN_D code writes here*/
 
 uint8_t prevpinval = PIND & bitMask;
@@ -84,7 +86,7 @@ void setup (void) {
  * Advance the beginning of the bounded buffer, looping back to the beginning
  * if needed. Won't advance the counter if it overtakes 'end'.
  */
-void bb_adv_beg(){
+void bb_advance_beg(){
   if(bb_beg == bb_end) return;
   bb_beg++;
   if(bb_beg >= BB_LEN) bb_beg = 0;
@@ -94,7 +96,7 @@ void bb_adv_beg(){
  * Advance the end of the bounded buffer, looping back to the beginning
  * if needed.
  */
-void bb_adv_end(){
+void bb_advance_end(){
   bb_end++;
   if(bb_end >= BB_LEN) bb_end = 0;
 }
@@ -147,7 +149,7 @@ void loop (void){
       if(marker > 3){
         marker = 0;
         send_pinvals = 1;
-        bb_adv_beg();
+        bb_advance_beg();
       }
     }
 	}
@@ -170,7 +172,7 @@ void loop (void){
 //    output[bb_end][0] = (pinval >> 3); /* Lowest 3 bits unused */
 //    output[bb_end][1] = time_elapsed;
 //    
-//    bb_adv_end();
+//    bb_advance_end();
 //  }
 //  prevpinval = pinval;
 
