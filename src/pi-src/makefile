@@ -1,6 +1,6 @@
 CC=g++
 
-CFILES=main.c spi.c
+CFILES=main.cpp spi.cpp data_collection.cpp
 OFILES=${CFILES:.c=.o}
 
 all: ${OFILES}
@@ -14,4 +14,4 @@ clean:
 	@echo Working directory cleaned
 
 #dependency list
-${OFILES}: spi.h # add other .h files?
+${OFILES}: spi.h data_collection.h # add other .h files?
