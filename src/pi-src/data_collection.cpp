@@ -11,7 +11,8 @@ Project: Crab Tracker
 Created: 2018-02-10
 ***********************************************************/
 
-#include <spi.h>
+#include "data_collection.h"
+#include "spi.h"
 
 #define NUM_PINS 5 /* TODO: Define this elsewhere, globally */
 
@@ -54,7 +55,7 @@ void proc_block(spi_rawblock data){
                 /* TODO: Share this new `ping` where `main` can see it */
                 tmp.pin = i;
                 tmp.start = partials[i];
-                tmp.duration: data.timestamp - partials[i];
+                tmp.duration = data.timestamp - partials[i];
             }
         }
     }

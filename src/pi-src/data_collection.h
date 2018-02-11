@@ -15,4 +15,4 @@ struct ping {
     int pin;
     unsigned long start;
     unsigned long duration;
-}
+};
