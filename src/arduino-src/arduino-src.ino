@@ -16,6 +16,7 @@ where each `timestamp_part` is only 8 of the 32 bits in the integer.
 *******************************************************************************/
 
 const int BB_LEN = 64; /* number of items in the bounded buffer */
+const byte SPI_RESET = 0x1;
 
 /* ======================= PIN_D Variables ======================= */
 // Masks off digital pins 0, 1, and 2.
@@ -56,6 +57,7 @@ unsigned long time_elapsed;
 /* ======================== SPI Variables ======================== */
 byte marker = 0; /* Index into `long` timestamp in output array */
 byte send_pinvals = 1; /* Send 'pinvals' first, so initialize to 1 */
+byte flag; /* For Pi -> Arduino messages, such as 'reset' */
 
 /**
  * This function runs once when the board boots.
@@ -124,6 +126,15 @@ void loop (void){
    * slave is sending parts of the timestamp.
    */
 	if((SPSR & (1 << SPIF)) != 0){
+    flag = SPDR;
+    if( (flag & SPI_RESET) == SPI_RESET){
+      /* In case the devices get out of sync, we can send the 'RESET'
+       * flag, causing us to send the 5-transmission sequence starting
+       * at the beginning (with the pinvals). Could be useful if the Pi
+       * is restarted without the Arduino resetting its counters. */
+      marker = 0;
+      send_pinvals = 1;
+    }
     if(send_pinvals){
       /* Send the pin values */
       SPDR = output[bb_beg][0];

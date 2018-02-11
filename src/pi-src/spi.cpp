@@ -29,12 +29,15 @@ int fd;
  *
  * Returns a single byte (as in int)
  */
-int spi_getbyte(int spifd){
-    /* Unused, but we have to send SOMETHING. It's the [SPI] rule */
-    unsigned char txDat = ' ';
-    unsigned char rxDat;
+uint8_t spi_getbyte(int spifd){
+    uint8_t txDat = 0x0; /* Could be a flag instead */
+    uint8_t rxDat;
     struct spi_ioc_transfer spi;
 
+    /* From /usr/include/linux/spi/spidev.h on the Pi:
+    * "Zero-initialize the structure, including currently unused fields, to
+    * accommodate potential future updates."
+    */
     memset (&spi, 0, sizeof (spi));
 
     spi.tx_buf        = (unsigned long)&txDat;
@@ -43,7 +46,7 @@ int spi_getbyte(int spifd){
 
     ioctl (spifd, SPI_IOC_MESSAGE(1), &spi);
 
-    printf(" [raw=0x%x]\n", rxDat);
+    printf(" [raw=0x%x] (%d bytes)\n", rxDat, sizeof(rxDat));
     return rxDat;
 }
 
@@ -57,7 +60,6 @@ int spi_getblock(int spifd, spi_rawblock *data){
     /* Get timestamp (in 4 parts) */
     for(int i=0; i<4; i++){
         timestamp |= spi_getbyte(spifd) << (i * 8);
-        // printf("  timestamp now: 0x%x\n", timestamp);
     }
 
     data->pinvals = pinvals;
