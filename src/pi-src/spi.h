@@ -1,6 +1,10 @@
-/**
- * SPI Header
- */
+/******************************************************************************
+Facilitates the transfer of data from the Arduino to the Pi via SPI.
+
+Author:  Noah Strong
+Project: Crab Tracker
+Created: 2018-02-10
+******************************************************************************/
 #include <stdint.h>
 
 #define SPI_RESET 0x1

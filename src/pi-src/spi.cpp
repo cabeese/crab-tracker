@@ -1,12 +1,12 @@
-/**********************************************************
- SPI_Hello_Arduino
-   Configures an Raspberry Pi as an SPI master and
-   demonstrates bidirectional communication with an
-   Arduino Slave by repeatedly sending the text
-   "Hello Arduino" and receiving a response
+/******************************************************************************
+Facilitates the transfer of data from the Arduino to the Pi via SPI.
 
-Code taken from http://robotics.hobbizine.com/raspiduino.html
-***********************************************************/
+Code based on http://robotics.hobbizine.com/raspiduino.html
+
+Author:  Noah Strong
+Project: Crab Tracker
+Created: 2018-02-10
+******************************************************************************/
 
 #include <sys/ioctl.h>
 #include <linux/spi/spidev.h>

@@ -1,4 +1,4 @@
-/**********************************************************
+/******************************************************************************
 Data collection and initial processing
 
 Polls the SPI slave for new data. The data comes in as raw "blocks" containing
@@ -9,7 +9,7 @@ functions that will determine location and UID.
 Author:  Noah Strong
 Project: Crab Tracker
 Created: 2018-02-10
-***********************************************************/
+******************************************************************************/
 
 struct ping {
     int pin;
