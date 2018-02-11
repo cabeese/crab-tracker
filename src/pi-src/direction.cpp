@@ -60,6 +60,7 @@ double calcN(unsigned long delta_1, unsigned long delta_2, unsigned long delta_3
 double calcX(unsigned long delta_2, double N);
 double calcY(unsigned long delta_1, double N);
 double calcZ(double N, double x, double y);
+void printResult(xyz *result);
 void selectionSort(unsigned long arr[], int n);
 void swap(unsigned long*xp, unsigned long *yp);
 
@@ -80,11 +81,12 @@ int main(int argc, const char* argv[]) {
 */
 
 int triangulation( /* 'ping' arguments TBD, */ xyz *result){
+  fprintf(stderr, "IN TRIG\n");
   /*  These will be removed when 'ping arguments' is a real thing*/
-  unsigned long ts_a = 2;
-  unsigned long ts_b = 8;
-  unsigned long ts_c = 9;
-  unsigned long ts_d = 4;
+  unsigned long ts_a = 24;
+  unsigned long ts_b = 85;
+  unsigned long ts_c = 6666666;
+  unsigned long ts_d = 3985;
 
   /* sort the time stamps */
   unsigned long arr[4] = {ts_a, ts_b, ts_c, ts_d};
@@ -95,11 +97,13 @@ int triangulation( /* 'ping' arguments TBD, */ xyz *result){
   unsigned long ts_3 = arr[2];
   unsigned long ts_4 = arr[3];
 
-  fprintf(stderr, "%ld, %ld, %ld, %ld \n", ts_1, ts_2, ts_3, ts_4);
+  //fprintf(stderr, "%ld, %ld, %ld, %ld \n", ts_1, ts_2, ts_3, ts_4);
 
   //xyz result;
 
   triangulation_helper(ts_1, ts_2, ts_3, ts_4, result);
+
+  printResult(result);
 
   return 1;
 
@@ -110,9 +114,10 @@ int triangulation( /* 'ping' arguments TBD, */ xyz *result){
  */
 int triangulation_helper(unsigned long ts_1, unsigned long ts_2, unsigned long ts_3, unsigned long ts_4, xyz *result){
   /* x, y, and z directions */
+  fprintf(stderr, "IN TRIG_H\n");
   double x;
   double y;
-  double z = 0; //
+  double z = 1; //
   double N;
   /*changes in time bewtween various hydrophones*/
   unsigned long delta_1 = ts_1 - ts_4;
@@ -120,6 +125,7 @@ int triangulation_helper(unsigned long ts_1, unsigned long ts_2, unsigned long t
   unsigned long delta_3 = ts_3 - ts_4;  //double check with chloe that this is what she meant
 
   if(delta_1 == 0 || delta_2 == 0){
+    fprintf(stderr, "IN IF\n");
     //"z is the last known z.  may need user input for first one.
     //Alternatively, throw out if first data point hits this case
     //and wait for the next signal"
@@ -152,18 +158,24 @@ int triangulation_helper(unsigned long ts_1, unsigned long ts_2, unsigned long t
       y = something
       */
     }
-    else{
-      N = calcN(delta_1, delta_2, delta_3);
-      x = calcX(delta_2, N);
-      y = calcY(delta_1, N);
-      z = calcZ(N, x, y);
-
-      result->x = x;
-      result->y = y;
-      result->z = z;
-
-    }
   }
+  else{
+    fprintf(stderr, "IN ELSE\n");
+    N = calcN(delta_1, delta_2, delta_3);
+    fprintf(stderr, "%lf\n", N);
+    x = calcX(delta_2, N);
+    fprintf(stderr, "%lf\n", x);
+    y = calcY(delta_1, N);
+    fprintf(stderr, "%lf\n", y);
+    z = calcZ(N, x, y);
+    fprintf(stderr, "%lf\n", z);
+
+    result->x = x;
+    result->y = y;
+    result->z = z;
+
+  }
+
 
   return 1;
 }
@@ -206,6 +218,13 @@ double calcY(unsigned long delta_1, double N){
 double calcZ(double N, double x, double y){
   double z = (double)sqrt(pow(N,2.0) - pow(x - R_USER/2.0 , 2.0) - pow(y + R_USER/2.0 , 2.0));
   return z;
+}
+
+/*debugging function prints xyz structs */
+void printResult(xyz *result){
+  fprintf(stderr, "x = %lf\n", result->x);
+  fprintf(stderr, "y = %lf\n", result->y);
+  fprintf(stderr, "z = %lf\n", result->z);
 }
 
 /* sorting stuff */
