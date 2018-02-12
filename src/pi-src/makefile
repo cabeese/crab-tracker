@@ -6,6 +6,10 @@ OFILES=${CFILES:.c=.o}
 all: ${OFILES}
 	$(CC) -o crab-tracker ${OFILES}
 
+install:
+	@echo Downloading \"Catch2\" for testing
+	@wget https://raw.githubusercontent.com/CatchOrg/Catch2/master/single_include/catch.hpp
+
 run:
 	@./crab-tracker
 

@@ -2,3 +2,4 @@
 *.log
 *.gz
 *.toc
+src/pi-src/catch.hpp
