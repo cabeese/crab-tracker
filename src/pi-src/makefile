@@ -1,5 +1,6 @@
 CC=g++
-
+FLAGS=-std=c++11 #make sure this works
+CATCH_PATH=`pwd`/include #/catch.hpp
 CFILES=main.cpp spi.cpp data_collection.cpp
 OFILES=${CFILES:.c=.o}
 
@@ -7,14 +8,21 @@ all: ${OFILES}
 	$(CC) -o crab-tracker ${OFILES}
 
 install:
-	@echo Downloading \"Catch2\" for testing
-	@wget https://raw.githubusercontent.com/CatchOrg/Catch2/master/single_include/catch.hpp
+	@mkdir -p include
+	@wget https://raw.githubusercontent.com/CatchOrg/Catch2/master/single_include/catch.hpp -P include/
 
 run:
 	@./crab-tracker
 
+testcode: ${OFILES}
+	g++ -std=c++11 -Wall -I$(CATCH_PATH) -c test_main.cpp
+	g++ -std=c++11 -Wall -I$(CATCH_PATH) -o test test_main.o test_data_collection.cpp data_collection.cpp
+
+test: ${OFILES}
+	@./test
+
 clean:
-	@rm -f *.o *~ crab-tracker
+	@rm -f *.o *~ crab-tracker test
 	@echo Working directory cleaned
 
 #dependency list
