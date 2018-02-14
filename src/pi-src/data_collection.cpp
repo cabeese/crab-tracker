@@ -11,10 +11,9 @@ Project: Crab Tracker
 Created: 2018-02-10
 ******************************************************************************/
 
+#include <string.h>
 #include "data_collection.h"
 #include "spi.h"
-
-#include <stdio.h> /* TODO: REMOVE */
 
 #define NUM_PINS 5 /* TODO: Define this elsewhere, globally */
 
@@ -51,30 +50,26 @@ int proc_block(spi_rawblock data, ping *storage){
         mask,
         changed = data.pinvals ^ prev.pinvals,
         count = 0;
-    ping tmp;
+    ping *tmp;
 
-    printf("prev=0x%x, next=0x%x, changed=0x%x;\n", data.pinvals, prev.pinvals, changed);
     for(i=0; i<5; i++){
         mask = 1 << i;
-        printf("i=%d; mask=0x%x\n", i, mask);
         if(changed & mask){
-            printf("pin %d changed\n", i);
             /* Pin `i` changed states */
             if(data.pinvals & mask){
                 /* Pin `i` changed LOW to HIGH */
-                printf("low to high\n");
                 partials[i] = data.timestamp;
             } else {
                 /* Pin `i` changed HIGH to LOW */
-                /* TODO: Share this new `ping` where `main` can see it */
-                printf("pind %d changed HIGH->LOW\n", i);
-                tmp = storage[0];
-                tmp.pin = i;
-                tmp.start = partials[i];
-                tmp.duration = data.timestamp - partials[i];
+                tmp = &storage[count];
+                tmp->pin = i;
+                tmp->start = partials[i];
+                tmp->duration = data.timestamp - partials[i];
                 count++;
             }
         }
     }
+    /* Is memcpy necessary? Just use assignment? */
+    memcpy(&prev, &data, sizeof(spi_rawblock));
     return count;
 }
