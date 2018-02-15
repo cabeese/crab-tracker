@@ -1,11 +1,12 @@
-CC=g++
-FLAGS=-std=c++11 #make sure this works
+CXX=g++ -std=c++11
+# This isn't working: CXXFLAGS=-std=c++11
 CATCH_PATH=`pwd`/include #/catch.hpp
+
 CFILES=main.cpp spi.cpp data_collection.cpp
 OFILES=${CFILES:.c=.o}
 
 all: ${OFILES}
-	$(CC) -o crab-tracker ${OFILES}
+	$(CXX) -o crab-tracker ${OFILES}
 
 install:
 	@mkdir -p include
