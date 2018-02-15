@@ -30,7 +30,7 @@ int main (void) {
         TODO: find out why this happens! Could by SPI thing or could just be
           some dumb thing in the Arduino code I did.
     */
-    spi_getbyte(); /* Throw away the first byte. Why is this? */
+    spi_getbyte(SPI_NO_FLAGS); /* Throw away the first byte. Why is this? */
 
     while (1){
         cout << "Enter a char to get more data via SPI. ";

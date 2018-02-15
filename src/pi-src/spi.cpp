@@ -19,6 +19,7 @@ Created: 2018-02-10
 using namespace std;
 
 int spifd;
+int _INITIALIZED = 0;
 
 /**
  * Grabs one byte via SPI.
@@ -27,10 +28,11 @@ int spifd;
  * by spidev.h and loads the various members to pass the data
  * and configuration parameters to the SPI device via IOCTL
  *
+ * @param flags - The flag(s) to send to the slave. Flags are defined in spi.h
  * Returns a single byte (as in int)
  */
-uint8_t spi_getbyte(){
-    uint8_t txDat = 0x0; /* Could be a flag instead */
+uint8_t spi_getbyte(uint8_t flags){
+    uint8_t txDat = flags;
     uint8_t rxDat;
     struct spi_ioc_transfer spi;
 
@@ -50,16 +52,22 @@ uint8_t spi_getbyte(){
     return rxDat;
 }
 
+/**
+ * Grabs a full "block" (5 8-byte transmissions) from SPI and stores them in
+ *     a struct.
+ * @param  data - Out parameter. Incoming data is stored here.
+ * @return      - 1 (unused currently)
+ */
 int spi_getblock(spi_rawblock *data){
     uint8_t pinvals;
     unsigned long timestamp = 0;
 
     /* Get pinvals */
-    pinvals = spi_getbyte();
+    pinvals = spi_getbyte(SPI_NO_FLAGS);
 
     /* Get timestamp (in 4 parts) */
     for(int i=0; i<4; i++){
-        timestamp |= spi_getbyte() << (i * 8);
+        timestamp |= spi_getbyte(SPI_NO_FLAGS) << (i * 8);
     }
 
     data->pinvals = pinvals;
@@ -67,18 +75,38 @@ int spi_getblock(spi_rawblock *data){
     return 1;
 }
 
+/**
+ * Print an SPI 'raw block' struct to stdout.
+ * @param data - The block to print.
+ */
 void spi_dispblock(spi_rawblock data){
     printf("--- SPI Raw Data Block ---\n");
     printf("pinvals: 0x%x\n", data.pinvals);
     printf("timestamp: 0x%lx\n", data.timestamp);
 }
 
+/**
+ * Sends a quick test to ensure that the SPI connection between the two devices
+ *     is working as intended.
+ * @return 1 if connection is working; 0 otherwise
+ */
+int spi_echo_test(){
+    return spi_getbyte(SPI_ECHO_REQUEST) == SPI_ECHO_EXPECTED_RESPONSE;
+}
+
+/**
+ * Open up the SPI file (chip enable 0) and configure speed.
+ * This function must be called once before SPI is used.
+ */
 void initialize_spi(){
-    /*
-      Open file spidev0.0 (chip enable 0) for read/write
-      Configure transfer speed (1MkHz)
-    */
-    unsigned int speed = 1000000;
-    spifd = open("/dev/spidev0.0", O_RDWR);
-    ioctl (spifd, SPI_IOC_WR_MAX_SPEED_HZ, &speed);
+    if(!_INITIALIZED){
+        /*
+          Open file spidev0.0 (chip enable 0) for read/write
+          Configure transfer speed (1MkHz)
+        */
+        unsigned int speed = 1000000;
+        spifd = open("/dev/spidev0.0", O_RDWR);
+        ioctl (spifd, SPI_IOC_WR_MAX_SPEED_HZ, &speed);
+        _INITIALIZED = 1;
+    }
 }
