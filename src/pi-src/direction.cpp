@@ -9,7 +9,7 @@
 #include <algorithm>
 #include <vector>
 #include <stdio.h>
-#define S_USER 1460/*  "s" f(salinity, temperature), to be defined later */
+#define S_USER 1500/*  "s" f(salinity, temperature), to be defined later */
 #define R_USER 1 /*  "r"  the length of the hydrophone square          */
 
 
@@ -83,14 +83,14 @@ int main(int argc, const char* argv[]) {
 int triangulation( /* 'ping' arguments TBD, */ xyz *result){
   fprintf(stderr, "IN TRIG\n");
   /*  These will be removed when 'ping arguments' is a real thing*/
-  unsigned long ts_a = 24;
-  unsigned long ts_b = 85;
-  unsigned long ts_c = 6666666;
-  unsigned long ts_d = 3985;
+  unsigned long ts_a = 9552336;
+  unsigned long ts_b = 9552864;
+  unsigned long ts_c = 9553444;
+  unsigned long ts_d = 9553499;
 
   /* sort the time stamps */
   unsigned long arr[4] = {ts_a, ts_b, ts_c, ts_d};
-  selectionSort(arr, 4);
+  //selectionSort(arr, 4);
  /* declaration of variables to be passed to triangulation_helper */
   unsigned long ts_1 = arr[0];
   unsigned long ts_2 = arr[1];
@@ -162,13 +162,13 @@ int triangulation_helper(unsigned long ts_1, unsigned long ts_2, unsigned long t
   else{
     fprintf(stderr, "IN ELSE\n");
     N = calcN(delta_1, delta_2, delta_3);
-    fprintf(stderr, "%lf\n", N);
+    fprintf(stderr, "N = %lf\n", N);
     x = calcX(delta_2, N);
-    fprintf(stderr, "%lf\n", x);
+    fprintf(stderr, "x = %lf\n", x);
     y = calcY(delta_1, N);
-    fprintf(stderr, "%lf\n", y);
+    fprintf(stderr, "y = %lf\n", y);
     z = calcZ(N, x, y);
-    fprintf(stderr, "%lf\n", z);
+    fprintf(stderr, "z = %lf\n", z);
 
     result->x = x;
     result->y = y;
@@ -196,7 +196,7 @@ double calcN(unsigned long delta_1, unsigned long delta_2, unsigned long delta_3
  *                 2 * r
  */
 double calcX(unsigned long delta_2, double N){
-  double x = (double)(pow((S_USER * delta_2),2.0) + (2.0*S_USER*delta_2*N))/(2.0*R_USER);
+  double x = (double)(pow((S_USER * delta_2),2.0) + (2.0*S_USER*delta_2*N))  /  (2.0*R_USER);
   return x;
 }
 
@@ -206,7 +206,7 @@ double calcX(unsigned long delta_2, double N){
  *                 -2 * r
  */
 double calcY(unsigned long delta_1, double N){
-  double y = (double)(pow((S_USER * delta_1),2.0) + (2.0*S_USER*delta_1*N))/(-2.0*R_USER);
+  double y = (double)(pow((S_USER * delta_1),2.0) + (2.0*S_USER*delta_1*N))  /  (-2.0*R_USER);
   return y;
 }
 
@@ -216,7 +216,8 @@ double calcY(unsigned long delta_1, double N){
  *
  */
 double calcZ(double N, double x, double y){
-  double z = (double)sqrt(pow(N,2.0) - pow(x - R_USER/2.0 , 2.0) - pow(y + R_USER/2.0 , 2.0));
+  // may not be real oops
+  double z = (double)sqrt( fabs( pow(N,2.0) - pow(x - R_USER/2.0 , 2.0) - pow(y + R_USER/2.0 , 2.0) ) );
   return z;
 }
 
