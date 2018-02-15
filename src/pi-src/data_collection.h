@@ -22,5 +22,6 @@ struct ping {
 };
 
 int proc_block(spi_rawblock, ping*);
+int poll(ping*);
 
 #endif /* __DATA_COLLECTION_H */

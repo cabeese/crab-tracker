@@ -22,6 +22,8 @@ spi_rawblock prev = {
     0x0, // timestamp
     0x0  // pinvals
 };
+/* Each time we read from SPI, store the data here */
+spi_rawblock raw_data = {0, 0};
 
 /* Store half of a 'ping'. Specifically, store the starting timestamp of
  * a ping. The timestamp at index `i` corresponds to the timestamp of the rising
@@ -72,4 +74,18 @@ int proc_block(spi_rawblock data, ping *storage){
     /* Is memcpy necessary? Just use assignment? */
     memcpy(&prev, &data, sizeof(spi_rawblock));
     return count;
+}
+
+/**
+ * Highest level function for grabbing new data. Checks SPI for new data and
+ *     then processes what it gets back.
+ *
+ * @param storage - Where the processed `ping`s should be stored. Ensure that
+ *     there is enough space to store up to 5 pings in this array.
+ * @returns The number of `ping`s stored after the data is processed. Will be no
+ *     more than 5.
+ */
+int poll(ping *storage){
+    spi_getblock(&raw_data);
+    return proc_block(raw_data, storage);
 }
