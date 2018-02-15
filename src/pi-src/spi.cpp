@@ -18,7 +18,7 @@ Created: 2018-02-10
 #include "spi.h"
 using namespace std;
 
-int fd;
+int spifd;
 
 /**
  * Grabs one byte via SPI.
@@ -29,7 +29,7 @@ int fd;
  *
  * Returns a single byte (as in int)
  */
-uint8_t spi_getbyte(int spifd){
+uint8_t spi_getbyte(){
     uint8_t txDat = 0x0; /* Could be a flag instead */
     uint8_t rxDat;
     struct spi_ioc_transfer spi;
@@ -46,20 +46,20 @@ uint8_t spi_getbyte(int spifd){
 
     ioctl (spifd, SPI_IOC_MESSAGE(1), &spi);
 
-    printf(" [raw=0x%x] (%d bytes)\n", rxDat, sizeof(rxDat));
+    printf(" [raw=0x%x] (%ld bytes)\n", rxDat, sizeof(rxDat));
     return rxDat;
 }
 
-int spi_getblock(int spifd, spi_rawblock *data){
+int spi_getblock(spi_rawblock *data){
     uint8_t pinvals;
     unsigned long timestamp = 0;
 
     /* Get pinvals */
-    pinvals = spi_getbyte(spifd);
+    pinvals = spi_getbyte();
 
     /* Get timestamp (in 4 parts) */
     for(int i=0; i<4; i++){
-        timestamp |= spi_getbyte(spifd) << (i * 8);
+        timestamp |= spi_getbyte() << (i * 8);
     }
 
     data->pinvals = pinvals;
@@ -71,4 +71,14 @@ void spi_dispblock(spi_rawblock data){
     printf("--- SPI Raw Data Block ---\n");
     printf("pinvals: 0x%x\n", data.pinvals);
     printf("timestamp: 0x%lx\n", data.timestamp);
+}
+
+void initialize_spi(){
+    /*
+      Open file spidev0.0 (chip enable 0) for read/write
+      Configure transfer speed (1MkHz)
+    */
+    unsigned int speed = 1000000;
+    spifd = open("/dev/spidev0.0", O_RDWR);
+    ioctl (spifd, SPI_IOC_WR_MAX_SPEED_HZ, &speed);
 }

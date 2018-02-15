@@ -11,14 +11,16 @@ Created: 2018-02-10
 #define __SPI_H
 
 #define SPI_RESET 0x1
+#define SPI_ECHO_REQUEST 0x2 /* TODO: implement */
 
 struct spi_rawblock {
     unsigned long timestamp;
     uint8_t pinvals;
 };
 
-uint8_t spi_getbyte(int spifd);
-int spi_getblock(int spifd, spi_rawblock*);
+uint8_t spi_getbyte();
+int spi_getblock(spi_rawblock*);
 void spi_dispblock(spi_rawblock);
+void initialize_spi();
 
 #endif /* __SPI_H */

@@ -16,7 +16,6 @@ TEST_CASE("proc_block", "[proc_block]"){
     int res;
 
     storage[0] = {0,0};
-
     for(int i=0; i<5; i++){ storage[i] = {0, 0}; }
 
     SECTION("One pin goes HIGH. No ping created."){
