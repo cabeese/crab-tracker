@@ -88,10 +88,13 @@ void spi_dispblock(spi_rawblock data){
 /**
  * Sends a quick test to ensure that the SPI connection between the two devices
  *     is working as intended.
+ * Requests that the next byte is the "RESPONSE" pattern. It then fetches that
+ *     byte and resets the counters on the Arduino so data can still be read.
  * @return 1 if connection is working; 0 otherwise
  */
 int spi_echo_test(){
-    return spi_getbyte(SPI_ECHO_REQUEST) == SPI_ECHO_EXPECTED_RESPONSE;
+    spi_getbyte(SPI_ECHO_REQUEST); /* Next byte should be response */
+    return spi_getbyte(SPI_RESET) == SPI_ECHO_EXPECTED_RESPONSE;
 }
 
 /**
@@ -107,6 +110,18 @@ void initialize_spi(){
         unsigned int speed = 1000000;
         spifd = open("/dev/spidev0.0", O_RDWR);
         ioctl (spifd, SPI_IOC_WR_MAX_SPEED_HZ, &speed);
+
+        /* For some reason, we get some junk data on the first byte we grab.
+            TODO: find out why this happens! Could by SPI thing or could just be
+              some dumb thing in the Arduino code I did. */
+        spi_getbyte(SPI_RESET); /* Throw away the first byte. Why is this? */
+
+        if(spi_echo_test()){
+            std::cout << "SPI test PASSED" << '\n';
+        } else {
+            std::cout << "SPI test FAILED!!!!" << '\n';
+        }
+
         _INITIALIZED = 1;
     }
 }

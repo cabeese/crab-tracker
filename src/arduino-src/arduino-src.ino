@@ -19,6 +19,9 @@ eventually the highest order bits.
 
 const int BB_LEN = 64; /* number of items in the bounded buffer */
 const byte SPI_RESET = 0x1;
+const byte SPI_ECHO_REQUEST = 0x2;   /* Send response next time */
+const byte SPI_ECHO_RESPONSE = 0x77; /* Response to send */
+
 
 /* ======================= PIN_D Variables ======================= */
 // Masks off digital pins 0, 1, and 2.
@@ -129,27 +132,36 @@ void loop (void){
    */
 	if((SPSR & (1 << SPIF)) != 0){
     flag = SPDR;
-    if( (flag & SPI_RESET) == SPI_RESET){
-      /* In case the devices get out of sync, we can send the 'RESET'
-       * flag, causing us to send the 5-transmission sequence starting
-       * at the beginning (with the pinvals). Could be useful if the Pi
-       * is restarted without the Arduino resetting its counters. */
-      marker = 0;
-      send_pinvals = 1;
-    }
-    if(send_pinvals){
-      /* Send the pin values */
-      SPDR = output[bb_beg][0];
-      send_pinvals = 0;
+    if( (flag & SPI_ECHO_REQUEST) == SPI_ECHO_REQUEST){
+      SPDR = SPI_ECHO_RESPONSE;
     } else {
-      /* Send the timestamp, 8 bits at a time */
-      SPDR = output[0][1] >> (8 * marker);
-      marker++;
-  
-      if(marker > 3){
+      if( (flag & SPI_RESET) == SPI_RESET){
+        /* In case the devices get out of sync, we can send the 'RESET'
+         * flag, causing us to send the 5-transmission sequence starting
+         * at the beginning (with the pinvals). Could be useful if the Pi
+         * is restarted without the Arduino resetting its counters.
+         * NOTE: this is received while the current data is simultaneously
+         * transmitted, meaning that the effects of this flag won't take
+         * place until the next byte is transmitted.
+         */
         marker = 0;
         send_pinvals = 1;
-        bb_advance_beg();
+      }
+
+      if(send_pinvals){
+        /* Send the pin values */
+        SPDR = output[bb_beg][0];
+        send_pinvals = 0;
+      } else {
+        /* Send the timestamp, 8 bits at a time */
+        SPDR = output[0][1] >> (8 * marker);
+        marker++;
+
+        if(marker > 3){
+          marker = 0;
+          send_pinvals = 1;
+          bb_advance_beg();
+        }
       }
     }
 	}

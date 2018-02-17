@@ -24,6 +24,7 @@ struct spi_rawblock {
 uint8_t spi_getbyte(uint8_t);
 int spi_getblock(spi_rawblock*);
 void spi_dispblock(spi_rawblock);
+int spi_echo_test();
 void initialize_spi();
 
 #endif /* __SPI_H */

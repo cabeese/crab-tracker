@@ -26,11 +26,7 @@ unsigned char result;
 int main (void) {
     spi_rawblock block;
 
-    /* For some reason, we get some junk data on the first byte we grab.
-        TODO: find out why this happens! Could by SPI thing or could just be
-          some dumb thing in the Arduino code I did.
-    */
-    spi_getbyte(SPI_NO_FLAGS); /* Throw away the first byte. Why is this? */
+    initialize_spi();
 
     while (1){
         cout << "Enter a char to get more data via SPI. ";
