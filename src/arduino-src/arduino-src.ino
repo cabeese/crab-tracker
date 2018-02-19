@@ -26,8 +26,8 @@ const byte SPI_ECHO_RESPONSE = 0x77; /* Response to send */
 /* ======================= PIN_D Variables ======================= */
 // Masks off digital pins 0, 1, and 2.
 // Most significant bit of register corresponds to digital pin 7
-uint8_t bitMask = B11111000;
-
+//uint8_t bitMask = B11111000;
+uint8_t bitMask = B00001000;
 /*
  * Pin values and corresponding timestamps are stored in this 2D array,
  * which is treated like a bounded buffer. As pin values are read in,
@@ -51,7 +51,10 @@ int bb_beg = 0; /* Start of bounded buffer. SPI reads here */
  *  when first data blip comes in.
  */
 /* TODO - change back to zero. this is for testing purposes */
-int bb_end = 4; /*   End of bounded buffer. PIN_D code writes here*/
+
+int bb_end = 0; /*   End of bounded buffer. PIN_D code writes here*/
+
+
 
 uint8_t prevpinval = PIND & bitMask;
 uint8_t pinval;
@@ -74,8 +77,10 @@ void setup (void) {
   SPCR |= _BV(SPE); /* Set 'enable' bit of SPI config register */
   
   /* PIN_D Setup - Sets all D pins to input; may be unnecessary */
-  DDRD = 0B00000000;
+  DDRD = 0B11110111;
+ // DDRD = 0B00000000;
   /* TEMPORARY - TESTING DATA ONLY */
+
   output[0][0] = 0b0000; // 0
   output[0][1] = 0;
 
@@ -90,6 +95,7 @@ void setup (void) {
 
   output[4][0] = 0b0000;
   output[4][1] = 20000;
+
 }
 
 /* ======================= Helper Functions ======================= */
@@ -180,21 +186,25 @@ void loop (void){
    * Hydrophones a,b,c,d will correspond to pins 3,4,5,6, respectively.
    * Digital pin 7 corresponds to the duration indicator.
    */
-//  pinval = PIND & bitMask;
-//  xorpins = (prevpinval ^ pinval);
-//  
-//  // recreates the functionality of the micors() function
-//  // without the overhead of a function call
-//  time_elapsed = ((timer0_overflow_count << 8) + TCNT0) * 4;
-//  
-//  if (xorpins != 0) {
-//    // stores high pins and timestamp
-//    output[bb_end][0] = (pinval >> 3); /* Lowest 3 bits unused */
-//    output[bb_end][1] = time_elapsed;
-//    
-//    bb_advance_end();
-//  }
-//  prevpinval = pinval;
+  pinval = PIND & bitMask;
+  xorpins = (prevpinval ^ pinval);
+  
+  // recreates the functionality of the micors() function
+  // without the overhead of a function call
+  time_elapsed = ((timer0_overflow_count << 8) + TCNT0) * 4;
+  
+  if (xorpins != 0) {
+    // stores high pins and timestamp
+    output[bb_end][0] = (pinval >> 3); /* Lowest 3 bits unused */
+    output[bb_end][1] = time_elapsed;
+//    Serial.println(output[bb_end][0], BIN);
+//    Serial.println(output[bb_end][1], DEC);
+//    Serial.println(pinval >> 3, BIN);
+//    Serial.println(time_elapsed, DEC);
+    
+    bb_advance_end();
+  }
+  prevpinval = pinval;
 
 }
 
