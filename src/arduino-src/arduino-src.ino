@@ -51,7 +51,7 @@ int bb_beg = 0; /* Start of bounded buffer. SPI reads here */
  *  when first data blip comes in.
  */
 /* TODO - change back to zero. this is for testing purposes */
-int bb_end = 2; /*   End of bounded buffer. PIN_D code writes here*/
+int bb_end = 4; /*   End of bounded buffer. PIN_D code writes here*/
 
 uint8_t prevpinval = PIND & bitMask;
 uint8_t pinval;
@@ -76,12 +76,20 @@ void setup (void) {
   /* PIN_D Setup - Sets all D pins to input; may be unnecessary */
   DDRD = 0B00000000;
   /* TEMPORARY - TESTING DATA ONLY */
-  output[0][0] = 0x00; // 0
-  output[0][1] = 0x0;
-  output[1][0] = 0x10; // 1
-  output[1][1] = 0x0;
-  output[2][0] = 0x20; // 2
-  output[2][1] = 0x0;
+  output[0][0] = 0b0000; // 0
+  output[0][1] = 0;
+
+  output[1][0] = 0b0010; // 1
+  output[1][1] = 1000;
+
+  output[2][0] = 0x0110; // 2
+  output[2][1] = 1500;
+
+  output[3][0] = 0b0100;
+  output[3][1] = 10000;
+
+  output[4][0] = 0b0000;
+  output[4][1] = 20000;
 }
 
 /* ======================= Helper Functions ======================= */
@@ -154,7 +162,7 @@ void loop (void){
         send_pinvals = 0;
       } else {
         /* Send the timestamp, 8 bits at a time */
-        SPDR = output[0][1] >> (8 * marker);
+        SPDR = output[bb_beg][1] >> (8 * marker);
         marker++;
 
         if(marker > 3){
