@@ -11,6 +11,7 @@ Project: Crab Tracker
 Created: 2018-02-10
 ******************************************************************************/
 
+#include <stdio.h>
 #include <string.h>
 #include "data_collection.h"
 #include "spi.h"
@@ -52,7 +53,7 @@ int proc_block(spi_rawblock data, ping *storage){
         mask,
         changed = data.pinvals ^ prev.pinvals,
         count = 0;
-    ping *tmp;
+    ping tmp = {0, 0, 0};
 
     for(i=0; i<5; i++){
         mask = 1 << i;
@@ -61,12 +62,16 @@ int proc_block(spi_rawblock data, ping *storage){
             if(data.pinvals & mask){
                 /* Pin `i` changed LOW to HIGH */
                 partials[i] = data.timestamp;
+                // printf("rising edge on pin %d at %lu\n", i, data.timestamp);
             } else {
                 /* Pin `i` changed HIGH to LOW */
-                tmp = &storage[count];
-                tmp->pin = i;
-                tmp->start = partials[i];
-                tmp->duration = data.timestamp - partials[i];
+                tmp.pin = i;
+                tmp.start = partials[i];
+                tmp.duration = data.timestamp - partials[i];
+
+                disp_ping(tmp);
+                // Do we need to do this?
+                // memcpy(&storage[count], &tmp, sizeof(ping));
                 count++;
             }
         }
@@ -76,6 +81,14 @@ int proc_block(spi_rawblock data, ping *storage){
     return count;
 }
 
+/**
+ * Print a ping to stdout.
+ * @param p The ping to print
+ */
+void disp_ping(ping p){
+    printf("== PING == pin: %d\t start: %ul\tduration: %ul\n", p.pin, p.start,
+        p.duration);
+}
 /**
  * Highest level function for grabbing new data. Checks SPI for new data and
  *     then processes what it gets back.

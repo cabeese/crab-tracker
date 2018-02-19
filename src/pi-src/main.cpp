@@ -11,6 +11,7 @@ Project: Crab Tracker
 #include <unistd.h>
 #include <stdio.h>
 #include "spi.h"
+#include "data_collection.h"
 using namespace std;
 
 
@@ -18,6 +19,8 @@ using namespace std;
 Declare Global Variables
 ***********************************************************/
 unsigned char result;
+spi_rawblock RAW = {0, 0};
+ping storage[5];
 
 /**
  * Initialize settings and start listening for and processing data.
@@ -28,16 +31,17 @@ int main (void) {
 
     initialize_spi();
 
-    while (1){
-        cout << "Enter a char to get more data via SPI. ";
-        getchar();
+    for(int i=0; i<5; i++){ storage[i] = {0, 0}; }
 
-        /* Get and display a block of data from the pi */
-        result = spi_getblock(&block);
-        spi_dispblock(block);
-        // result = spi_getbyte();
-        // printf("%d\n", result);
-        // cout << result;
-        // usleep (10); /* Why 10?? */
+    while (1){
+        spi_getblock(&RAW);
+        // spi_dispblock(RAW);
+        result = proc_block(RAW, &(*storage));
+        if(result){
+            // no-op for now
+        } else {
+            sleep(1);
+        }
+        usleep(100);
     }
 }
