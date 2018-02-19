@@ -104,7 +104,7 @@ void setup (void) {
  * if needed. Won't advance the counter if it overtakes 'end'.
  */
 void bb_advance_beg(){
-  if(bb_beg == bb_end) return;
+  if(bb_beg == bb_end || bb_beg == bb_end-1) return;
   bb_beg++;
   if(bb_beg >= BB_LEN) bb_beg = 0;
 }
