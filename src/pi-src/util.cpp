@@ -36,3 +36,17 @@ void print_bin_8(uint8_t number){
         bit_set >>= 1;
     }
 }
+
+/**
+ * Print a long unsigned integer in binary to stdout.
+ * @param number The number (UNSIGNED) to print
+ */
+void print_bin_ulong(unsigned long number){
+    unsigned long bit_set = (unsigned long) 1 << 31;
+    int bit_pos;
+
+    for(bit_pos = 31; bit_pos >= 0; --bit_pos){
+        printf("%c", (number & bit_set ? '1' : '0'));
+        bit_set >>= 1;
+    }
+}
