@@ -98,7 +98,13 @@ void setup (void) {
 
 
   //memset(output,0,sizeof(output));
-  memset(output, 0, sizeof(output[0][0]) * 2 * BB_LEN);
+  //memset(output, 0, sizeof(output[0][0]) * 2 * BB_LEN);
+  for (int i=0; i<BB_LEN; i++){
+    //for(int j=0; j<2; j++){
+      output[i][0] = 0B11111111;
+      output[i][1] = 123456789;   
+    //}  
+  }
 
 }
 
@@ -173,8 +179,9 @@ void loop (void){
           send_pinvals = 1;
 
            // body of function call  
-          bb_end++;
-          if(bb_end >= BB_LEN) bb_end = 0;
+        if(bb_beg == bb_end || bb_beg == bb_end-1) {return;}
+        bb_beg++;
+        if(bb_beg >= BB_LEN) {bb_beg = 0;}
           //bb_advance_beg();
         }
       }
@@ -205,7 +212,7 @@ void loop (void){
     
     //bb_advance_end();
 
-    // body function 
+    // body of function 
     bb_end++;
     if(bb_end >= BB_LEN) bb_end = 0;
   }
