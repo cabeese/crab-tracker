@@ -135,18 +135,11 @@ void loop (void){
    * 
    * We send the timestamp in 4 chunks, as it is 32 bytes and
    * we only send 8 bytes at a time.
-   * 
-   * TODO: since we have to read some data in from the master
-   * anyway, perhaps we can treat some values as a 'reset'.
-   * For example, if we get some magic number from the master,
-   * we'll set 'send_pinvals' to true and start over.
-   * This may be useful for cases where the two devices may be
-   * out of sync, and the master expects the pinvals while the
-   * slave is sending parts of the timestamp.
    */
 	if((SPSR & (1 << SPIF)) != 0){
     flag = SPDR;
     if( (flag & SPI_ECHO_REQUEST) == SPI_ECHO_REQUEST){
+      /* Next time, send echo request. This is a connection test */
       SPDR = SPI_ECHO_RESPONSE;
     } else {
       if( (flag & SPI_RESET) == SPI_RESET){

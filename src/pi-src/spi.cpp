@@ -114,10 +114,12 @@ void initialize_spi(){
         spifd = open("/dev/spidev0.0", O_RDWR);
         ioctl (spifd, SPI_IOC_WR_MAX_SPEED_HZ, &speed);
 
-        /* For some reason, we get some junk data on the first byte we grab.
-            TODO: find out why this happens! Could by SPI thing or could just be
-              some dumb thing in the Arduino code I did. */
-        spi_getbyte(SPI_RESET); /* Throw away the first byte. Why is this? */
+        /* When the Arduino first starts up, there will be some junk in its SPI
+         * data register. We can just throw it away, because we never put it
+         * there. It's also fine to throw it away if it was valid data, becase
+         * we'll immediately send a RESET flag and have that data re-sent.
+         */
+        spi_getbyte(SPI_RESET);
 
         if(spi_echo_test()){
             std::cout << "SPI test PASSED" << '\n';
