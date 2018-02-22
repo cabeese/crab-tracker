@@ -171,7 +171,11 @@ void loop (void){
         if(marker > 3){
           marker = 0;
           send_pinvals = 1;
-          bb_advance_beg();
+
+           // body of function call  
+          bb_end++;
+          if(bb_end >= BB_LEN) bb_end = 0;
+          //bb_advance_beg();
         }
       }
     }
