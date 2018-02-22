@@ -17,7 +17,7 @@ where each `timestamp_part` is only 8 of the 32 bits in the integer. The low-ord
 eventually the highest order bits.
 *******************************************************************************/
 
-const int BB_LEN = 64; /* number of items in the bounded buffer */
+const int  BB_LEN = 64; /* number of items in the bounded buffer */
 const byte SPI_RESET = 0x1;
 const byte SPI_ECHO_REQUEST = 0x2;   /* Send response next time */
 const byte SPI_ECHO_RESPONSE = 0x77; /* Response to send */
@@ -26,8 +26,8 @@ const byte SPI_ECHO_RESPONSE = 0x77; /* Response to send */
 /* ======================= PIN_D Variables ======================= */
 // Masks off digital pins 0, 1, and 2.
 // Most significant bit of register corresponds to digital pin 7
-//uint8_t bitMask = B11111000;
-uint8_t bitMask = B00001000;
+uint8_t bitMask = B11111000;
+//uint8_t bitMask = B00001000;
 /*
  * Pin values and corresponding timestamps are stored in this 2D array,
  * which is treated like a bounded buffer. As pin values are read in,
@@ -81,20 +81,24 @@ void setup (void) {
  // DDRD = 0B00000000;
   /* TEMPORARY - TESTING DATA ONLY */
 
-  output[0][0] = 0b0000; // 0
-  output[0][1] = 0;
+//  output[0][0] = 0b0000; // 0
+//  output[0][1] = 0;
+//
+//  output[1][0] = 0b0010; // 1
+//  output[1][1] = 1000;
+//
+//  output[2][0] = 0x0110; // 2
+//  output[2][1] = 1500;
+//
+//  output[3][0] = 0b0100;
+//  output[3][1] = 10000;
+//
+//  output[4][0] = 0b0000;
+//  output[4][1] = 20000;
 
-  output[1][0] = 0b0010; // 1
-  output[1][1] = 1000;
 
-  output[2][0] = 0x0110; // 2
-  output[2][1] = 1500;
-
-  output[3][0] = 0b0100;
-  output[3][1] = 10000;
-
-  output[4][0] = 0b0000;
-  output[4][1] = 20000;
+  //memset(output,0,sizeof(output));
+  memset(output, 0, sizeof(output[0][0]) * 2 * BB_LEN);
 
 }
 
@@ -195,7 +199,11 @@ void loop (void){
 //    Serial.println(pinval >> 3, BIN);
 //    Serial.println(time_elapsed, DEC);
     
-    bb_advance_end();
+    //bb_advance_end();
+
+    // body function 
+    bb_end++;
+    if(bb_end >= BB_LEN) bb_end = 0;
   }
   prevpinval = pinval;
 
