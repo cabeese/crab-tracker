@@ -86,7 +86,7 @@ int proc_block(spi_rawblock data, ping *storage){
  * @param p The ping to print
  */
 void disp_ping(ping p){
-    printf("== PING == pin: %d\t start: %ul\tduration: %ul\n", p.pin, p.start,
+    printf("== PING == pin: %d\t start: %lu\tduration: %lu\n", p.pin, p.start,
         p.duration);
 }
 /**
