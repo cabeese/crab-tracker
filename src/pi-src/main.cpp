@@ -10,6 +10,7 @@ Project: Crab Tracker
 #include <iostream>
 #include <unistd.h>
 #include <stdio.h>
+#include "config.h"
 #include "spi.h"
 #include "data_collection.h"
 using namespace std;
@@ -35,7 +36,7 @@ int main (void) {
 
     while (1){
         spi_getblock(&RAW);
-        // spi_dispblock(RAW);
+        if(DISPLAY_RAW_SPI) spi_dispblock(RAW);
         result = proc_block(RAW, &(*storage));
         if(result){
             // no-op for now

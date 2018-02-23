@@ -27,4 +27,4 @@ clean:
 	@echo Working directory cleaned
 
 #dependency list
-${OFILES}: spi.h data_collection.h util.h # add other .h files?
+${OFILES}: spi.h data_collection.h util.h config.h

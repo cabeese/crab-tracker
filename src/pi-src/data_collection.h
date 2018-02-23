@@ -11,6 +11,7 @@ Project: Crab Tracker
 Created: 2018-02-10
 ******************************************************************************/
 #include "spi.h"
+#include "config.h"
 
 #ifndef __DATA_COLLECTION_H
 #define __DATA_COLLECTION_H

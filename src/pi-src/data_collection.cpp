@@ -15,6 +15,7 @@ Created: 2018-02-10
 #include <string.h>
 #include "data_collection.h"
 #include "spi.h"
+#include "util.h"
 
 #define NUM_PINS 5 /* TODO: Define this elsewhere, globally */
 
@@ -69,7 +70,8 @@ int proc_block(spi_rawblock data, ping *storage){
                 tmp.start = partials[i];
                 tmp.duration = data.timestamp - partials[i];
 
-                disp_ping(tmp);
+                if(DISPLAY_PINGS) disp_ping(tmp);
+
                 // Do we need to do this?
                 // memcpy(&storage[count], &tmp, sizeof(ping));
                 count++;
@@ -86,8 +88,8 @@ int proc_block(spi_rawblock data, ping *storage){
  * @param p The ping to print
  */
 void disp_ping(ping p){
-    printf("== PING == pin: %d\t start: %lu\tduration: %lu\n", p.pin, p.start,
-        p.duration);
+    printf("== PING == pin: %d\t start: %lu (0x%x)\tduration: %lu (0x%x)\n",
+        p.pin, p.start, p.start, p.duration, p.duration);
 }
 /**
  * Highest level function for grabbing new data. Checks SPI for new data and
