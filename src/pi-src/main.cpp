@@ -23,8 +23,6 @@ ping storage[5]; /* Eventual storage for pings that come in. Currently unused */
  * @return  (unused)
  */
 int main (void) {
-    spi_rawblock block;
-
     initialize_spi();
 
     for(int i=0; i<5; i++){ storage[i] = {0, 0}; }

@@ -72,7 +72,7 @@ int proc_block(spi_rawblock data, ping *storage){
                 if(DISPLAY_PINGS) disp_ping(tmp);
 
                 // Do we need to do this?
-                // memcpy(&storage[count], &tmp, sizeof(ping));
+                memcpy(&storage[count], &tmp, sizeof(ping));
                 count++;
             }
         }
@@ -87,7 +87,7 @@ int proc_block(spi_rawblock data, ping *storage){
  * @param p The ping to print
  */
 void disp_ping(ping p){
-    printf("== PING == pin: %d\t start: %lu (0x%x)\tduration: %lu (0x%x)\n",
+    printf("== PING == pin: %d\t start: %lu (0x%lx)\tduration: %lu (0x%lx)\n",
         p.pin, p.start, p.start, p.duration, p.duration);
 }
 

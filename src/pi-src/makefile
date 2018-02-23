@@ -1,4 +1,4 @@
-CXX=g++ -std=c++11
+CXX=g++ -std=c++11 -Wall
 # This isn't working: CXXFLAGS=-std=c++11
 CATCH_PATH=`pwd`/include #/catch.hpp
 
@@ -17,7 +17,7 @@ run:
 
 testcode: ${OFILES}
 	g++ -std=c++11 -Wall -I$(CATCH_PATH) -c test_main.cpp
-	g++ -std=c++11 -Wall -I$(CATCH_PATH) -o test test_main.o test_data_collection.cpp data_collection.cpp
+	g++ -std=c++11 -Wall -I$(CATCH_PATH) -o test test_main.o test_data_collection.cpp data_collection.cpp spi.cpp util.cpp
 
 test: ${OFILES}
 	@./test
