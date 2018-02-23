@@ -13,15 +13,10 @@ Project: Crab Tracker
 #include "config.h"
 #include "spi.h"
 #include "data_collection.h"
-using namespace std;
 
-
-/**********************************************************
-Declare Global Variables
-***********************************************************/
-unsigned char result;
+unsigned int result;
 spi_rawblock RAW = {0, 0};
-ping storage[5];
+ping storage[5]; /* Eventual storage for pings that come in. Currently unused */
 
 /**
  * Initialize settings and start listening for and processing data.

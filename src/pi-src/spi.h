@@ -12,9 +12,9 @@ Created: 2018-02-10
 
 #define SPI_NO_FLAGS 0x0     /* Default behavior */
 #define SPI_RESET 0x1        /* Reset counters */
-#define SPI_ECHO_REQUEST 0x2 /* Send specific message. TODO: implement */
+#define SPI_ECHO_REQUEST 0x2 /* Used for connection test */
 
-#define SPI_ECHO_EXPECTED_RESPONSE 0x77 /* Expected back from Arduino. */
+#define SPI_ECHO_EXPECTED_RESPONSE 0x77 /* Expected back in connection test */
 
 struct spi_rawblock {
     unsigned long timestamp;

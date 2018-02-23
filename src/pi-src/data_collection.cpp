@@ -63,7 +63,6 @@ int proc_block(spi_rawblock data, ping *storage){
             if(data.pinvals & mask){
                 /* Pin `i` changed LOW to HIGH */
                 partials[i] = data.timestamp;
-                // printf("rising edge on pin %d at %lu\n", i, data.timestamp);
             } else {
                 /* Pin `i` changed HIGH to LOW */
                 tmp.pin = i;
@@ -91,9 +90,13 @@ void disp_ping(ping p){
     printf("== PING == pin: %d\t start: %lu (0x%x)\tduration: %lu (0x%x)\n",
         p.pin, p.start, p.start, p.duration, p.duration);
 }
+
 /**
  * Highest level function for grabbing new data. Checks SPI for new data and
  *     then processes what it gets back.
+ *
+ * This function is currently unused.
+ * @TODO: determine how to correctly pass the 'storage' array to the callee.
  *
  * @param storage - Where the processed `ping`s should be stored. Ensure that
  *     there is enough space to store up to 5 pings in this array.

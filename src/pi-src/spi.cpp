@@ -49,9 +49,6 @@ uint8_t spi_getbyte(uint8_t flags){
 
     ioctl (spifd, SPI_IOC_MESSAGE(1), &spi);
 
-    // printf(" [raw=0b");
-    // print_bin_8(rxDat);
-    // printf("]\n");
     return rxDat;
 }
 
