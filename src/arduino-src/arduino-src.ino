@@ -78,32 +78,13 @@ void setup (void) {
   
   /* PIN_D Setup - Sets all D pins to input; may be unnecessary */
   DDRD = 0B11110111;
- // DDRD = 0B00000000;
-  /* TEMPORARY - TESTING DATA ONLY */
 
-//  output[0][0] = 0b0000; // 0
-//  output[0][1] = 0;
-//
-//  output[1][0] = 0b0010; // 1
-//  output[1][1] = 1000;
-//
-//  output[2][0] = 0x0110; // 2
-//  output[2][1] = 1500;
-//
-//  output[3][0] = 0b0100;
-//  output[3][1] = 10000;
-//
-//  output[4][0] = 0b0000;
-//  output[4][1] = 20000;
-
-
-  //memset(output,0,sizeof(output));
-  //memset(output, 0, sizeof(output[0][0]) * 2 * BB_LEN);
+  /* Initialize all entries in the buffer to something we can notice.
+   * Idealy/eventually, we will not need to do this.
+   */
   for (int i=0; i<BB_LEN; i++){
-    //for(int j=0; j<2; j++){
-      output[i][0] = 0B11111111;
-      output[i][1] = 123456789;   
-    //}  
+    output[i][0] = 0B11111111;
+    output[i][1] = 123456789;   
   }
 
 }
@@ -185,7 +166,7 @@ void loop (void){
           marker = 0;
           send_pinvals = 1;
 
-           // body of function call  
+          /* ================ Body of bb_advance_beg() ================ */
           /* The next entry isn't ready for us - don't move our pointer */
           if(bb_beg == bb_end || bb_beg == bb_end-1) return;
         
@@ -196,7 +177,7 @@ void loop (void){
             /* If bb_end is at 0, we still can't move */
             bb_beg = bb_end == 0 ? BB_LEN - 1 : 0;
           }
-          //bb_advance_beg();
+          /* ================== End bb_advance_beg() ================== */
         }
       }
     }
@@ -224,11 +205,10 @@ void loop (void){
 //    Serial.println(pinval >> 3, BIN);
 //    Serial.println(time_elapsed, DEC);
     
-    //bb_advance_end();
-
-    // body of function 
+    /* ================ Body of bb_advance_end() ================ */
     bb_end++;
     if(bb_end >= BB_LEN) bb_end = 0;
+    /* ================== End bb_advance_end() ================== */
   }
   prevpinval = pinval;
 
