@@ -114,9 +114,16 @@ void setup (void) {
  * if needed. Won't advance the counter if it overtakes 'end'.
  */
 void bb_advance_beg(){
+  /* The next entry isn't ready for us - don't move our pointer */
   if(bb_beg == bb_end || bb_beg == bb_end-1) return;
+
+  /* Otherwise, we can increment a little more */
   bb_beg++;
   if(bb_beg >= BB_LEN) bb_beg = 0;
+  if(bb_beg == BB_LEN){
+    /* If bb_end is at 0, we still can't move */
+    bb_beg = bb_end == 0 ? BB_LEN - 1 : 0;
+  }
 }
 
 /**
@@ -179,9 +186,16 @@ void loop (void){
           send_pinvals = 1;
 
            // body of function call  
-        if(bb_beg == bb_end || bb_beg == bb_end-1) {return;}
-        bb_beg++;
-        if(bb_beg >= BB_LEN) {bb_beg = 0;}
+          /* The next entry isn't ready for us - don't move our pointer */
+          if(bb_beg == bb_end || bb_beg == bb_end-1) return;
+        
+          /* Otherwise, we can increment a little more */
+          bb_beg++;
+          if(bb_beg >= BB_LEN) bb_beg = 0;
+          if(bb_beg == BB_LEN){
+            /* If bb_end is at 0, we still can't move */
+            bb_beg = bb_end == 0 ? BB_LEN - 1 : 0;
+          }
           //bb_advance_beg();
         }
       }
