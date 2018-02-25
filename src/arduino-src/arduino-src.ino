@@ -26,8 +26,8 @@ const byte SPI_ECHO_RESPONSE = 0x77; /* Response to send */
 /* ======================= PIN_D Variables ======================= */
 // Masks off digital pins 0, 1, and 2.
 // Most significant bit of register corresponds to digital pin 7
-uint8_t bitMask = B11111000;
-//uint8_t bitMask = B00001000;
+/* Hotfix: only listen on Pin 5 (for Feb 25th testing) */
+uint8_t bitMask = B00100000;
 /*
  * Pin values and corresponding timestamps are stored in this 2D array,
  * which is treated like a bounded buffer. As pin values are read in,
@@ -77,7 +77,7 @@ void setup (void) {
   SPCR |= _BV(SPE); /* Set 'enable' bit of SPI config register */
   
   /* PIN_D Setup - Sets all D pins to input; may be unnecessary */
-  DDRD = 0B11110111;
+  DDRD = 0B11111000;
 
   /* Initialize all entries in the buffer to something we can notice.
    * Idealy/eventually, we will not need to do this.
