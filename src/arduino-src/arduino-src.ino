@@ -27,7 +27,7 @@ const byte SPI_ECHO_RESPONSE = 0x77; /* Response to send */
 // Masks off digital pins 0, 1, and 2.
 // Most significant bit of register corresponds to digital pin 7
 uint8_t bitMask = B11111000;
-//uint8_t bitMask = B00001000;
+
 /*
  * Pin values and corresponding timestamps are stored in this 2D array,
  * which is treated like a bounded buffer. As pin values are read in,
@@ -50,10 +50,7 @@ int bb_beg = 0; /* Start of bounded buffer. SPI reads here */
  *  get overwritten (perhaps simultaneously - race condition!)
  *  when first data blip comes in.
  */
-/* TODO - change back to zero. this is for testing purposes */
-
 int bb_end = 0; /*   End of bounded buffer. PIN_D code writes here*/
-
 
 
 uint8_t prevpinval = PIND & bitMask;
@@ -87,33 +84,6 @@ void setup (void) {
     output[i][1] = 123456789;   
   }
 
-}
-
-/* ======================= Helper Functions ======================= */
-/**
- * Advance the beginning of the bounded buffer, looping back to the beginning
- * if needed. Won't advance the counter if it overtakes 'end'.
- */
-void bb_advance_beg(){
-  /* The next entry isn't ready for us - don't move our pointer */
-  if(bb_beg == bb_end || bb_beg == bb_end-1) return;
-
-  /* Otherwise, we can increment a little more */
-  bb_beg++;
-  if(bb_beg >= BB_LEN) bb_beg = 0;
-  if(bb_beg == BB_LEN){
-    /* If bb_end is at 0, we still can't move */
-    bb_beg = bb_end == 0 ? BB_LEN - 1 : 0;
-  }
-}
-
-/**
- * Advance the end of the bounded buffer, looping back to the beginning
- * if needed.
- */
-void bb_advance_end(){
-  bb_end++;
-  if(bb_end >= BB_LEN) bb_end = 0;
 }
 
 /**
@@ -200,10 +170,6 @@ void loop (void){
     // stores high pins and timestamp
     output[bb_end][0] = (pinval >> 3); /* Lowest 3 bits unused */
     output[bb_end][1] = time_elapsed;
-//    Serial.println(output[bb_end][0], BIN);
-//    Serial.println(output[bb_end][1], DEC);
-//    Serial.println(pinval >> 3, BIN);
-//    Serial.println(time_elapsed, DEC);
     
     /* ================ Body of bb_advance_end() ================ */
     bb_end++;
