@@ -9,9 +9,9 @@
 #include <algorithm>
 #include <vector>
 #include <stdio.h>
-#define S_USER 1460/*  "s" f(salinity, temperature), to be defined later */
+//#define S_USER 1500/*  "s" f(salinity, temperature), to be defined later */
 #define R_USER 1 /*  "r"  the length of the hydrophone square          */
-
+const double S_USER = 0.0015;
 
 typedef struct {
   double x;
@@ -56,13 +56,11 @@ int triangulation_helper(unsigned long ts_a, unsigned long ts_b, unsigned long t
 /*
  * Helper functions calculate various calculations
 */
-double calcN(unsigned long delta_1, unsigned long delta_2, unsigned long delta_3);
-double calcX(unsigned long delta_2, double N);
-double calcY(unsigned long delta_1, double N);
+double calcN(long delta_1, long delta_2, long delta_3);
+double calcX(long delta_2, double N);
+double calcY(long delta_1, double N);
 double calcZ(double N, double x, double y);
 void printResult(xyz *result);
-void selectionSort(unsigned long arr[], int n);
-void swap(unsigned long*xp, unsigned long *yp);
 
 int main(int argc, const char* argv[]) {
   xyz result;
@@ -83,25 +81,12 @@ int main(int argc, const char* argv[]) {
 int triangulation( /* 'ping' arguments TBD, */ xyz *result){
   fprintf(stderr, "IN TRIG\n");
   /*  These will be removed when 'ping arguments' is a real thing*/
-  unsigned long ts_a = 24;
-  unsigned long ts_b = 85;
-  unsigned long ts_c = 6666666;
-  unsigned long ts_d = 3985;
+  unsigned long ts_a = 52283;
+  unsigned long ts_b = 52537;
+  unsigned long ts_c = 52376;
+  unsigned long ts_d = 52121;
 
-  /* sort the time stamps */
-  unsigned long arr[4] = {ts_a, ts_b, ts_c, ts_d};
-  selectionSort(arr, 4);
- /* declaration of variables to be passed to triangulation_helper */
-  unsigned long ts_1 = arr[0];
-  unsigned long ts_2 = arr[1];
-  unsigned long ts_3 = arr[2];
-  unsigned long ts_4 = arr[3];
-
-  //fprintf(stderr, "%ld, %ld, %ld, %ld \n", ts_1, ts_2, ts_3, ts_4);
-
-  //xyz result;
-
-  triangulation_helper(ts_1, ts_2, ts_3, ts_4, result);
+  triangulation_helper(ts_a, ts_b, ts_c, ts_d, result);
 
   printResult(result);
 
@@ -112,7 +97,7 @@ int triangulation( /* 'ping' arguments TBD, */ xyz *result){
  * time stamp 1 - 4 are the timestamps in order of appearance.
  * result is the structure
  */
-int triangulation_helper(unsigned long ts_1, unsigned long ts_2, unsigned long ts_3, unsigned long ts_4, xyz *result){
+int triangulation_helper(unsigned long ts_a, unsigned long ts_b, unsigned long ts_c, unsigned long ts_d, xyz *result){
   /* x, y, and z directions */
   fprintf(stderr, "IN TRIG_H\n");
   double x;
@@ -120,9 +105,12 @@ int triangulation_helper(unsigned long ts_1, unsigned long ts_2, unsigned long t
   double z = 1; //
   double N;
   /*changes in time bewtween various hydrophones*/
-  unsigned long delta_1 = ts_1 - ts_4;
-  unsigned long delta_2 = ts_2 - ts_4;  //these are out of order in alg doccumentation,
-  unsigned long delta_3 = ts_3 - ts_4;  //double check with chloe that this is what she meant
+  long delta_1 = ts_a - ts_d;
+  long delta_2 = ts_c - ts_d;
+  long delta_3 = ts_b - ts_d;
+  fprintf(stderr, "delta_1 %ld\n", delta_1);
+  fprintf(stderr, "delta_2 %ld\n", delta_2);
+  fprintf(stderr, "delta_3 %ld\n", delta_3);
 
   if(delta_1 == 0 || delta_2 == 0){
     fprintf(stderr, "IN IF\n");
@@ -185,8 +173,18 @@ int triangulation_helper(unsigned long ts_1, unsigned long ts_2, unsigned long t
  * N = -------------------------------------
  *     2(delta_3 - delta_1 - delta_2)
  */
-double calcN(unsigned long delta_1, unsigned long delta_2, unsigned long delta_3){
-  double N = (double)(S_USER*(pow(delta_1,2.0) + pow(delta_2,2.0) - pow(delta_3,2.0)))  /  (2.0*(delta_3 - delta_1 - delta_2));
+double calcN(long delta_1, long delta_2, long delta_3){
+  fprintf(stderr, "delta_1 %ld\n", delta_1);
+  fprintf(stderr, "delta_2 %ld\n", delta_2);
+  fprintf(stderr, "delta_3 %ld\n", delta_3);
+  long double topN = (S_USER*(pow(delta_1,2.0) + pow(delta_2,2.0) - pow(delta_3,2.0)));
+  fprintf(stderr, "TopN %Lf\n", topN);
+  long double botN = (2.0*(delta_3 - delta_1 - delta_2));
+  fprintf(stderr, "BotN %Lf\n", botN);
+  long double testN = topN / botN;
+  fprintf(stderr, "testN %Lf\n", testN);
+  long double N = (S_USER*(pow(delta_1,2.0) + pow(delta_2,2.0) - pow(delta_3,2.0)))  /  (2*(delta_3 - delta_1 - delta_2));
+  fprintf(stderr, "N %Lf\n", N);
   return N;
 }
 
@@ -195,7 +193,7 @@ double calcN(unsigned long delta_1, unsigned long delta_2, unsigned long delta_3
  * x = -------------------------------------
  *                 2 * r
  */
-double calcX(unsigned long delta_2, double N){
+double calcX(long delta_2, double N){
   double x = (double)(pow((S_USER * delta_2),2.0) + (2.0*S_USER*delta_2*N))/(2.0*R_USER);
   return x;
 }
@@ -205,7 +203,8 @@ double calcX(unsigned long delta_2, double N){
  * y = -------------------------------------
  *                 -2 * r
  */
-double calcY(unsigned long delta_1, double N){
+double calcY(long delta_1, double N){
+  //double y = (double)(pow((S_USER * delta_1),2.0) + (2.0*S_USER*delta_1*N))/(-2.0*R_USER);
   double y = (double)(pow((S_USER * delta_1),2.0) + (2.0*S_USER*delta_1*N))/(-2.0*R_USER);
   return y;
 }
@@ -225,29 +224,4 @@ void printResult(xyz *result){
   fprintf(stderr, "x = %lf\n", result->x);
   fprintf(stderr, "y = %lf\n", result->y);
   fprintf(stderr, "z = %lf\n", result->z);
-}
-
-/* sorting stuff */
-
-void swap(unsigned long *xp, unsigned long *yp){
-    unsigned long temp = *xp;
-    *xp = *yp;
-    *yp = temp;
-}
-
-void selectionSort(unsigned long arr[], int n){
-    int i, j, min_idx;
-
-    // One by one move boundary of unsorted subarray
-    for (i = 0; i < n-1; i++)
-    {
-        // Find the minimum element in unsorted array
-        min_idx = i;
-        for (j = i+1; j < n; j++)
-          if (arr[j] < arr[min_idx])
-            min_idx = j;
-
-        // Swap the found minimum element with the first element
-        swap(&arr[min_idx], &arr[i]);
-    }
 }
