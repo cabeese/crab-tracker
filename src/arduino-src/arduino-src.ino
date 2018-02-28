@@ -17,8 +17,11 @@ where each `timestamp_part` is only 8 of the 32 bits in the integer. The low-ord
 eventually the highest order bits.
 *******************************************************************************/
 
-const int BB_LEN = 64; /* number of items in the bounded buffer */
+const int  BB_LEN = 64; /* number of items in the bounded buffer */
 const byte SPI_RESET = 0x1;
+const byte SPI_ECHO_REQUEST = 0x2;   /* Send response next time */
+const byte SPI_ECHO_RESPONSE = 0x77; /* Response to send */
+
 
 /* ======================= PIN_D Variables ======================= */
 // Masks off digital pins 0, 1, and 2.
@@ -47,8 +50,8 @@ int bb_beg = 0; /* Start of bounded buffer. SPI reads here */
  *  get overwritten (perhaps simultaneously - race condition!)
  *  when first data blip comes in.
  */
-/* TODO - change back to zero. this is for testing purposes */
-int bb_end = 2; /*   End of bounded buffer. PIN_D code writes here*/
+int bb_end = 0; /*   End of bounded buffer. PIN_D code writes here*/
+
 
 uint8_t prevpinval = PIND & bitMask;
 uint8_t pinval;
@@ -71,34 +74,16 @@ void setup (void) {
   SPCR |= _BV(SPE); /* Set 'enable' bit of SPI config register */
   
   /* PIN_D Setup - Sets all D pins to input; may be unnecessary */
-  DDRD = 0B00000000;
-  /* TEMPORARY - TESTING DATA ONLY */
-  output[0][0] = 0x00; // 0
-  output[0][1] = 0x0;
-  output[1][0] = 0x10; // 1
-  output[1][1] = 0x0;
-  output[2][0] = 0x20; // 2
-  output[2][1] = 0x0;
-}
+  DDRD = 0B11110111;
 
-/* ======================= Helper Functions ======================= */
-/**
- * Advance the beginning of the bounded buffer, looping back to the beginning
- * if needed. Won't advance the counter if it overtakes 'end'.
- */
-void bb_advance_beg(){
-  if(bb_beg == bb_end) return;
-  bb_beg++;
-  if(bb_beg >= BB_LEN) bb_beg = 0;
-}
+  /* Initialize all entries in the buffer to something we can notice.
+   * Idealy/eventually, we will not need to do this.
+   */
+  for (int i=0; i<BB_LEN; i++){
+    output[i][0] = 0B11111111;
+    output[i][1] = 123456789;   
+  }
 
-/**
- * Advance the end of the bounded buffer, looping back to the beginning
- * if needed.
- */
-void bb_advance_end(){
-  bb_end++;
-  if(bb_end >= BB_LEN) bb_end = 0;
 }
 
 /**
@@ -118,38 +103,52 @@ void loop (void){
    * 
    * We send the timestamp in 4 chunks, as it is 32 bytes and
    * we only send 8 bytes at a time.
-   * 
-   * TODO: since we have to read some data in from the master
-   * anyway, perhaps we can treat some values as a 'reset'.
-   * For example, if we get some magic number from the master,
-   * we'll set 'send_pinvals' to true and start over.
-   * This may be useful for cases where the two devices may be
-   * out of sync, and the master expects the pinvals while the
-   * slave is sending parts of the timestamp.
    */
 	if((SPSR & (1 << SPIF)) != 0){
     flag = SPDR;
-    if( (flag & SPI_RESET) == SPI_RESET){
-      /* In case the devices get out of sync, we can send the 'RESET'
-       * flag, causing us to send the 5-transmission sequence starting
-       * at the beginning (with the pinvals). Could be useful if the Pi
-       * is restarted without the Arduino resetting its counters. */
-      marker = 0;
-      send_pinvals = 1;
-    }
-    if(send_pinvals){
-      /* Send the pin values */
-      SPDR = output[bb_beg][0];
-      send_pinvals = 0;
+    if( (flag & SPI_ECHO_REQUEST) == SPI_ECHO_REQUEST){
+      /* Next time, send echo request. This is a connection test */
+      SPDR = SPI_ECHO_RESPONSE;
     } else {
-      /* Send the timestamp, 8 bits at a time */
-      SPDR = output[0][1] >> (8 * marker);
-      marker++;
-  
-      if(marker > 3){
+      if( (flag & SPI_RESET) == SPI_RESET){
+        /* In case the devices get out of sync, we can send the 'RESET'
+         * flag, causing us to send the 5-transmission sequence starting
+         * at the beginning (with the pinvals). Could be useful if the Pi
+         * is restarted without the Arduino resetting its counters.
+         * NOTE: this is received while the current data is simultaneously
+         * transmitted, meaning that the effects of this flag won't take
+         * place until the next byte is transmitted.
+         */
         marker = 0;
         send_pinvals = 1;
-        bb_advance_beg();
+      }
+
+      if(send_pinvals){
+        /* Send the pin values */
+        SPDR = output[bb_beg][0];
+        send_pinvals = 0;
+      } else {
+        /* Send the timestamp, 8 bits at a time */
+        SPDR = output[bb_beg][1] >> (8 * marker);
+        marker++;
+
+        if(marker > 3){
+          marker = 0;
+          send_pinvals = 1;
+
+          /* ================ Body of bb_advance_beg() ================ */
+          /* The next entry isn't ready for us - don't move our pointer */
+          if(bb_beg == bb_end || bb_beg == bb_end-1) return;
+        
+          /* Otherwise, we can increment a little more */
+          bb_beg++;
+          if(bb_beg >= BB_LEN) bb_beg = 0;
+          if(bb_beg == BB_LEN){
+            /* If bb_end is at 0, we still can't move */
+            bb_beg = bb_end == 0 ? BB_LEN - 1 : 0;
+          }
+          /* ================== End bb_advance_beg() ================== */
+        }
       }
     }
 	}
@@ -160,21 +159,24 @@ void loop (void){
    * Hydrophones a,b,c,d will correspond to pins 3,4,5,6, respectively.
    * Digital pin 7 corresponds to the duration indicator.
    */
-//  pinval = PIND & bitMask;
-//  xorpins = (prevpinval ^ pinval);
-//  
-//  // recreates the functionality of the micors() function
-//  // without the overhead of a function call
-//  time_elapsed = ((timer0_overflow_count << 8) + TCNT0) * 4;
-//  
-//  if (xorpins != 0) {
-//    // stores high pins and timestamp
-//    output[bb_end][0] = (pinval >> 3); /* Lowest 3 bits unused */
-//    output[bb_end][1] = time_elapsed;
-//    
-//    bb_advance_end();
-//  }
-//  prevpinval = pinval;
+  pinval = PIND & bitMask;
+  xorpins = (prevpinval ^ pinval);
+  
+  // recreates the functionality of the micors() function
+  // without the overhead of a function call
+  time_elapsed = ((timer0_overflow_count << 8) + TCNT0) * 4;
+  
+  if (xorpins != 0) {
+    // stores high pins and timestamp
+    output[bb_end][0] = (pinval >> 3); /* Lowest 3 bits unused */
+    output[bb_end][1] = time_elapsed;
+    
+    /* ================ Body of bb_advance_end() ================ */
+    bb_end++;
+    if(bb_end >= BB_LEN) bb_end = 0;
+    /* ================== End bb_advance_end() ================== */
+  }
+  prevpinval = pinval;
 
 }
 
