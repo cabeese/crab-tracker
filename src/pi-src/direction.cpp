@@ -9,23 +9,12 @@
 #include <algorithm>
 #include <vector>
 #include <stdio.h>
+#include "direction.h"
 //#define S_USER 1500/*  "s" f(salinity, temperature), to be defined later */
 #define R_USER 1 /*  "r"  the length of the hydrophone square          */
 const double S_USER = 0.0015;
 
-typedef struct {
-  double x;
-  double y;
-  double z;
-} xyz;
 
-
- /*
- * Wrapper function for Triangulation calculation.
- * First argument(s) point to "ping" or similar structs
- * 'result' is an out parameter and is a matrix (or other)
- */
-int triangulation( /* 'ping' arguments TBD, */ xyz *result);
 
 
 /**
@@ -56,10 +45,7 @@ int triangulation_helper(unsigned long ts_a, unsigned long ts_b, unsigned long t
 /*
  * Helper functions calculate various calculations
 */
-double calcN(long delta_1, long delta_2, long delta_3);
-double calcX(long delta_2, double N);
-double calcY(long delta_1, double N);
-double calcZ(double N, double x, double y);
+
 void printResult(xyz *result);
 
 int main(int argc, const char* argv[]) {
@@ -68,6 +54,12 @@ int main(int argc, const char* argv[]) {
 
   return 1;
 }
+
+/*
+* Wrapper function for Triangulation calculation.
+* First argument(s) point to "ping" or similar structs
+* 'result' is an out parameter and is a matrix (or other)
+*/
 
 /* Update as appropriate
  * "ping" arguments here are the time stamps for microphones
