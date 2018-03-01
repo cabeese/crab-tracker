@@ -15,8 +15,6 @@
 const double S_USER = 0.0015;
 
 
-
-
 /**
  * Triangulation algorithm. Does actual direction calculation.
  * 'ts_a' is the timestamp of a ping arriving at receiver A
@@ -40,20 +38,14 @@ const double S_USER = 0.0015;
  *                         |
  *
  */
-int triangulation_helper(unsigned long ts_a, unsigned long ts_b, unsigned long ts_c, unsigned long ts_d, xyz *result);
 
-/*
- * Helper functions calculate various calculations
-*/
 
-void printResult(xyz *result);
-
-int main(int argc, const char* argv[]) {
+/*int main(int argc, const char* argv[]) {
   xyz result;
   triangulation(&result);
 
   return 1;
-}
+}*/
 
 /*
 * Wrapper function for Triangulation calculation.

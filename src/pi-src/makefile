@@ -19,6 +19,10 @@ testcode: ${OFILES}
 	g++ -std=c++11 -Wall -I$(CATCH_PATH) -c test_main.cpp
 	g++ -std=c++11 -Wall -I$(CATCH_PATH) -o test test_main.o test_data_collection.cpp data_collection.cpp spi.cpp util.cpp
 
+test-dir: direction.cpp direction.h
+	$(CXX) -I$(CATCH_PATH) -c test_main.cpp
+	$(CXX) -I$(CATCH_PATH) -o test test_main.o test_direction.cpp direction.cpp direction.h
+
 test: ${OFILES}
 	@./test
 
