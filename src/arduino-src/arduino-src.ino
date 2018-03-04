@@ -73,8 +73,8 @@ void setup (void) {
   pinMode(MISO, OUTPUT); /* Set "Master In/Slave Out" pin as output */
   SPCR |= _BV(SPE); /* Set 'enable' bit of SPI config register */
   
-  /* PIN_D Setup - Sets all D pins to input; may be unnecessary */
-  DDRD = 0B11110111;
+  /* PIN_D Setup - Sets all D pins to input */
+  DDRD = 0b00000000;
 
   /* Initialize all entries in the buffer to something we can notice.
    * Idealy/eventually, we will not need to do this.
@@ -161,12 +161,12 @@ void loop (void){
    */
   pinval = PIND & bitMask;
   xorpins = (prevpinval ^ pinval);
-  
-  // recreates the functionality of the micors() function
-  // without the overhead of a function call
-  time_elapsed = ((timer0_overflow_count << 8) + TCNT0) * 4;
-  
+
   if (xorpins != 0) {
+    // recreates the functionality of the micors() function
+    // without the overhead of a function call
+    time_elapsed = ((timer0_overflow_count << 8) + TCNT0) * 4;
+
     // stores high pins and timestamp
     output[bb_end][0] = (pinval >> 3); /* Lowest 3 bits unused */
     output[bb_end][1] = time_elapsed;
