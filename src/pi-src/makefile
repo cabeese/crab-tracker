@@ -1,9 +1,9 @@
-CXX=g++ -std=c++11 -Wall
-# This isn't working: CXXFLAGS=-std=c++11
-CATCH_PATH=`pwd`/include #/catch.hpp
+CXX=g++
+CXXFLAGS=-std=c++11 -Wall
+CATCH_PATH=`pwd`/include
 
 CFILES=main.cpp spi.cpp data_collection.cpp util.cpp
-OFILES=${CFILES:.c=.o}
+OFILES=${CFILES:.cpp=.o}
 
 all: ${OFILES}
 	$(CXX) -o crab-tracker ${OFILES}
@@ -18,9 +18,6 @@ run:
 testcode: ${OFILES}
 	g++ -std=c++11 -Wall -I$(CATCH_PATH) -c test_main.cpp
 	g++ -std=c++11 -Wall -I$(CATCH_PATH) -o test test_main.o test_data_collection.cpp data_collection.cpp spi.cpp util.cpp
-
-test: ${OFILES}
-	@./test
 
 clean:
 	@rm -f *.o *~ crab-tracker test
