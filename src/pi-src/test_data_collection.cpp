@@ -88,4 +88,19 @@ TEST_CASE("proc_block", "[proc_block]"){
         REQUIRE(storage[3].start == 102);
         REQUIRE(storage[3].duration == 108);
     }
+    SECTION("Stress test - generated."){
+        unsigned long time = 1000;
+        data = {0, 0};
+        for(int i=0; i<10000; i++){
+            for(int j=0; j<5; j++){
+                data = {time, (uint8_t)(1<<j)};
+                REQUIRE(proc_block(data, &storage[0]) == 0);
+                time += 100;
+                data = {time, 0b00000};
+                REQUIRE(proc_block(data, &storage[0]) == 1);
+                REQUIRE(storage[0].duration == 100);
+                REQUIRE(storage[0].pin == j);
+            }
+        }
+    }
 }
