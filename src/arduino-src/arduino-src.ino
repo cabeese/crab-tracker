@@ -17,6 +17,11 @@ where each `timestamp_part` is only 8 of the 32 bits in the integer. The low-ord
 eventually the highest order bits.
 *******************************************************************************/
 
+struct state {
+  byte pinvals;
+  unsigned long timestamp;
+} state;
+
 const int  BB_LEN = 64; /* number of items in the bounded buffer */
 const byte SPI_RESET = 0x1;
 const byte SPI_ECHO_REQUEST = 0x2;   /* Send response next time */
@@ -40,7 +45,7 @@ uint8_t bitMask = B11111000;
  * be sent as the 'beginning' will not be advanced until new data is
  * available.
  */
-unsigned long output[BB_LEN][2]; /* Note: longs are 32 bits */
+struct state output[BB_LEN];
 int bb_beg = 0; /* Start of bounded buffer. SPI reads here */
 /* TODO - currently, the first block of data will be sent via SPI
  *  before it's actually valid (immediately, in fact).
@@ -80,8 +85,8 @@ void setup (void) {
    * Idealy/eventually, we will not need to do this.
    */
   for (int i=0; i<BB_LEN; i++){
-    output[i][0] = 0B11111111;
-    output[i][1] = 123456789;   
+    output[i].pinvals = 0B11111111;
+    output[i].timestamp = 123456789;
   }
 
 }
@@ -125,11 +130,11 @@ void loop (void){
 
       if(send_pinvals){
         /* Send the pin values */
-        SPDR = output[bb_beg][0];
+        SPDR = output[bb_beg].pinvals;
         send_pinvals = 0;
       } else {
         /* Send the timestamp, 8 bits at a time */
-        SPDR = output[bb_beg][1] >> (8 * marker);
+        SPDR = output[bb_beg].timestamp >> (8 * marker);
         marker++;
 
         if(marker > 3){
@@ -168,8 +173,8 @@ void loop (void){
     time_elapsed = ((timer0_overflow_count << 8) + TCNT0) * 4;
 
     // stores high pins and timestamp
-    output[bb_end][0] = (pinval >> 3); /* Lowest 3 bits unused */
-    output[bb_end][1] = time_elapsed;
+    output[bb_end].pinvals = pinval >> 3;
+    output[bb_end].timestamp = time_elapsed;
     
     /* ================ Body of bb_advance_end() ================ */
     bb_end++;
