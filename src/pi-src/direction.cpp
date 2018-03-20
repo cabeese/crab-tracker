@@ -42,6 +42,13 @@ const double S_USER = 0.0015;
 
 int main(int argc, const char* argv[]) {
   data result;
+  //eventually, test will pass struct with times
+  //times timestamps;
+
+  // times->ts_a = ts_a;
+  // times->ts_b = ts_b;
+  // times->ts_c = ts_c;
+  // times->ts_d = ts_d;
   triangulation(&result);
 
   return 1;
@@ -64,11 +71,10 @@ int main(int argc, const char* argv[]) {
 
 int triangulation( /* 'ping' arguments TBD, */ data *result){
   /*  These will be removed when 'ping arguments' is a real thing*/
-  unsigned long ts_a = 23823;
-  unsigned long ts_b = 23447;
-  unsigned long ts_c = 22871;
-  unsigned long ts_d = 23257;
-
+  unsigned long ts_a = 9197;
+  unsigned long ts_b = 8838;
+  unsigned long ts_c = 8932;
+  unsigned long ts_d = 9283;
   triangulation_helper(ts_a, ts_b, ts_c, ts_d, result);
 
   printResult(result);
@@ -91,6 +97,11 @@ int triangulation_helper(unsigned long ts_a, unsigned long ts_b, unsigned long t
   double delta_2 = (double)ts_c - (double)ts_a;
   double delta_3 = (double)ts_d - (double)ts_a;
 
+  fprintf(stderr, "delta_1 %lf\n", delta_1);
+  fprintf(stderr, "delta_2 %lf\n", delta_2);
+  fprintf(stderr, "delta_3 %lf\n", delta_3);
+
+
   //Set biggest delta
   double max_delta = (double) (1 / S_USER) * sqrt(2 * pow(2 * R_USER, 2.0));
   //find biggest delta
@@ -100,7 +111,7 @@ int triangulation_helper(unsigned long ts_a, unsigned long ts_b, unsigned long t
     return -1;
   }
 
-  if (delta_1 == 0 || delta_2 == 0 || delta_3 == 0){
+  if (delta_1 == 0 || delta_3 == 0){
     //Directly above crab
     if(delta_1 == 0 && delta_2 == 0 && delta_3 == 0){
       x = 0;
@@ -109,11 +120,11 @@ int triangulation_helper(unsigned long ts_a, unsigned long ts_b, unsigned long t
       z = 1;
     }
     //Crab on x-axis
-    if (delta_1 == 0){
+    if (delta_3 == 0){
       return -1;
     }
     //Crab on y-axis
-    if (delta_2 == 0){
+    if (delta_1 == 0){
       return -1;
     }
   }
@@ -140,7 +151,17 @@ int triangulation_helper(unsigned long ts_a, unsigned long ts_b, unsigned long t
  *     2(delta_1 + delta_3 - delta_2)
  */
 double calcN(double delta_1, double delta_2, double delta_3){
-  long double N = (S_USER*(pow(delta_2,2.0) - pow(delta_1,2.0) - pow(delta_3,2.0)))  /  (2*(delta_1 + delta_3 - delta_2));
+  long double N;
+  if ((delta_1 + delta_3 - delta_2) == 0){
+    fprintf(stderr, "Small delta \n");
+    N = (S_USER*(pow(delta_2,2.0) - pow(delta_1,2.0) - pow(delta_3,2.0)))  /  (2.0);
+  } else if ((pow(delta_2,2.0) - pow(delta_1,2.0) - pow(delta_3,2.0)) == 0) {
+    fprintf(stderr, "Small bottom \n");
+    //not sure needed
+    N = (S_USER*1.0)  /  (2.0*(delta_1 + delta_3 - delta_2));
+  } else {
+    N = (S_USER*(pow(delta_2,2.0) - pow(delta_1,2.0) - pow(delta_3,2.0)))  /  (2.0*(delta_1 + delta_3 - delta_2));
+  }
   return N;
 }
 

@@ -9,11 +9,6 @@ Created: 2018-03-1
 #ifndef __DIRECTION_H
 #define __DIRECTION_H
 
-typedef struct {
-  double x;
-  double y;
-  double z;
-} xyz;
 
 typedef struct {
   double x;
@@ -23,6 +18,13 @@ typedef struct {
   double r;
   double theta;
 } data;
+
+typedef struct {
+  double ts_a;
+  double ts_b;
+  double ts_c;
+  double ts_d;
+} timestamps;
 
 int triangulation( /* 'ping' arguments TBD, */ data *result);
 int triangulation_helper(unsigned long ts_a, unsigned long ts_b, unsigned long ts_c, unsigned long ts_d, data *result);

@@ -31,12 +31,16 @@ typedef struct {
 
 int calcDist(double x, double y, double z, data *result, timestamps *times);
 void printResult(data *result);
+void printTimes(timestamps *times);
 int main(int argc, const char* argv[]) {
   data result;
   timestamps times;
-  double x = -10.0;
-  double y = -15.0;
-  double z = -30.0;
+  double x = 4*-0.9;
+  double y = 4*0.25;
+  //shallow - 1m
+  //avg - 5.5m
+  //deep - 15m
+  double z = -13.0;
   calcDist(x, y, z, &result, &times);
   printResult(&result);
   return 1;
@@ -63,6 +67,7 @@ int calcDist(double x, double y, double z, data *result, timestamps *times){
   times->ts_b = ts_b;
   times->ts_c = ts_c;
   times->ts_d = ts_d;
+  printTimes(times);
 
   //deltas
   double d1 = ts_b - ts_a;
@@ -85,4 +90,11 @@ void printResult(data *result){
   fprintf(stderr, "N = %lf\n", result->N);
   fprintf(stderr, "r = %lf\n", result->r);
   fprintf(stderr, "theta = %lf\n", result->theta);
+}
+
+void printTimes(timestamps *times){
+  fprintf(stderr, "unsigned long ts_a = %lf;\n", times->ts_a);
+  fprintf(stderr, "unsigned long ts_b = %lf;\n", times->ts_b);
+  fprintf(stderr, "unsigned long ts_c = %lf;\n", times->ts_c);
+  fprintf(stderr, "unsigned long ts_d = %lf;\n", times->ts_d);
 }
