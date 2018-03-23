@@ -131,6 +131,7 @@ void loop (void){
       if(send_pinvals){
         /* Send the pin values */
         SPDR = output[bb_beg].pinvals;
+        output[bb_beg].pinvals = (1 << 7) | output[bb_beg].pinvals;
         send_pinvals = 0;
       } else {
         /* Send the timestamp, 8 bits at a time */
@@ -173,7 +174,7 @@ void loop (void){
     time_elapsed = ((timer0_overflow_count << 8) + TCNT0) * 4;
 
     // stores high pins and timestamp
-    output[bb_end].pinvals = pinval >> 3;
+    output[bb_end].pinvals = (pinval >> 3) & 0b00011111;
     output[bb_end].timestamp = time_elapsed;
     
     /* ================ Body of bb_advance_end() ================ */
