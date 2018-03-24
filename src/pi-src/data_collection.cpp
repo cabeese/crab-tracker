@@ -72,6 +72,13 @@ int proc_block(spi_rawblock data, ping *storage){
                 tmp.start = partials[i];
                 tmp.duration = data.timestamp - partials[i];
 
+                /* TODO: remove this (temporary debugging code) */
+                if(tmp.duration > 120){
+                    printf("LONG PING DETECTED.\t");
+                    printf("start: %lu (0x%lx)\t", partials[i], partials[i]);
+                    printf("end: %lu (0x%lx)\n", data.timestamp, data.timestamp);
+                }
+
                 if(DISPLAY_PINGS) disp_ping(tmp);
 
                 // Do we need to do this?

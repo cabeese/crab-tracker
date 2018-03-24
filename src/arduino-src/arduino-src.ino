@@ -22,7 +22,7 @@ struct state {
   unsigned long timestamp;
 } state;
 
-const int  BB_LEN = 64; /* number of items in the bounded buffer */
+const int  BB_LEN = 8; /* number of items in the bounded buffer */
 const byte SPI_RESET = 0x1;
 const byte SPI_ECHO_REQUEST = 0x2;   /* Send response next time */
 const byte SPI_ECHO_RESPONSE = 0x77; /* Response to send */
@@ -86,7 +86,7 @@ void setup (void) {
    */
   for (int i=0; i<BB_LEN; i++){
     output[i].pinvals = 0B11111111;
-    output[i].timestamp = 123456789;
+    output[i].timestamp = 0;
   }
 
 }
@@ -111,11 +111,11 @@ void loop (void){
    */
 	if((SPSR & (1 << SPIF)) != 0){
     flag = SPDR;
-    if( (flag & SPI_ECHO_REQUEST) == SPI_ECHO_REQUEST){
+    if( (flag & SPI_ECHO_REQUEST) == flag){
       /* Next time, send echo request. This is a connection test */
       SPDR = SPI_ECHO_RESPONSE;
     } else {
-      if( (flag & SPI_RESET) == SPI_RESET){
+      if( (flag & SPI_RESET) == flag){
         /* In case the devices get out of sync, we can send the 'RESET'
          * flag, causing us to send the 5-transmission sequence starting
          * at the beginning (with the pinvals). Could be useful if the Pi
@@ -144,14 +144,15 @@ void loop (void){
 
           /* ================ Body of bb_advance_beg() ================ */
           /* The next entry isn't ready for us - don't move our pointer */
-          if(bb_beg == bb_end || bb_beg == bb_end-1) return;
-        
-          /* Otherwise, we can increment a little more */
-          bb_beg++;
-          if(bb_beg >= BB_LEN) bb_beg = 0;
-          if(bb_beg == BB_LEN){
-            /* If bb_end is at 0, we still can't move */
-            bb_beg = bb_end == 0 ? BB_LEN - 1 : 0;
+          if(bb_beg == bb_end || bb_beg == bb_end-1 || (bb_beg+1==BB_LEN && bb_end == 0)){}
+          else {
+            /* Otherwise, we can increment a little more */
+            bb_beg++;
+            if(bb_beg >= BB_LEN) bb_beg = 0;
+            if(bb_beg == BB_LEN){
+              /* If bb_end is at 0, we still can't move */
+              bb_beg = bb_end == 0 ? BB_LEN - 1 : 0;
+            }
           }
           /* ================== End bb_advance_beg() ================== */
         }
