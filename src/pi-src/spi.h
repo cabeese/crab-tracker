@@ -10,7 +10,7 @@ Created: 2018-02-10
 #ifndef __SPI_H
 #define __SPI_H
 
-#define SPI_NO_FLAGS 0x0     /* Default behavior */
+#define SPI_NO_FLAGS 0xF     /* Default behavior */
 #define SPI_RESET 0x1        /* Reset counters */
 #define SPI_ECHO_REQUEST 0x2 /* Used for connection test */
 

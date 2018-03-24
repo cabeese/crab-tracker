@@ -28,13 +28,19 @@ int main (void) {
     for(int i=0; i<5; i++){ storage[i] = {0, 0}; }
 
     while (1){
-        spi_getblock(&RAW);
-        if(DISPLAY_RAW_SPI) spi_dispblock(RAW);
-        result = proc_block(RAW, &(*storage));
-        if(result){
-            // no-op for now
+        if(spi_getblock(&RAW)){
+            if(DISPLAY_RAW_SPI) spi_dispblock(RAW);
+
+            result = proc_block(RAW, &(*storage));
+            if(result){
+                // no-op for now
+            } else {
+                // sleep(1);
+                // usleep(100);
+            }
         } else {
-            sleep(1);
+            // printf(".");
+            sleep(0.5);
         }
         usleep(100);
     }
