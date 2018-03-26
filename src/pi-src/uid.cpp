@@ -20,7 +20,7 @@ Created: 2018-02-28
  */
 int id_decode_ping(ping p){
     long duration_ms = p.duration / 1000; /* convert us->ms */
-    float raw_id = (duration - MIN_PING_DUR_MS) / STEP_SIZE_MS;
+    float raw_id = (duration_ms - MIN_PING_DUR_MS) / STEP_SIZE_MS;
 
     /* TODO: correctly handle variability.
      * for example, do
@@ -43,7 +43,7 @@ int id_decode_ping(ping p){
  */
 int id_decode_delay(ping a, ping b){
     long delay_ms = (b.start - (a.start + a.duration)) / 1000; /* us->ms */
-    float raw_id = (delay - MIN_DELAY_DUR_MS) / STEP_SIZE_MS;
+    float raw_id = (delay_ms - MIN_DELAY_DUR_MS) / STEP_SIZE_MS;
 
     /* TODO: correctly handle variability.
      * for example, do

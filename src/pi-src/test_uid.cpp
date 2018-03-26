@@ -13,7 +13,7 @@ Created: 2018-02-28
 TEST_CASE("UID decoding", "[uid_decoding]"){
 
     SECTION("PING decoding"){
-        int id = 205;
+        int id = 200;
         ping a;
         long duration = ((id * STEP_SIZE_MS) + MIN_PING_DUR_MS) * 1000;
 
@@ -28,7 +28,7 @@ TEST_CASE("UID decoding", "[uid_decoding]"){
         int id = 320;
         int dur = 10;
         ping a, b;
-        long delay = ()(id * STEP_SIZE_MS) + MIN_DELAY_DUR_MS) * 1000;
+        long delay = ((id * STEP_SIZE_MS) + MIN_DELAY_DUR_MS) * 1000;
 
         a.pin = 0;
         a.start = 0;

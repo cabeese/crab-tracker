@@ -18,7 +18,15 @@ run:
 
 testcode: ${OFILES}
 	$(CXX) -I$(CATCH_PATH) -c test_main.cpp
-	$(CXX) -I$(CATCH_PATH) -o test test_main.o spi.cpp util.cpp ${TESTFILES}
+	$(CXX) -I$(CATCH_PATH) -o test test_main.o spi.cpp util.cpp uid.cpp ${TESTFILES}
+
+test-dc: test_data_collection.cpp data_collection.cpp data_collection.h
+	$(CXX) -I$(CATCH_PATH) -c test_main.cpp
+	$(CXX) -I$(CATCH_PATH) -o test test_main.o spi.cpp util.cpp test_data_collection.cpp
+
+test-uid: test_uid.cpp uid.cpp uid.h
+	$(CXX) -I$(CATCH_PATH) -c test_main.cpp
+	$(CXX) -I$(CATCH_PATH) -o test test_main.o uid.cpp test_uid.cpp
 
 clean:
 	@rm -f *.o *~ crab-tracker test
