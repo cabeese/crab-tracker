@@ -1,9 +1,8 @@
 /******************************************************************************
 Decodes unique identifiers from transmissions
 
-The details of UID encoding and decoding can be found in
-.../doc/TransmissionProtocol/TransmissionProtocol.pdf,
-also known as the iCRAB Protocol Documentation.
+The details of UID encoding and decoding can be found in the iCRAB Protocol
+documentation (TransmissionProtocol.pdf).
 
 Note that we expect some amount of noise or variance in our measured signals,
 so we can't rely on the measured durations or delays matching perfectly with

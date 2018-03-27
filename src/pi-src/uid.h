@@ -1,9 +1,8 @@
 /******************************************************************************
 Decodes unique identifiers from transmissions
 
-The details of UID encoding and decoding can be found in
-.../doc/TransmissionProtocol/TransmissionProtocol.pdf,
-also known as the iCRAB Protocol Documentation.
+The details of UID encoding and decoding can be found in the iCRAB Protocol
+documentation (TransmissionProtocol.pdf).
 
 Note that we expect some amount of noise or variance in our measured signals,
 so we can't rely on the measured durations or delays matching perfectly with
@@ -23,8 +22,7 @@ Created: 2018-02-28
 #include "data_collection.h"
 
 /*** Transmission Protocol Constants ***
- * Values should match those in
- * .../doc/TransmissionProtocol/TransmissionProtocol.pdf
+ * Values should match those in the TransmissionProtocol.pdf document.
  */
 #define MIN_INTERVAL_S 15
 #define MAX_INTERVAL_S 30
