@@ -31,7 +31,7 @@ const byte SPI_ECHO_RESPONSE = 0x77; /* Response to send */
 /* ======================= PIN_D Variables ======================= */
 // Masks off digital pins 0, 1, and 2.
 // Most significant bit of register corresponds to digital pin 7
-uint8_t bitMask = B11111000;
+uint8_t bitMask = B00001000;
 
 /*
  * Pin values and corresponding timestamps are stored in this 2D array,
