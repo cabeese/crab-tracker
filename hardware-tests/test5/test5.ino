@@ -2,7 +2,8 @@
 * 
 * 
 * Hydrophones a,b,c, d will correspond to pins 3,4,5,6, respectively.
-*  Digital pin 7 corresponds to the duration indicator. 
+* Digital pin 7 corresponds to the duration indicator. 
+* Test Code for pulse collector
 *
 */
 

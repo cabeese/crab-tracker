@@ -1,6 +1,5 @@
-
-// test case for noah
-
+// Test code for pulse generator
+// tests deltas between pulses being generated
 
 
 void setup() {
@@ -22,38 +21,21 @@ void setup() {
 
 void loop() {
   
-  //make pin 2 high
-  PORTD = 0B00000100;
+  PORTD = 0B00000100; // 2 high
   delayMicroseconds(500); 
-  PORTD = 0B00001100;
+  PORTD = 0B00001100; // 2,3 high
   delayMicroseconds(500);
-  PORTD = 0B00011100;
+  PORTD = 0B00011100; // 2,3,4 high
   delayMicroseconds(500);
-  PORTD = 0B00111100;
+  PORTD = 0B00111100; // 2,3,4,5 high
   delayMicroseconds(1700);
   PORTD = 0B00111000; // 2 low, 3,4,5 high
   delayMicroseconds(500);
-  PORTD = 0B00110000;
+  PORTD = 0B00110000; // 2,3 low 4,5 high
   delayMicroseconds(500);
-  PORTD = 0B00100000;
+  PORTD = 0B00100000; // 2,3,4 low 5 high
   delayMicroseconds(500);
-  PORTD = 0B00000000;  
-//  delayMicroseconds(6000);
-//  PORTD = 0B00000100; 
-//  delayMicroseconds(1000); 
-//  PORTD = 0B00001100; 
-//  delayMicroseconds(1000); 
-//  PORTD = 0B00011100;    
-//  delayMicroseconds(1000); 
-//  PORTD = 0B00111100;
-//  delayMicroseconds(200); 
-//  PORTD = 0B00111000; // 2 low, 3,4,5 high
-//  delayMicroseconds(1000); 
-//  PORTD = 0B00110000;
-//  delayMicroseconds(1000); 
-//  PORTD = 0B00100000; 
-//  delayMicroseconds(1000);   
-//  PORTD = 0B00000000;
+  PORTD = 0B00000000;  // all low
 
 
   delay(20000);

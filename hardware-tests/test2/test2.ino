@@ -1,11 +1,7 @@
-//TODO comment this
-// how long does this mean?
-//#define signal_length 60000 // in microseconds
-// recreates signal for crab 22
+// In this test file the signal pattern for crab 22 is generated
+// use to test UID decoding
 
 void setup() {
-  // put your setup code here, to run once:
-
   
   // sets pins 2,3,4,5,6 D pins to output, 0 and 1 are RX & TX (not used)
   DDRD = 0B01111100;

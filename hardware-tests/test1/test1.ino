@@ -1,7 +1,7 @@
-//TODO comment this
-// how long does this mean?
-//#define signal_length 60000 // in microseconds
-//#define wait 120000 // in microseconds
+// This test file sets pins 2 through 6 high, one at a time with a delay between each pin so that no two pins will be high at the same time
+// time period for which each pin is high as well as the time inbetween each pin's signal is in microseconds and is the same for each pin
+
+
 unsigned int signal_length = 100; // in microseconds
 
 unsigned int wait = 200; // in microseconds

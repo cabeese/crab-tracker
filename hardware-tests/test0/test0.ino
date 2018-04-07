@@ -1,7 +1,7 @@
-//TODO comment this
-// how long does this mean?
-//#define signal_length 60000 // in microseconds
-//#define wait 120000 // in microseconds
+// This test file will make one pin, as indicated by 1 in  PORTD high for 1 second
+// then make all pins low for five seconds
+
+
 unsigned int signal_length = 0; // in microseconds
 unsigned int delay1 = 50;
 unsigned int wait = 0; // in microseconds
@@ -22,6 +22,8 @@ void setup() {
   // sets all pins to low
  // like digital write
   PORTD = 0B00000000;
+
+  //this functionality is not used currently
   signal_length = delay1;
   wait = delay2;
   
@@ -31,9 +33,9 @@ void setup() {
 
 void loop() {
   
-  %high for 1 second, low for 5 seconds
+  //high for 1 second, low for 5 seconds
   PORTD = 0B00000100;
-  delay(1000);
+  delay(1000); //milliseconds
 //  PORTD = 0B00001100;
 //  delayMicroseconds(4000);
 //  PORTD = 0B00001000;

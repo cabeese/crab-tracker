@@ -1,12 +1,9 @@
-// send output on only one pin
+// send output on only one pin for a time in milliseconds determined by signal lenght
+// then make all pins low for a delay in milliseconds determined by wait
+// can change which pin will go high by changing value in PIND register
+unsigned int signal_length = 100; 
 
-//TODO comment this
-// how long does this mean?
-//#define signal_length 60000 // in microseconds
-//#define wait 120000 // in microseconds
-unsigned int signal_length = 100; // in microseconds
-
-unsigned int wait = 200; // in microseconds
+unsigned int wait = 200; 
 
 uint8_t bitMask = 0B01111100;
 uint8_t pinval;
@@ -31,38 +28,11 @@ void setup() {
 
 void loop() {
   
-//  //make pin 2 high
-//  PORTD = 0B00000100;
-//  delay(signal_length); 
-//  PORTD = 0B00000000;
-//  delay(wait);
-//
-//  // make pin 3 high
-//  PORTD = 0B00001000;
-//  delay(signal_length);
-//  PORTD = 0B00000000;
-//  delay(wait);
 
 // make pin 4 high  
   PORTD = 0B00010000;
   delay(signal_length);
   PORTD = 0B00000000;
   delay(wait);
-
-
-////  //make pin 5 high
-// 
-//  PORTD = 0B00100000;
-//  delay(signal_length);
-//  PORTD = 0B00000000;
-//  delay(wait);
-//
-//  //make pin 6 high
-//  PORTD = 0B01000000;
-//  delay(signal_length);
-//  PORTD = 0B00000000;
-//  delay(wait);
-//
-//  delay(20000);
 
 }
