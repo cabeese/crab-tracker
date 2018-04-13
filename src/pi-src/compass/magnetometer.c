@@ -157,7 +157,7 @@
                 float magnetic_heading = atan2(y, x);
                
                 //printf("x=%d, y=%d, z=%d\n", x, y, z);
-                printf("angle = %0.1f\n", angle);
+                printf("angle = %0.1f x = %d y = %d \n", angle, x, y);
                 //printf("angle = %0.1f, mag = %0.1f\n", angle,mag);
                 //printf("magnetic heading %0.2f \n", magnetic_heading);
 		//printf("time: %ld.%06ld\n",tv.tv_sec, tv.tv_usec);
