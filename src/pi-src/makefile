@@ -8,6 +8,8 @@ OFILES=${CFILES:.cpp=.o}
 all: ${OFILES}
 	$(CXX) -o crab-tracker ${OFILES}
 
+config-test: ${OFILES}
+	$(CXX) -o config-test read_config.cpp
 install:
 	@mkdir -p include
 	@wget https://raw.githubusercontent.com/CatchOrg/Catch2/master/single_include/catch.hpp -P include/
