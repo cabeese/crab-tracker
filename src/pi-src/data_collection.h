@@ -22,6 +22,7 @@ struct ping {
     unsigned long duration;
 };
 
+int initialize_dc();
 int proc_block(spi_rawblock, ping*);
 void disp_ping(ping);
 int poll(ping*);
