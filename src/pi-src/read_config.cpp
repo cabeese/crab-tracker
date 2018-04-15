@@ -10,12 +10,14 @@
 #include <fcntl.h>
 #include "config.h"
 
+/* Basically a key/value store for configuration options */
 struct config_entry{
     const char* param;
     int value;
     int isset;
 };
 
+/* An exhaustive set of all configuration options. Default values given here */
 config_entry entries[] = { {"DISPLAY_PINGS", 1, 0},
                            {"DISPLAY_RAW_SPI", 0, 0},
                            {"HPHONE_ADJ_DIST_CM", 300, 0}};
@@ -53,13 +55,14 @@ int initialize(){
     fp = fopen(CONFIG_FILE_PATH, "r");
     if (fp == NULL){
         perror("fopen");
+        fprintf(stderr, "Unable to load configuration file\n");
         return 1;
     }
 
     while ((len = getline(&line, &linecap, fp)) != -1) {
         for(int i=0; i<len; i++){
             /* Strip out comments (denoted by a hash (#)) */
-            if(line[i] == '#') line[i] = '\0';
+            if(line[i] == '#'){ line[i] = '\0'; i=len; };
         }
 
         /* See if any of our parameters are found in this line */
@@ -74,7 +77,6 @@ int initialize(){
                 /* Found the parameter! Store it */
                 entries[j].value = int_param;
                 entries[j].isset = 1;
-                printf("set %s to %d\n", entries[j].param, entries[j].value);
                 j = num_entries; /* Break out of loop early */
             }
         }
