@@ -1,5 +1,5 @@
 CXX=g++
-CXXFLAGS=-std=c++11 -Wall
+CXXFLAGS=-std=c++11 -Wall -Wextra -pedantic
 CATCH_PATH=`pwd`/include
 
 CFILES=main.cpp spi.cpp data_collection.cpp util.cpp

@@ -39,7 +39,7 @@ int initialize(){
 int main (void) {
     initialize();
 
-    for(int i=0; i<5; i++){ storage[i] = {0, 0}; }
+    for(int i=0; i<5; i++){ storage[i] = {0, 0, 0}; }
 
     while (1){
         spi_getblock(&RAW);
