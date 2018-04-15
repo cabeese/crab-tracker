@@ -10,6 +10,7 @@ Project: Crab Tracker
 #include <iostream>
 #include <unistd.h>
 #include <stdio.h>
+#include "util.h"
 #include "config.h"
 #include "spi.h"
 #include "data_collection.h"
@@ -23,6 +24,7 @@ ping storage[5]; /* Eventual storage for pings that come in. Currently unused */
  * @return  (unused)
  */
 int main (void) {
+    initialize_util();
     initialize_spi();
 
     for(int i=0; i<5; i++){ storage[i] = {0, 0}; }
