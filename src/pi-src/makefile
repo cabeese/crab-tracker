@@ -1,9 +1,9 @@
-CXX=g++ -std=c++11 -Wall
-# This isn't working: CXXFLAGS=-std=c++11
-CATCH_PATH=`pwd`/include #/catch.hpp
+CXX=g++
+CXXFLAGS=-std=c++11 -Wall -Wextra -pedantic
+CATCH_PATH=`pwd`/include
 
 CFILES=main.cpp spi.cpp data_collection.cpp util.cpp uid.cpp
-OFILES=${CFILES:.c=.o}
+OFILES=${CFILES:.cpp=.o}
 TESTFILES=test_*.cpp
 
 all: ${OFILES}
@@ -21,12 +21,12 @@ testcode: ${OFILES}
 	$(CXX) -I$(CATCH_PATH) -o test test_main.o spi.cpp util.cpp uid.cpp ${TESTFILES}
 
 test-dc: test_data_collection.cpp data_collection.cpp data_collection.h
-	$(CXX) -I$(CATCH_PATH) -c test_main.cpp
-	$(CXX) -I$(CATCH_PATH) -o test test_main.o spi.cpp util.cpp test_data_collection.cpp
+	$(CXX) -std=c++11 -I$(CATCH_PATH) -c test_main.cpp
+	$(CXX) -std=c++11 -I$(CATCH_PATH) -o test test_main.o data_collection.cpp spi.cpp util.cpp test_data_collection.cpp
 
 test-uid: test_uid.cpp uid.cpp uid.h
-	$(CXX) -I$(CATCH_PATH) -c test_main.cpp
-	$(CXX) -I$(CATCH_PATH) -o test test_main.o uid.cpp test_uid.cpp
+	$(CXX) -std=c++11 -I$(CATCH_PATH) -c test_main.cpp
+	$(CXX) -std=c++11 -I$(CATCH_PATH) -o test test_main.o uid.cpp test_uid.cpp
 
 clean:
 	@rm -f *.o *~ crab-tracker test

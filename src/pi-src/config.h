@@ -12,7 +12,6 @@ Created: 2018-02-22
 #ifndef __CONFIG_H
 #define __CONFIG_H
 
-#define DISPLAY_RAW_SPI 0 /* Enables printing of raw SPI data */
-#define DISPLAY_PINGS 1 /* Enables printing of each computed "ping" */
+#define CONFIG_FILE_PATH "/etc/crab-tracker.conf"
 
 #endif /* __CONFIG_H */
