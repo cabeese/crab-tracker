@@ -19,6 +19,8 @@ Created: 2018-02-10
 
 #define NUM_PINS 5 /* TODO: Define this elsewhere, globally */
 
+int DISPLAY_PINGS = 0;
+
 /* The previous raw data block. We only need the 1 most recent. */
 spi_rawblock prev = {
     0x0, // timestamp
@@ -106,4 +108,8 @@ void disp_ping(ping p){
 int poll(ping *storage){
     spi_getblock(&raw_data);
     return proc_block(raw_data, storage);
+}
+
+int initialize_dc(){
+    return get_param((char*)"DISPLAY_PINGS", &DISPLAY_PINGS);
 }
