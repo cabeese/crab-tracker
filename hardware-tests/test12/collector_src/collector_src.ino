@@ -59,28 +59,18 @@ void loop() {
 //  time_elapsed = ((timer0_overflow_count << 8) + TCNT0) * 4;
   time_elapsed = micros();
 
-  if ((xorpins != 0) && (xorpins & pinval)) { // need to figure this out and why this ogic was chosen
-    
-//      Serial.println(prevpinval, BIN);
-//      Serial.println(pinval, BIN);
-//      Serial.println(xorpins, BIN);
-//      Serial.println(xorpins & pinval,BIN);
-////      Serial.println(time_elapsed);
-//     Serial.println(xorpins & (1 << 3), BIN);
-//     Serial.println(xorpins & (1 << 4), BIN);
-     
-//     Serial.println();
-     if (xorpins & (1 << 3)){ // need to figure this out and why this logic was chosen
-    
+  if ((xorpins != 0) && (xorpins & pinval)) { // need to figure this out and why this logic was chosen
+     if (xorpins & (1 << 3)){ 
+//      time_elapsed = micros();
       ts0 = time_elapsed;
+//      ts0 = micros();
      }
-     if (xorpins & (1 << 4)){ // need to figure this out and why this logic was chosen
-    
+     if (xorpins & (1 << 4)){ 
+//       time_elapsed = micros();
        ts1 = time_elapsed;
+//        ts1 = micros();
        Serial.println(ts1 - ts0); //print delta
-       //Serial.println();
      }
-  //   Serial.println();
   }
    
   prevpinval = pinval;
