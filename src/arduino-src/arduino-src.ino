@@ -22,7 +22,7 @@ struct state {
   unsigned long timestamp;
 } state;
 
-const int  BB_LEN = 8; /* number of items in the bounded buffer */
+const int  BB_LEN = 64; /* number of items in the bounded buffer */
 const byte SPI_RESET = 0x1;
 const byte SPI_ECHO_REQUEST = 0x2;   /* Send response next time */
 const byte SPI_ECHO_RESPONSE = 0x77; /* Response to send */
