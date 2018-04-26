@@ -22,7 +22,7 @@ struct state {
   unsigned long timestamp;
 } state;
 
-const int  BB_LEN = 8; /* number of items in the bounded buffer */
+const int  BB_LEN = 64; /* number of items in the bounded buffer */
 const byte SPI_RESET = 0x1;
 const byte SPI_ECHO_REQUEST = 0x2;   /* Send response next time */
 const byte SPI_ECHO_RESPONSE = 0x77; /* Response to send */
@@ -131,7 +131,7 @@ void loop (void){
       if(send_pinvals){
         /* Send the pin values */
         SPDR = output[bb_beg].pinvals;
-        output[bb_beg].pinvals = (1 << 7) | output[bb_beg].pinvals;
+        output[bb_beg].pinvals |= (1 << 7);
         send_pinvals = 0;
       } else {
         /* Send the timestamp, 8 bits at a time */
@@ -149,10 +149,6 @@ void loop (void){
             /* Otherwise, we can increment a little more */
             bb_beg++;
             if(bb_beg >= BB_LEN) bb_beg = 0;
-            if(bb_beg == BB_LEN){
-              /* If bb_end is at 0, we still can't move */
-              bb_beg = bb_end == 0 ? BB_LEN - 1 : 0;
-            }
           }
           /* ================== End bb_advance_beg() ================== */
         }
