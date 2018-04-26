@@ -54,8 +54,9 @@ unsigned long partials[NUM_PINS];
 int proc_block(spi_rawblock data, ping *storage){
     int i,
         mask,
-        changed = data.pinvals ^ prev.pinvals,
         count = 0;
+    /* TODO: Update bitmask to be all 5 pins, not just lowest 4 */
+    uint8_t changed = (data.pinvals ^ prev.pinvals) & 0b1111;
     ping tmp = {0, 0, 0};
 
     for(i=0; i<5; i++){
@@ -89,8 +90,9 @@ int proc_block(spi_rawblock data, ping *storage){
  * @param p The ping to print
  */
 void disp_ping(ping p){
-    printf("== PING == pin: %d\t start: %lu (0x%lx)\tduration: %lu (0x%lx)\n",
+    printf("== PING == pin: %d\tstart: %lu (0x%lx)\tduration: %lu (0x%lx)\n",
         p.pin, p.start, p.start, p.duration, p.duration);
+    fflush(stdout);
 }
 
 /**

@@ -56,7 +56,7 @@ uint8_t spi_getbyte(uint8_t flags){
  * Grabs a full "block" (5 8-byte transmissions) from SPI and stores them in
  *     a struct.
  * @param  data - Out parameter. Incoming data is stored here.
- * @return      - 1 (unused currently)
+ * @return      - 1 if new data was fetched, else 0.
  */
 int spi_getblock(spi_rawblock *data){
     uint8_t pinvals;
@@ -67,9 +67,14 @@ int spi_getblock(spi_rawblock *data){
 
     /* Get timestamp (in 4 parts) */
     for(int i=0; i<4; i++){
+        usleep(10);
         timestamp |= spi_getbyte(SPI_NO_FLAGS) << (i * 8);
     }
 
+    if(pinvals & (1<<7)){
+        /* We already saw this, and it might be corrupt now */
+        return 0;
+    }
     data->pinvals = pinvals;
     data->timestamp = timestamp;
     return 1;
