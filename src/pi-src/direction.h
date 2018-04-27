@@ -11,22 +11,14 @@ Created: 2018-03-1
 
 
 typedef struct {
-  double x;
-  double y;
-  double z;
-  double N;
   double r;
   double theta;
+  double z;
 } data;
 
-typedef struct {
-  double ts_a;
-  double ts_b;
-  double ts_c;
-  double ts_d;
-} timestamps;
+double calcSpeedOfSound(double temp, double salinity, double depth);
 
-int triangulation( /* 'ping' arguments TBD, */ data *result);
+int triangulation(unsigned long ts_a, unsigned long ts_b, unsigned long ts_c, unsigned long ts_d, data *result);
 int triangulation_helper(unsigned long ts_a, unsigned long ts_b, unsigned long ts_c, unsigned long ts_d, data *result);
 
 /*

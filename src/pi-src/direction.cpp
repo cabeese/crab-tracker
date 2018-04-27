@@ -28,11 +28,11 @@ const double S_USER = 0.0015;
  *                         |
  *                         |
  *                         |
- *                  b*-----+-----*c
+ *                  b*-----+-----*a
  *                   |     |     |
  *           ---------r----+--------------x
  *                   |     |     |
- *                  a*-----+-----*d
+ *                  c*-----+-----*d
  *                         |
  *                         |
  *                         |
@@ -42,14 +42,13 @@ const double S_USER = 0.0015;
 
 int main(int argc, const char* argv[]) {
   data result;
-  //eventually, test will pass struct with times
-  //times timestamps;
 
-  // times->ts_a = ts_a;
-  // times->ts_b = ts_b;
-  // times->ts_c = ts_c;
-  // times->ts_d = ts_d;
-  triangulation(&result);
+  /*  These will be removed when 'ping arguments' is a real thing*/
+  unsigned long ts_a = 9197;
+  unsigned long ts_b = 8838;
+  unsigned long ts_c = 8932;
+  unsigned long ts_d = 9283;
+  triangulation(ts_a, ts_b, ts_c, ts_d, &result);
 
   return 1;
 }
@@ -69,12 +68,7 @@ int main(int argc, const char* argv[]) {
  * work is done and what that argument is is figured out.
 */
 
-int triangulation( /* 'ping' arguments TBD, */ data *result){
-  /*  These will be removed when 'ping arguments' is a real thing*/
-  unsigned long ts_a = 9197;
-  unsigned long ts_b = 8838;
-  unsigned long ts_c = 8932;
-  unsigned long ts_d = 9283;
+int triangulation(unsigned long ts_a, unsigned long ts_b, unsigned long ts_c, unsigned long ts_d, data *result){
   triangulation_helper(ts_a, ts_b, ts_c, ts_d, result);
 
   printResult(result);
@@ -96,10 +90,6 @@ int triangulation_helper(unsigned long ts_a, unsigned long ts_b, unsigned long t
   double delta_1 = (double)ts_b - (double)ts_a;
   double delta_2 = (double)ts_c - (double)ts_a;
   double delta_3 = (double)ts_d - (double)ts_a;
-
-  fprintf(stderr, "delta_1 %lf\n", delta_1);
-  fprintf(stderr, "delta_2 %lf\n", delta_2);
-  fprintf(stderr, "delta_3 %lf\n", delta_3);
 
 
   //Set biggest delta
@@ -137,9 +127,6 @@ int triangulation_helper(unsigned long ts_a, unsigned long ts_b, unsigned long t
     double theta = calcAngle(x,y);
     result->r = r;
     result->theta = theta;
-    result->N = N;
-    result->x = x;
-    result->y = y;
     result->z = z;
   }
   return 1;
@@ -153,10 +140,10 @@ int triangulation_helper(unsigned long ts_a, unsigned long ts_b, unsigned long t
 double calcN(double delta_1, double delta_2, double delta_3){
   long double N;
   if ((delta_1 + delta_3 - delta_2) == 0){
-    fprintf(stderr, "Small delta \n");
+    //fprintf(stderr, "Small delta \n");
     N = (S_USER*(pow(delta_2,2.0) - pow(delta_1,2.0) - pow(delta_3,2.0)))  /  (2.0);
   } else if ((pow(delta_2,2.0) - pow(delta_1,2.0) - pow(delta_3,2.0)) == 0) {
-    fprintf(stderr, "Small bottom \n");
+    //fprintf(stderr, "Small bottom \n");
     //not sure needed
     N = (S_USER*1.0)  /  (2.0*(delta_1 + delta_3 - delta_2));
   } else {
@@ -187,11 +174,11 @@ double calcY(double delta_3, double N){
 
 /*
  *
- * z = sqrt( N^2 -  (x - r)^2  -  (y + r)^2)
+ * z = sqrt( N^2 -  (x - r)^2  -  (y - r)^2)
  *
  */
 double calcZ(double N, double x, double y){
-  double z = (double)sqrt(pow(N,2.0) - pow(x - R_USER , 2.0) - pow(y - R_USER, 2.0));
+  double z = (double)sqrt(abs(pow(N,2.0) - pow(x - R_USER , 2.0) - pow(y - R_USER, 2.0)));
   return z;
 }
 
@@ -218,10 +205,11 @@ double calcZ(double N, double x, double y){
   }
 /*debugging function prints data structs */
 void printResult(data *result){
-  fprintf(stderr, "x = %lf\n", result->x);
-  fprintf(stderr, "y = %lf\n", result->y);
-  fprintf(stderr, "z = %lf\n", result->z);
-  fprintf(stderr, "N = %lf\n", result->N);
   fprintf(stderr, "r = %lf\n", result->r);
   fprintf(stderr, "theta = %lf\n", result->theta);
+  fprintf(stderr, "z = %lf\n", result->z);
+}
+
+double calcSpeedOfSound(double temp, double salinity, double depth) {
+  return 1449.2+4.6*temp-5.5pow(10.0,-2.0)*pow(temp, 2.0)+(1.34-pow(10,-2.0)*temp)(salinity-35)+1.6*pow(10.0,-2.0)*depth;
 }
