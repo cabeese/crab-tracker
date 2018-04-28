@@ -40,19 +40,6 @@ const double S_USER = 0.0015;
  */
 
 
-int main(int argc, const char* argv[]) {
-  data result;
-
-  /*  These will be removed when 'ping arguments' is a real thing*/
-  unsigned long ts_a = 9197;
-  unsigned long ts_b = 8838;
-  unsigned long ts_c = 8932;
-  unsigned long ts_d = 9283;
-  triangulation(ts_a, ts_b, ts_c, ts_d, &result);
-
-  return 1;
-}
-
 /*
 * Wrapper function for Triangulation calculation.
 * First argument(s) point to "ping" or similar structs
@@ -212,5 +199,8 @@ void printResult(data *result){
 }
 
 double calcSpeedOfSound(double temp, double salinity, double depth) {
-  return 1449.2+4.6*temp-5.5pow(10.0,-2.0)*pow(temp, 2.0)+(1.34-pow(10,-2.0)*temp)(salinity-35)+1.6*pow(10.0,-2.0)*depth;
+    return 1449.2 + (4.6*temp)
+                  - (5.5 * pow(10.0,-2.0)) * pow(temp, 2.0)
+                  + (1.34 - (pow(10,-2.0)*temp)) * (salinity-35)
+                  + 1.6 * pow(10.0,-2.0) * depth;
 }
