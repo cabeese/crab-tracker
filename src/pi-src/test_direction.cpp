@@ -7,7 +7,6 @@
 #include <stdio.h>
 #include <time.h>
 
-#define _DIR_TEST_EXPORT_HELPERS
 #include "direction.h"
 #define R 1 /*  "r"  the length of the hydrophone square          */
 #define R_USER 1

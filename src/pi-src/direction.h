@@ -21,7 +21,6 @@ double calcSpeedOfSound(double temp, double salinity, double depth);
 int triangulation(unsigned long ts_a, unsigned long ts_b, unsigned long ts_c, unsigned long ts_d, data *result);
 int triangulation_helper(unsigned long ts_a, unsigned long ts_b, unsigned long ts_c, unsigned long ts_d, data *result);
 
-#ifdef _DIR_TEST_EXPORT_HELPERS
 /*
  * Helper functions calculate various calculations
 */
@@ -32,7 +31,6 @@ double calcY(double delta_3, double N);
 double calcZ(double N, double x, double y);
 double calcR(double x, double y);
 double calcAngle(double x, double y);
-#endif /* _DIR_TEST_EXPORT_HELPERS */
 
 
 #endif /* __DIRECTION_H */
