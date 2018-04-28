@@ -55,7 +55,7 @@ const double S_USER = 0.0015;
  * work is done and what that argument is is figured out.
 */
 
-int triangulation(struct ping a, struct ping b, struct ping c, struct ping d, data *result){
+int triangulation(struct ping a, struct ping b, struct ping c, struct ping d, crab_event *result){
   int ret = triangulation_helper(a.start, b.start, c.start, d.start, result);
 
   printResult(result);
@@ -67,7 +67,7 @@ int triangulation(struct ping a, struct ping b, struct ping c, struct ping d, da
  * time stamp 1 - 4 are the timestamps in order of appearance.
  * result is the structure
  */
-int triangulation_helper(unsigned long ts_a, unsigned long ts_b, unsigned long ts_c, unsigned long ts_d, data *result){
+int triangulation_helper(unsigned long ts_a, unsigned long ts_b, unsigned long ts_c, unsigned long ts_d, crab_event *result){
   /* x, y, and z directions */
   double x;
   double y;
@@ -112,9 +112,9 @@ int triangulation_helper(unsigned long ts_a, unsigned long ts_b, unsigned long t
     z = calcZ(N, x, y);
     double r = calcR(x, y);
     double theta = calcAngle(x,y);
-    result->r = r;
+    result->r_m = r;
     result->theta = theta;
-    result->z = z;
+    result->z_m = z;
   }
   return 1;
 }
@@ -192,10 +192,10 @@ double calcAngle(double x, double y){
 }
 
 /*debugging function prints data structs */
-void printResult(data *result){
-  fprintf(stderr, "r = %lf\n", result->r);
+void printResult(crab_event *result){
+  fprintf(stderr, "r = %lf\n", result->r_m);
   fprintf(stderr, "theta = %lf\n", result->theta);
-  fprintf(stderr, "z = %lf\n", result->z);
+  fprintf(stderr, "z = %lf\n", result->z_m);
 }
 
 double calcSpeedOfSound(double temp, double salinity, double depth) {
