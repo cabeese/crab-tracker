@@ -13,6 +13,7 @@ Created: 2018-02-10
 
 #include <stdio.h>
 #include <string.h>
+#include "common.h"
 #include "data_collection.h"
 #include "spi.h"
 #include "util.h"

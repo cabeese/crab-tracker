@@ -16,12 +16,6 @@ Created: 2018-02-10
 #ifndef __DATA_COLLECTION_H
 #define __DATA_COLLECTION_H
 
-struct ping {
-    int pin;
-    unsigned long start;
-    unsigned long duration;
-};
-
 int proc_block(spi_rawblock, ping*);
 void disp_ping(ping);
 int poll(ping*);
