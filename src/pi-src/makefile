@@ -2,7 +2,7 @@ CXX=g++ -std=c++11 -Wall
 # This isn't working: CXXFLAGS=-std=c++11
 CATCH_PATH=`pwd`/include #/catch.hpp
 
-CFILES=main.cpp spi.cpp data_collection.cpp util.cpp
+CFILES=main.cpp spi.cpp data_collection.cpp util.cpp direction.cpp
 OFILES=${CFILES:.c=.o}
 
 all: ${OFILES}
@@ -31,4 +31,4 @@ clean:
 	@echo Working directory cleaned
 
 #dependency list
-${OFILES}: spi.h data_collection.h util.h config.h
+${OFILES}: spi.h data_collection.h util.h config.h direction.h
