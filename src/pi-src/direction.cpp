@@ -10,8 +10,8 @@
 #include <vector>
 #include <stdio.h>
 #include <iostream>
+#include "common.h"
 #include "direction.h"
-//#define S_USER 1500/*  "s" f(salinity, temperature), to be defined later */
 #define R_USER 1 /*  "r"  half the length of the hydrophone square          */
 const double S_USER = 0.0015;
 
@@ -30,12 +30,12 @@ const double S_USER = 0.0015;
  *                         |
  *                  b*-----+-----*a
  *                   |     |     |
- *           ---------r----+--------------x
+ *           --------------+--------------x
  *                   |     |     |
  *                  c*-----+-----*d
- *                         |
- *                         |
- *                         |
+ *
+ *                   |---  L  ---|
+ *
  *
  */
 
@@ -68,12 +68,12 @@ int main(int argc, const char* argv[]) {
  * work is done and what that argument is is figured out.
 */
 
-int triangulation(unsigned long ts_a, unsigned long ts_b, unsigned long ts_c, unsigned long ts_d, data *result){
-  triangulation_helper(ts_a, ts_b, ts_c, ts_d, result);
+int triangulation(struct ping a, struct ping b, struct ping c, struct ping d, data *result){
+  int ret = triangulation_helper(a.start, b.start, c.start, d.start, result);
 
   printResult(result);
 
-  return 1;
+  return ret;
 
 }
 /*
@@ -187,22 +187,23 @@ double calcZ(double N, double x, double y){
  * r = sqrt(x^2 + y^2)
  *
  */
- double calcR(double x, double y){
-   double r = (double)sqrt(pow(x,2.0) + pow(y,2.0));
-   return r;
- }
+double calcR(double x, double y){
+  double r = (double)sqrt(pow(x,2.0) + pow(y,2.0));
+  return r;
+}
 
- /*
-  *
-  * theta = tan^(-1)(y/x)
-  * radians to degrees: degrees = radians * (180/pi)
-  * theta_degrees = tan^(-1)(y/x) * 180/pi
-  */
-  double calcAngle(double x, double y){
-    double pi = (double)atan(1)*4;
-    double theta_degrees = (double)atan2(y,x) * 180 / pi;
-    return theta_degrees;
-  }
+/*
+ *
+ * theta = tan^(-1)(y/x)
+ * radians to degrees: degrees = radians * (180/pi)
+ * theta_degrees = tan^(-1)(y/x) * 180/pi
+ */
+double calcAngle(double x, double y){
+  double pi = (double)atan(1)*4;
+  double theta_degrees = (double)atan2(y,x) * 180 / pi;
+  return theta_degrees;
+}
+
 /*debugging function prints data structs */
 void printResult(data *result){
   fprintf(stderr, "r = %lf\n", result->r);
