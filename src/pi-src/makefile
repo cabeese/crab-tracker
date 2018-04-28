@@ -19,6 +19,9 @@ testcode: ${OFILES}
 	g++ -std=c++11 -Wall -I$(CATCH_PATH) -c test_main.cpp
 	g++ -std=c++11 -Wall -I$(CATCH_PATH) -o test test_main.o test_data_collection.cpp data_collection.cpp spi.cpp util.cpp
 
+test-direction: direction.cpp direction.h test_direction.cpp
+	$(CXX) -o test direction.cpp test_direction.cpp
+
 test-dir: direction.cpp direction.h
 	$(CXX) -I$(CATCH_PATH) -c test_main.cpp
 	$(CXX) -I$(CATCH_PATH) -o test test_main.o test_direction.cpp direction.cpp direction.h
@@ -31,4 +34,4 @@ clean:
 	@echo Working directory cleaned
 
 #dependency list
-${OFILES}: spi.h data_collection.h util.h config.h direction.h
+${OFILES}: spi.h data_collection.h util.h config.h common.h direction.h

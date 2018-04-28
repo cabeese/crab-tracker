@@ -45,25 +45,17 @@ void printTimes(timestamps *times);
 
 void convertTimestamps(timestamps *times, actualTime *actual);
 void difference( data *actual, data *result, data *diffResult);
-int triangulation_helper(unsigned long ts_a, unsigned long ts_b, unsigned long ts_c, unsigned long ts_d, data *result);
 /* END PROTOTYPES */
 
 /*
  * Helper functions calculate various calculations
 */
-void printResult(data *result);
-double calcN(double delta_1, double delta_2, double delta_3);
-double calcX(double delta_1, double N);
-double calcY(double delta_3, double N);
-double calcZ(double N, double x, double y);
-double calcR(double x, double y);
-double calcAngle(double x, double y);
 
 int main(int argc, const char* argv[]) {
   data actual;
   timestamps actualTimes;
   actualTime intTimes;
-  data result;
+  crab_event result;
   data diffResult;
   double x1;
   double x2;
@@ -188,75 +180,6 @@ void difference( data *actual, data *result, data *diff) {
   diff->theta = (actual->theta - result->theta);
 }
 
-int triangulation_helper(unsigned long ts_a, unsigned long ts_b, unsigned long ts_c, unsigned long ts_d, data *result){
-  /* x, y, and z directions */
-  double x;
-  double y;
-  double z = 1;
-  double N;
-  /*changes in time bewtween various hydrophones*/
-  double delta_1 = (double)ts_b - (double)ts_a;
-  double delta_2 = (double)ts_c - (double)ts_a;
-  double delta_3 = (double)ts_d - (double)ts_a;
-
-  //fprintf(stderr, "delta_1 %lf\n", delta_1);
-  //fprintf(stderr, "delta_2 %lf\n", delta_2);
-  //fprintf(stderr, "delta_3 %lf\n", delta_3);
-
-
-  //Set biggest delta
-  double max_delta = (double) (1 / S_USER) * sqrt(2 * pow(2 * R_USER, 2.0));
-  //fprintf(stderr, "max_delta %f\n", max_delta);
-  //find biggest delta
-  double longest_delta = fmax(fmax(abs(delta_1), abs(delta_2)), abs(delta_3));
-  //check deltas are in reasonable range for good data
-  if (abs(longest_delta) > max_delta){
-    return -1;
-  }
-
-  if (delta_1 == 0 || delta_3 == 0){
-    //Directly above crab
-    if(delta_1 == 0 && delta_2 == 0 && delta_3 == 0){
-      x = 0;
-      y = 0;
-      //z unknown. Can use last known Z or something like 1
-      z = 1;
-    }
-    //Crab on x-axis
-    if (delta_3 == 0){
-      return -1;
-    }
-    //Crab on y-axis
-    if (delta_1 == 0){
-      return -1;
-    }
-  }
-  else{
-    N = calcN(delta_1, delta_2, delta_3);
-    x = calcX(delta_1, N);
-    y = calcY(delta_3, N);
-    z = calcZ(N, x, y);
-    double r = calcR(x, y);
-    double theta = calcAngle(x,y);
-    result->r = r;
-    result->theta = theta;
-    result->N = N;
-    result->x = x;
-    result->y = y;
-    result->z = z;
-  }
-  return 1;
-}
-
-/*debugging function prints data structs */
-void printResult(data *result){
-  fprintf(stderr, "x = %lf\n", result->x);
-  fprintf(stderr, "y = %lf\n", result->y);
-  fprintf(stderr, "z = %lf\n", result->z);
-  fprintf(stderr, "N = %lf\n", result->N);
-  fprintf(stderr, "r = %lf\n", result->r);
-  fprintf(stderr, "theta = %lf\n", result->theta);
-}
 
 int calcDist(double x, double y, double z, data *result, timestamps *times){
   result->x = x;
