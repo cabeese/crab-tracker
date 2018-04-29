@@ -47,6 +47,6 @@ void loop() {
     
    }
   
-  delay(3000);
+//  delay(3000);
 
 }
