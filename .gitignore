@@ -6,3 +6,6 @@
 *~
 src/pi-src/catch.hpp
 src/pi-src/include
+src/pi-src/crab-tracker
+# Teensy source
+*.hex
