@@ -1,11 +1,16 @@
 # Downloading and Installing
 
-(These steps may be incomplete)
+(These steps are aimed towards those using a macOS development environment and
+    may be incomplete)
 
-Download CrossPack (formerly AVR MacPack)
+Download and install CrossPack (formerly AVR MacPack)
 https://www.obdev.at/products/crosspack/download.html
 
 Download the Teensy CLI tool
+https://www.pjrc.com/teensy/loader_cli.html
+
+More details:
+https://www.pjrc.com/teensy/loader.html
 
 # Compiling and Uploading
 
