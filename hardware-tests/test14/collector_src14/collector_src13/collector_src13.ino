@@ -28,6 +28,9 @@ double time_elapsed;
 double period = 1.0L/120.0L;
 //float time_elapsed;
 //float period = 1.0/120.0;
+int i=0;
+double output1[64];
+
 // 
 //elapsedMicros timer_us;
 //volatile unsigned long cycles; 
@@ -65,31 +68,44 @@ void loop() {
 //  time_elapsed = ((timer0_overflow_count << 8) + TCNT0) * 4;
  // time_elapsed = micros();
 
-  if ((xorpins != 0) && (xorpins & pinval)) { // need to figure this out and why this logic was chosen
-
-//    cycles = ARM_DWT_CYCCNT;
-//    time_elapsed = timer_us;
+//  if ((xorpins != 0) && (xorpins & pinval)) { // need to figure this out and why this logic was chosen
+  if (xorpins  && (xorpins & pinval)) { // I bet I can make this logic shorter
     
-     
      if (xorpins & (1 << 3)){    
-//      ts0 = time_elapsed;
         ts0 = ARM_DWT_CYCCNT;
      }
      
      if (xorpins & (1 << 4)){ 
-//       ts1 = time_elapsed;
        ts1 = ARM_DWT_CYCCNT;
+       
 //       Serial.println(ts0);
 //       Serial.println(ts1);
-        time_elapsed = period * (ts1 - ts0); 
-        Serial.println(ts1 - ts0);
-       Serial.println(time_elapsed, 7); //print delta
-//       Serial.println();
+//        time_elapsed = period * (ts1 - ts0); 
+       output1[i] = ts1-ts0;
+        i++;
+//        Serial.println(ts1 - ts0);
+//        Serial.println(output1[i]);
+//       Serial.println(time_elapsed, 7); //print delta
+       // extra print statements increase the number of clock cycles this loop takes
+//         Serial.println();
      }
   }
 
    
   prevpinval = pinval;
 //  interrupts();
+ 
+  if (i==64){
+    Serial.println("i is 64");
+    
+    for (int j=0; j<64; j++){
+      time_elapsed = period * output1[j];
+      Serial.println(time_elapsed, 7);
+    }
+    Serial.println();
+//    exit(1);
+    i=-1;
+   }
+
 }
 
