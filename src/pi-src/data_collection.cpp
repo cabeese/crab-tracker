@@ -18,7 +18,15 @@ Created: 2018-02-10
 #include "util.h"
 
 #define NUM_PINS 5 /* TODO: Define this elsewhere, globally */
+#define PING_BUF_LEN 16 /* TODO: Define as config param */
+// extern int DISPLAY_PINGS;
 
+struct ping_collector_t {
+    ping pings[PING_BUF_LEN]; /* Recent pings on this hydrophone */
+    int index;                /* Insert new pings here */
+};
+
+struct ping_collector_t ping_collectors[NUM_PINS];
 int DISPLAY_PINGS = 0;
 
 /* The previous raw data block. We only need the 1 most recent. */
@@ -53,10 +61,11 @@ unsigned long partials[NUM_PINS];
  */
 int proc_block(spi_rawblock data, ping *storage){
     int i,
+        idx,
         mask,
         count = 0;
-    /* TODO: Update bitmask to be all 5 pins, not just lowest 4 */
-    uint8_t changed = (data.pinvals ^ prev.pinvals) & 0b1111;
+    /* Ignore high-order 4 bits. May need to adjust if NUM_PINS increased */
+    uint8_t changed = (data.pinvals ^ prev.pinvals) & 0xf;
     ping tmp = {0, 0, 0};
 
     for(i=0; i<5; i++){
@@ -71,12 +80,19 @@ int proc_block(spi_rawblock data, ping *storage){
                 tmp.pin = i;
                 tmp.start = partials[i];
                 tmp.duration = data.timestamp - partials[i];
-
-                if(DISPLAY_PINGS) disp_ping(tmp);
+                idx = ping_collectors[i].index;
 
                 // Do we need to do this?
                 memcpy(&storage[count], &tmp, sizeof(ping));
+                memcpy(&(ping_collectors[i].pings[idx]), &tmp, sizeof(ping));
+                ping_collectors[i].index = (idx + 1) % PING_BUF_LEN;
                 count++;
+
+                if(DISPLAY_PINGS){
+                    printf("---\n");
+                    disp_ping(tmp);
+                    disp_ping(ping_collectors[i].pings[idx]);
+                }
             }
         }
     }
@@ -113,5 +129,8 @@ int poll(ping *storage){
 }
 
 int initialize_dc(){
+    for(int i=0; i<NUM_PINS; i++){
+        ping_collectors[i] = { {0, 0, 0}, 0};
+    }
     return get_param((char*)"DISPLAY_PINGS", &DISPLAY_PINGS);
 }
