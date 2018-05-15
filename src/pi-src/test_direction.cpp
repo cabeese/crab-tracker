@@ -23,7 +23,7 @@ typedef struct {
   double N;
   double r;
   double theta;
-} data;
+} detailed_crab_event;
 
 typedef struct {
   double ts_a;
@@ -40,11 +40,11 @@ typedef struct{
 } actualTime;
 
 /* PROTOTYPES */
-int calcDist(double x, double y, double z, data *result, timestamps *times);
+int calcDist(double x, double y, double z, detailed_crab_event *result, timestamps *times);
 void printTimes(timestamps *times);
 
 void convertTimestamps(timestamps *times, actualTime *actual);
-void difference( data *actual, data *result, data *diffResult);
+void difference( detailed_crab_event *actual, crab_event *result, detailed_crab_event *diffResult);
 /* END PROTOTYPES */
 
 /*
@@ -52,11 +52,11 @@ void difference( data *actual, data *result, data *diffResult);
 */
 
 int main(int argc, const char* argv[]) {
-  data actual;
+  detailed_crab_event actual;
   timestamps actualTimes;
   actualTime intTimes;
   crab_event result;
-  data diffResult;
+  detailed_crab_event diffResult;
   double x1;
   double x2;
   double x3;
@@ -107,11 +107,13 @@ int main(int argc, const char* argv[]) {
             ts_d += (rand() % 6 + -6);
         }
         triangulation_helper(ts_a, ts_b, ts_c, ts_d, &result);
-        x2 = result.x;
-        y2 = result.y;
-        z2 = result.z;
+        // TODO: what should we do about these values? They don't exist in a 'crab_event' struct
+        x2 = y2 = z2 = r2 = 0;
+        // x2 = result.x;
+        // y2 = result.y;
+        // z2 = result.z;
         N2 = result.N;
-        r2 = result.r;
+        // r2 = result.r;
         t2 = result.theta;
         difference(&actual, &result, &diffResult);
         x3 = diffResult.x;
@@ -171,17 +173,17 @@ void convertTimestamps(timestamps *times, actualTime *actual) {
   actual->ts_d = (unsigned long)(times->ts_d);
 }
 
-void difference( data *actual, data *result, data *diff) {
-  diff->x = (actual->x - result->x);
-  diff->y = (actual->y - result->y);
-  diff->z = abs(actual->z - result->z);
+void difference(detailed_crab_event *actual, crab_event *result, detailed_crab_event *diff) {
+  // diff->x = (actual->x - result->x);
+  // diff->y = (actual->y - result->y);
+  diff->z = abs(actual->z - result->z_m);
   diff->N = abs(actual->N - result->N);
-  diff->r = (actual->r - result->r);
+  diff->r = (actual->r - result->r_m);
   diff->theta = (actual->theta - result->theta);
 }
 
 
-int calcDist(double x, double y, double z, data *result, timestamps *times){
+int calcDist(double x, double y, double z, detailed_crab_event *result, timestamps *times){
   result->x = x;
   result->y = y;
   result->z = z;
