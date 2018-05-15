@@ -2,6 +2,7 @@
 *.log
 *.gz
 *.toc
+*.out
 *.o
 *~
 src/pi-src/catch.hpp

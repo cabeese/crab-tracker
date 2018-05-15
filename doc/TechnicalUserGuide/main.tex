@@ -1,0 +1,82 @@
+\documentclass[12pt]{article}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{2mm}
+
+\usepackage{geometry}
+ \geometry{
+ letterpaper, left=20mm, right=20mm,  top=20mm,
+ }
+\usepackage{graphicx}
+\graphicspath{ {graphics/} }
+\usepackage{amssymb}
+\usepackage[hidelinks]{hyperref}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\title{Crab Tracker - Technical Documentation}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\author{
+	Noah Strong
+}
+
+\date{\today\ -- v1.0-wip}
+
+\begin{document}
+
+\maketitle
+
+\tableofcontents{}
+
+\section{Introduction}
+
+The Crab Tracker project was designed as a cost-effective means of remotely
+tracking crabs through acoustic signals.
+Small piezoelectric transmitters can be waterproofed and attached to crabs,
+and their intermittent signals can then be received by a set of four
+piezoelectric receivers configured in a square array.
+
+Because this product was built with very few ``off-the-shelf'' components,
+it is somewhat complex and many of the finer details may be difficult for
+future collaborators to infer based on the existing documentation.
+This document aims to provide a technical overview of the project, including
+the rationale for some of the design choices, in hopes of giving the reader
+a deeper insight into the inner-workings of the product.
+
+\section{Background and Overview}
+
+While solutions already exist to aid in the tracking of aquatic animals,
+they are often prohibitively expensive without significant financial resources.
+The Crab Tracker product has been designed with cost and simplicity in mind,
+so a majority of the components, including both hardware and software, are
+custom-made.
+However, much of the product, especially the software, has been designed
+in a ``modular'' fashion, meaning that the various components are not tightly
+coupled.
+Simply put, one should be able to change out various components with relative
+ease.
+
+There are several major components of this project, each detailed in their
+respective sections. Those components include:
+\begin{itemize}
+	\item The piezoelectric transmitters, which are to be attached to the
+	      crabs themselves, and the piezoelectric receivers, which are to
+	      be attached to the water vessel (such as a kayak) in a fixed shape
+	      relative to each other. These are detailed in
+	      Section \ref{sec:ee-hardware}.
+	\item The receiving and calculating computers, which detect incoming
+	      data from the receivers and process that data, eventually displaying
+	      those results to the user.
+	      These hardware components are detailed in
+	      Section \ref{sec:cs-hardware} and the software is detailed in
+	      Section \ref{sec:software}.
+\end{itemize}
+
+\section{Electronics Hardware}\label{sec:ee-hardware}
+
+\section{Computer Hardware}\label{sec:cs-hardware}
+
+\section{Software}\label{sec:software}
+
+\end{document}
+
