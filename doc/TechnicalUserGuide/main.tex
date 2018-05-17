@@ -45,6 +45,8 @@ a deeper insight into the inner-workings of the product.
 
 \section{Background and Overview}
 
+\subsection{Motivation For The Project}
+
 While solutions already exist to aid in the tracking of aquatic animals,
 they are often prohibitively expensive without significant financial resources.
 The Crab Tracker product has been designed with cost and simplicity in mind,
@@ -56,21 +58,58 @@ coupled.
 Simply put, one should be able to change out various components with relative
 ease.
 
-There are several major components of this project, each detailed in their
-respective sections. Those components include:
-\begin{itemize}
-	\item The piezoelectric transmitters, which are to be attached to the
-	      crabs themselves, and the piezoelectric receivers, which are to
-	      be attached to the water vessel (such as a kayak) in a fixed shape
-	      relative to each other. These are detailed in
-	      Section \ref{sec:ee-hardware}.
-	\item The receiving and calculating computers, which detect incoming
-	      data from the receivers and process that data, eventually displaying
-	      those results to the user.
-	      These hardware components are detailed in
-	      Section \ref{sec:cs-hardware} and the software is detailed in
-	      Section \ref{sec:software}.
-\end{itemize}
+\subsection{Description of Components}
+
+Our solution uses high-frequency audio broadcasts to transmit data about
+each crab to a central receiving station (likely mounted on a kayak or similar
+water vessel).
+At the receiving station we have four piezoelectric receivers, or
+``hydrophones,'' which are tuned to detect the signals that the crabs'
+transmitters broadcast.
+These hydrophones are arranged in a square shape with equidistant side
+lengths, and all are to be submerged an equal depth into the water.
+
+As acoustic transmissions reach the hydrophone receivers, two distinct
+processes must be run.
+The first process is to detect incoming signals and label them with accurate
+timestamp values.
+Once this is done, software must run calculations using these timestamps
+to decode the unique identifiers of the broadcasting transmitter(s) and to
+determine the direction from which the sound(s) originated.
+Because the later task requires a number of calculations, and therefore
+processing time,
+and because the former task requires low-latency monitoring of the input
+devices, each task must be performed on a separate physical computer.
+
+The first device in the chain, whose task is to timestamp incoming data,
+need only be a simple microcontroller.
+For our purposes, we have tested the system with an Arduino Nano, a small,
+inexpensive device with a clock speed of 16MHz.
+Once broadcasts are detected and labeled with a timestamp, the device can
+send this data to the main computer that will run the calculations.
+We originally investigated using the popular I$^2$C protocol for this, but
+unfortunately I$^2$C can't be interrupted during a transfer, and therefore
+the device would be effectively frozen (and therefore unable to detect
+incoming data) any time a transfer was in progress.
+If any data were to come into the device during a transfer, its timestamp
+would be delayed and therefore inaccurate.
+Instead, we opted to use a similar, but lightly less popular, protocol, SPI.
+The advantage of SPI is that data can be placed into a separate physical
+bus on the device when it is ready, and the other machine can pull data out
+of that bus without affecting the detection and timestamp code.
+
+The second device, which runs calculations and displays results to the user,
+is a slightly more powerful machine.
+We opted to use a Raspberry Pi Model 3B for this task, as these machines are
+inexpensive, reasonably powerful, SPI-compatible, and more.
+We also purchased a 7-inch touchscreen for use in the field.
+The Pi is directly wired to the Arduino for SPI.
+
+While both the Arduino and the Raspberry Pi were off-the-shelf products,
+the transmitter and receiver hardware was all custom designed and fabricated
+for use in this project.
+Clearer specifications, including detailed diagrams, are detailed in other
+documents and therefore many details will not be repeated here.
 
 \section{Electronics Hardware}\label{sec:ee-hardware}
 
