@@ -113,7 +113,42 @@ documents and therefore many details will not be repeated here.
 
 \section{Electronics Hardware}\label{sec:ee-hardware}
 
+\subsection{Transmitters}
+
+The transmitters are small piezoelectric transducers that oscilate at an
+ultrasonic frequency.
+In our work, this frequency has been in the 40-60kHz range, depending on the
+resonant frequency of the transducer itself.
+Though we have not established bounds on our range of potential frequencies,
+the actual frequency shouldn't matter so long as the receiving hardware is
+appropriately tuned to pick up this frequency (through filtering, hardware,
+etc.).
+
+Each transmitter is attached to a small printed circuit board designed
+specifically for the project.
+The PCB can power the transducer by feeding it a current, effectively turning
+it off or on as needed.
+Each board will be programmed with a unique identifier (a numeric value).
+The ID determines the patter of pulses that the transmitter should emit.
+For more details on this, see the iCRAB Transmission Protocol document.
+
+\subsection{Receivers}
+
+The receivers include small piezeoelectric transducers that are able to detect
+vibrations in the same range as the transmitters.
+The signals from the transducers are sent to another circuit board that
+steps up the gain (using a 2-stage gain), passes the signal through a bandpass
+filter to reject noise outside the frequency range of the transmitters,
+and then runs a low-pass filter.
+The resulting digital signal is sent over a wire to the timestamp recorder,
+which is detailed in section \ref{sec:ts-rec}.
+
+{\bf Note:} Some of this may be wrong or no longer reflective of the actual
+hardware. TODO: update based on latest hardware model.
+
 \section{Computer Hardware}\label{sec:cs-hardware}
+
+\subsection{Timestamp Recorder}\label{sec:ts-rec}
 
 \section{Software}\label{sec:software}
 
