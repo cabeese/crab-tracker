@@ -14,6 +14,7 @@ Created: 2018-02-10
 #include <stdio.h>
 #include <string.h>
 #include "data_collection.h"
+#include "uid.h"
 #include "spi.h"
 #include "util.h"
 
@@ -59,7 +60,7 @@ unsigned long partials[NUM_PINS];
  * @returns The number of `ping`s stored after the data is processed. Will be no
  *     more than 5.
  */
-int proc_block(spi_rawblock data, ping *storage){
+int proc_block(spi_rawblock data){
     int i,
         idx,
         mask,
@@ -83,20 +84,18 @@ int proc_block(spi_rawblock data, ping *storage){
                 idx = ping_collectors[i].index;
 
                 // Do we need to do this?
-                memcpy(&storage[count], &tmp, sizeof(ping));
+                // memcpy(&storage[count], &tmp, sizeof(ping));
                 memcpy(&(ping_collectors[i].pings[idx]), &tmp, sizeof(ping));
                 ping_collectors[i].index = (idx + 1) % PING_BUF_LEN;
                 count++;
 
                 if(DISPLAY_PINGS){
-                    printf("---\n");
-                    disp_ping(tmp);
                     disp_ping(ping_collectors[i].pings[idx]);
                 }
             }
         }
     }
-    /* Is memcpy necessary? Just use assignment? */
+    /* data = prev (compare next block with this most recent one) */
     memcpy(&prev, &data, sizeof(spi_rawblock));
     return count;
 }
@@ -109,6 +108,16 @@ void disp_ping(ping p){
     printf("== PING == pin: %d\tstart: %lu (0x%lx)\tduration: %lu (0x%lx)\n",
         p.pin, p.start, p.start, p.duration, p.duration);
     fflush(stdout);
+}
+
+void disp_buffers(){
+    for(int p=0; p<NUM_PINS; p++){
+        printf("Pings on pin %d:", p);
+        for(int i=0; i<PING_BUF_LEN; i++){
+            printf(" %d;", ping_collectors[p].pings[i].duration);
+        }
+        printf("\n");
+    }
 }
 
 /**
@@ -125,7 +134,7 @@ void disp_ping(ping p){
  */
 int poll(ping *storage){
     spi_getblock(&raw_data);
-    return proc_block(raw_data, storage);
+    return proc_block(raw_data);
 }
 
 int initialize_dc(){
@@ -133,4 +142,48 @@ int initialize_dc(){
         ping_collectors[i] = { {0, 0, 0}, 0};
     }
     return get_param((char*)"DISPLAY_PINGS", &DISPLAY_PINGS);
+}
+
+int find_match_on_pin(int pin, int *first, int *second){
+    ping *fst;
+    ping *snd;
+    int candidate_id = -1;
+    for(int i=0; i<PING_BUF_LEN; i++){
+        // TODO: skip if id < 0
+        /* Check each ping, one at a time */
+        fst = &(ping_collectors[pin].pings[i]);
+        candidate_id = id_decode_ping(*fst);
+        printf("candidate id: %d\n", candidate_id);
+
+        /* Compare this ping with one that comes afterwards */
+        for(int j=i+1; j<PING_BUF_LEN; j++){
+            snd = &(ping_collectors[pin].pings[j]);
+            int t_id = id_decode_ping(*snd);
+            printf("\tsecond id: %d", t_id);
+            printf("\tdelay id: %d\n", id_decode_delay(*fst, *snd));
+
+            /* If pings have same ID and delay is correct, we found a match! */
+            if(t_id == candidate_id && t_id == id_decode_delay(*fst, *snd)){
+                printf("Found a match!!!\n");
+                *first = i;
+                *second = j;
+                return 1;
+            }
+        }
+    }
+    return 0;
+    /*
+    for each ping on pin 0:
+        if duration != 0:
+            look for match in remainder of pings
+            if no match, return 0;
+            else
+                add two matches from pin 0 to return
+                for each of the other pins 1..NUM_PINS:
+                    if duration matches current duration within threshold
+                        add it
+                        ............ ehh........?
+                        */
+}
+
 }
