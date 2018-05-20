@@ -186,4 +186,24 @@ int find_match_on_pin(int pin, int *first, int *second){
                         */
 }
 
+int main(void){
+    spi_rawblock d;
+    initialize_dc();
+
+    d = {0, 0x2};
+    proc_block(d);
+    d = {3200, 0x0};
+    proc_block(d);
+
+    d = {15400, 0x2};
+    proc_block(d);
+    d = {18600, 0x0};
+    proc_block(d);
+
+    disp_buffers();
+
+    int f = -1, s = -1;
+    int found = find_match_on_pin(1, &f, &s);
+    printf("Match found? %d\n", found);
+    printf("f=%d; s=%d\n", f, s);
 }
