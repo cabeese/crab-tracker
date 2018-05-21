@@ -11,6 +11,16 @@
 \graphicspath{ {graphics/} }
 \usepackage{amssymb}
 \usepackage[hidelinks]{hyperref}
+\usepackage{wrapfig}
+\usepackage[margin=1.2cm]{caption}
+
+%%%%%%%%%%%%%%%%%%% TIKZ CUSTOM SHAPES AND SETTINGS
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows}
+\tikzstyle{device} = [rectangle, rounded corners, minimum width=3cm,
+	minimum height=1cm,text centered, draw=black] % fill=red!30
+\tikzstyle{arrow} = [thick,->,>=stealth]
+\tikzstyle{transducer} = [draw,circle,minimum size=1cm,inner sep=0pt]
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \title{Crab Tracker - Technical Documentation}
@@ -93,7 +103,8 @@ the device would be effectively frozen (and therefore unable to detect
 incoming data) any time a transfer was in progress.
 If any data were to come into the device during a transfer, its timestamp
 would be delayed and therefore inaccurate.
-Instead, we opted to use a similar, but lightly less popular, protocol, SPI.
+Instead, we opted to use a similar protocol, Serial Perhipheral Interface
+(SPI).
 The advantage of SPI is that data can be placed into a separate physical
 bus on the device when it is ready, and the other machine can pull data out
 of that bus without affecting the detection and timestamp code.
@@ -104,6 +115,38 @@ We opted to use a Raspberry Pi Model 3B for this task, as these machines are
 inexpensive, reasonably powerful, SPI-compatible, and more.
 We also purchased a 7-inch touchscreen for use in the field.
 The Pi is directly wired to the Arduino for SPI.
+
+\begin{figure}[h]
+\begin{center}
+\begin{tikzpicture}[node distance=2cm]
+%\node (tx) [draw=none, circle]                 {};
+%\draw (tx) circle (0.9);
+%\draw (tx) circle (1.3);
+
+%--------- Receivers ---------%
+%\node (rx1) [draw, circle, below of = tx]  {Rx};
+\node (rx1) [draw, circle               ]  {Rx};
+\node (rx2) [draw, circle, right of = rx1] {Rx};
+\node (CTR) [rectangle, draw=none, right of = rx2] {};
+\node (rx3) [draw, circle, right of = CTR] {Rx};
+\node (rx4) [draw, circle, right of = rx3] {Rx};
+
+%--------- Devices ---------%
+\node (arduino) [device, below of = CTR] {Arduino};
+\node (pi) [device, below of = arduino] {Raspberry Pi};
+
+%--------- Arrows ---------%
+\draw [arrow] (rx1) -- (arduino);
+\draw [arrow] (rx2) -- (arduino);
+\draw [arrow] (rx3) -- (arduino);
+\draw [arrow] (rx4) -- (arduino);
+\draw [arrow] (arduino) -- (pi);
+
+\end{tikzpicture}
+\end{center}
+\caption{A simple diagram detailing the main components.}
+\label{fig:component-diagram}
+\end{figure}
 
 While both the Arduino and the Raspberry Pi were off-the-shelf products,
 the transmitter and receiver hardware was all custom designed and fabricated
