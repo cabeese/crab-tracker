@@ -46,10 +46,10 @@ Crab Tracker
 \textbf{Noah Strong}
 
 \vspace*{1cm}
+\end{large}
 
 \textit{Revision 1.0-WIP}\\
 \today
-\end{large}
 
 \vfill
 \hfill \includegraphics[scale=1]{ct-logo.png}
@@ -74,8 +74,9 @@ it is somewhat complex and many of the finer details may be difficult for
 future collaborators to infer based on the existing documentation.
 This document aims to provide a technical overview of the project, including
 the rationale for some of the design choices, in hopes of giving the reader
-a deeper insight into the inner-workings of the product.
+a deeper insight into the inner workings of the product.
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Background and Overview}
 
 \subsection{Motivation For The Project}
@@ -178,6 +179,7 @@ for use in this project.
 Clearer specifications, including detailed diagrams, are detailed in other
 documents and therefore many details will not be repeated here.
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Electronics Hardware}\label{sec:ee-hardware}
 
 \subsection{Transmitters}
@@ -250,11 +252,44 @@ recorder detailed in section \ref{sec:ts-rec}.
 \label{fig:rx-detail}
 \end{figure}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Computer Hardware}\label{sec:cs-hardware}
+
+Signals detected through the receiving hardware described in
+Section \ref{sec:ee-hardware} are delivered to more advanced microcontrollers
+and computers using common GPIO pins.
+Two separate devices are used for the signal processing.
+The first,
+referred to in this document as the Timestamp Recorder (\ref{sec:ts-rec}),
+provides a
+low-latency means of detecting the time of an incoming signal.
+This device must be able to reliably detect when a signal arrives with
+microsecond precision.
+Once timestamped, the data can be transferred to the
+Data Processor (\ref{sec:data-processor}).
+This device decodes the ID from each transmission and displays the crab's
+direction to the user.
 
 \subsection{Timestamp Recorder}\label{sec:ts-rec}
 
-\subsection{Data Processor}
+The timestamp recorder reads a digital signal on a GPIO pin and records the
+``time'' at which the signal changed from low to high or vice versa.
+In this case, the ``time'' need not be relative to wall clock time, so long
+as the timestamps have some meaning relative to each other.
+For example, the time associated with a state change could be measured in
+microseconds since the board reset.
+It is important, however, that the Timestamp Recorder and the Data Processor
+computers agree on the units used, because some of the later processing will be
+based on the speed of sound in water, measured in meters per second.
+
+In addition to providing reliable timing measurements when input pin states
+change, the timestamp recorder must also be able to communicate the timestamped
+data to another device.
+Use of a non-blocking protocol such as SPI (Serial Perhipheral Interface) is
+necessary here so that the data transfers do not have a large negative impact
+on the device's ability to continuously detect changes.
+
+\subsection{Data Processor}\label{sec:data-processor}
 
 \section{Software}\label{sec:software}
 
