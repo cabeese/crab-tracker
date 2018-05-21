@@ -22,23 +22,45 @@
 	minimum height=1cm,text centered, draw=black] % fill=red!30
 \tikzstyle{arrow} = [thick,->,>=stealth]
 \tikzstyle{transducer} = [draw,circle,minimum size=1cm,inner sep=0pt]
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\title{Crab Tracker - Technical Documentation}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\author{
-	Noah Strong
-}
 
 \date{\today\ -- v1.0-wip}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{document}
 
-\maketitle
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{titlepage}
 
+\vspace*{5cm}
+
+\begin{huge}
+Technical Documentation
+\end{huge}
+
+\begin{large}
+Crab Tracker
+
+\vspace*{1cm}
+
+\textbf{Noah Strong}
+
+\vspace*{1cm}
+
+\textit{Revision 1.0-WIP}\\
+\today
+\end{large}
+
+\vfill
+\hfill \includegraphics[scale=1]{ct-logo.png}
+
+\end{titlepage}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \tableofcontents{}
 
+\newpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Introduction}
 
 The Crab Tracker project was designed as a cost-effective means of remotely
@@ -134,8 +156,8 @@ See Figure \ref{fig:component-diagram} for an illustration of these components.
 \node (rx4) [draw, circle, right of = rx3] {Rx};
 
 %--------- Devices ---------%
-\node (arduino) [device, below of = CTR] {Arduino};
-\node (pi) [device, below of = arduino] {Raspberry Pi};
+\node (arduino) [device, below of = CTR] {Timestamp Recorder};
+\node (pi) [device, below of = arduino] {Data Processor};
 
 %--------- Arrows ---------%
 \draw [arrow] (rx1) -- (arduino);
@@ -185,30 +207,34 @@ A preamplifier steps up the signal from the transducer before sending this
 signal along to a bandpass filter.
 The bandpass filter restricts the frequencies that the hardware ``listens''
 to, meaning that a lot of irrelevant noise can be discarded.
-After being filtered, the signal is then amplified again before being
+After being filtered, the signal is then amplified.
+A potentiometer on the board allows for variable amplification.
+Next, the signal is
 rectified (effectively producing the absolute value of the incoming sine wave).
-The low pass filter does ???
+The low pass filter transforms the signal from a sinusoidal wave into a single
+pulse.
 Finally, the Schmitt Trigger acts as a variable threshold, preventing the
 rising or falling edge from being interpreted as a series of short rising and
 falling edges.
-Finally, the resul resulting digital signal is sent over a wire to the timestamp
-recorder which is detailed in section \ref{sec:ts-rec}.
 See Figure \ref{fig:rx-detail} for details on this pipeline.
+
+The resulting digital signal is sent over a wire to the timestamp
+recorder detailed in section \ref{sec:ts-rec}.
 
 \begin{figure}[h]
 \begin{center}
-\begin{tikzpicture}[node distance=1cm]
+\begin{tikzpicture}[node distance=0.6cm]
 
 \node (mic)    [device]                    {Transducer (microphone)};
 \node (preamp) [device, right = of mic]    {Preamplifier};
 \node (bp)     [device, right = of preamp] {Bandpass Filter};
 
-\node (adjamp) [device, below = of bp]    {Ajd?? Amplifier};
+\node (adjamp) [device, below = of bp]    {Ajdustable Amplifier};
 \node (rect)   [device, left = of adjamp] {Rectifier};
 \node (lowp)   [device, left = of rect]   {Low-Pass Filter};
 \node (schmt)  [device, left = of lowp]   {Schmitt Trigger};
 
-\node (ard)    [device, below = of schmt] {Timestamp Microcontroller};
+\node (ard)    [device, below = of schmt] {Timestamp Recorder};
 
 \draw [arrow] (mic) -- (preamp);
 \draw [arrow] (preamp) -- (bp);
@@ -227,6 +253,8 @@ See Figure \ref{fig:rx-detail} for details on this pipeline.
 \section{Computer Hardware}\label{sec:cs-hardware}
 
 \subsection{Timestamp Recorder}\label{sec:ts-rec}
+
+\subsection{Data Processor}
 
 \section{Software}\label{sec:software}
 
