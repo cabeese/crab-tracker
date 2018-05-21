@@ -17,6 +17,7 @@
 %%%%%%%%%%%%%%%%%%% TIKZ CUSTOM SHAPES AND SETTINGS
 \usepackage{tikz}
 \usetikzlibrary{shapes.geometric, arrows}
+\usetikzlibrary{positioning}
 \tikzstyle{device} = [rectangle, rounded corners, minimum width=3cm,
 	minimum height=1cm,text centered, draw=black] % fill=red!30
 \tikzstyle{arrow} = [thick,->,>=stealth]
@@ -115,6 +116,7 @@ We opted to use a Raspberry Pi Model 3B for this task, as these machines are
 inexpensive, reasonably powerful, SPI-compatible, and more.
 We also purchased a 7-inch touchscreen for use in the field.
 The Pi is directly wired to the Arduino for SPI.
+See Figure \ref{fig:component-diagram} for an illustration of these components.
 
 \begin{figure}[h]
 \begin{center}
@@ -179,15 +181,48 @@ For more details on this, see the iCRAB Transmission Protocol document.
 
 The receivers include small piezeoelectric transducers that are able to detect
 vibrations in the same range as the transmitters.
-The signals from the transducers are sent to another circuit board that
-steps up the gain (using a 2-stage gain), passes the signal through a bandpass
-filter to reject noise outside the frequency range of the transmitters,
-and then runs a low-pass filter.
-The resulting digital signal is sent over a wire to the timestamp recorder,
-which is detailed in section \ref{sec:ts-rec}.
+A preamplifier steps up the signal from the transducer before sending this
+signal along to a bandpass filter.
+The bandpass filter restricts the frequencies that the hardware ``listens''
+to, meaning that a lot of irrelevant noise can be discarded.
+After being filtered, the signal is then amplified again before being
+rectified (effectively producing the absolute value of the incoming sine wave).
+The low pass filter does ???
+Finally, the Schmitt Trigger acts as a variable threshold, preventing the
+rising or falling edge from being interpreted as a series of short rising and
+falling edges.
+Finally, the resul resulting digital signal is sent over a wire to the timestamp
+recorder which is detailed in section \ref{sec:ts-rec}.
+See Figure \ref{fig:rx-detail} for details on this pipeline.
 
-{\bf Note:} Some of this may be wrong or no longer reflective of the actual
-hardware. TODO: update based on latest hardware model.
+\begin{figure}[h]
+\begin{center}
+\begin{tikzpicture}[node distance=1cm]
+
+\node (mic)    [device]                    {Transducer (microphone)};
+\node (preamp) [device, right = of mic]    {Preamplifier};
+\node (bp)     [device, right = of preamp] {Bandpass Filter};
+
+\node (adjamp) [device, below = of bp]    {Ajd?? Amplifier};
+\node (rect)   [device, left = of adjamp] {Rectifier};
+\node (lowp)   [device, left = of rect]   {Low-Pass Filter};
+\node (schmt)  [device, left = of lowp]   {Schmitt Trigger};
+
+\node (ard)    [device, below = of schmt] {Timestamp Microcontroller};
+
+\draw [arrow] (mic) -- (preamp);
+\draw [arrow] (preamp) -- (bp);
+\draw [arrow] (bp) -- (adjamp);
+\draw [arrow] (adjamp) -- (rect);
+\draw [arrow] (rect) -- (lowp);
+\draw [arrow] (lowp) -- (schmt);
+\draw [arrow] (schmt) -- (ard);
+
+\end{tikzpicture}
+\end{center}
+\caption{The receiver hardware pipeline.}
+\label{fig:rx-detail}
+\end{figure}
 
 \section{Computer Hardware}\label{sec:cs-hardware}
 
