@@ -108,12 +108,12 @@ int main(int argc, const char* argv[]) {
         }
         triangulation_helper(ts_a, ts_b, ts_c, ts_d, &result);
         // TODO: what should we do about these values? They don't exist in a 'crab_event' struct
-        x2 = y2 = z2 = r2 = 0;
+        x2 = y2 = 0;
         // x2 = result.x;
         // y2 = result.y;
-        // z2 = result.z;
+        z2 = result.z_m;
         N2 = result.N;
-        // r2 = result.r;
+        r2 = result.r_m;
         t2 = result.theta;
         difference(&actual, &result, &diffResult);
         x3 = diffResult.x;
@@ -124,7 +124,8 @@ int main(int argc, const char* argv[]) {
         t3 = diffResult.theta;
         if ((abs(N3) > 1) && (abs(N3) < 5)) {
           error1++;
-          badcount++;
+          //badcount++;
+          goodcount++;
           output << x1 << "," << y1 << "," << z1 << "," << N1 << "," << r1 << "," << t1 << "," <<
           x2 << "," << y2 << "," << z2 << "," << N2 << "," << r2 << "," << t2 << ","
           << x3 << "," << y3 << "," << z3 << "," << N3 << "," << r3 << "," << t3 << std::endl;
@@ -205,11 +206,6 @@ int calcDist(double x, double y, double z, detailed_crab_event *result, timestam
   times->ts_c = ts_c;
   times->ts_d = ts_d;
   //printTimes(times);
-
-  //deltas
-  double d1 = ts_b - ts_a;
-  double d2 = ts_c - ts_a;
-  double d3 = ts_d - ts_a;
 
   //r and theta_degrees
   double radius = (double)sqrt(pow(x,2.0) + pow(y,2.0));

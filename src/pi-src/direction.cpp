@@ -112,6 +112,7 @@ int triangulation_helper(unsigned long ts_a, unsigned long ts_b, unsigned long t
     z = calcZ(N, x, y);
     double r = calcR(x, y);
     double theta = calcAngle(x,y);
+    result->N = N;
     result->r_m = r;
     result->theta = theta;
     result->z_m = z;

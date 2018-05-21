@@ -21,7 +21,7 @@ struct crab_event {
     double z_m;   /* Depth in meters */
     int id;       /* Unique ID of the crab (-1 if uncalculated) */
     int inert;    /* Non-zero if crab is inert */
-    int N;        /* For debugging purposes only */
+    double N;        /* For debugging purposes only */
 };
 
 #endif /* __COMMON_H */
