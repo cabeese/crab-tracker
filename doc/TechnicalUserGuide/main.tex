@@ -24,7 +24,26 @@
 \tikzstyle{transducer} = [draw,circle,minimum size=1cm,inner sep=0pt]
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\date{\today\ -- v1.0-wip}
+
+%%%%%%%%%%%%%%%%%%% GLOSSARY
+\usepackage[toc]{glossaries}
+\makeglossaries
+
+% Display 'full' version on first use and short version on subsequent uses
+\setacronymstyle{long-short}
+
+\newglossaryentry{hydrophone}
+{
+	name=hydrophone,
+	description={An underwater microphone}
+}
+
+\newacronym{spi}{SPI}{Serial Peripheral Interface}
+\newacronym{i2c}{I$^2$C}{Inter-Integrated Circuit}
+\newacronym{gpio}{GPIO}{General Purpose Input Output}
+\newacronym{pcb}{PCB}{Printed Circuit Board}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{document}
@@ -117,28 +136,28 @@ devices, each task must be performed on a separate physical computer.
 
 The first device in the chain, whose task is to timestamp incoming data,
 need only be a simple microcontroller.
-For our purposes, we have tested the system with an Arduino Nano, a small,
+As of the current revision of this document,
+we have tested the system with an Arduino Nano, a small,
 inexpensive device with a clock speed of 16MHz.
 Once broadcasts are detected and labeled with a timestamp, the device can
 send this data to the main computer that will run the calculations.
-We originally investigated using the popular I$^2$C protocol for this, but
-unfortunately I$^2$C can't be interrupted during a transfer, and therefore
+We originally investigated using the popular \gls{i2c} protocol for this, but
+unfortunately \gls{i2c} can't be interrupted during a transfer, and therefore
 the device would be effectively frozen (and therefore unable to detect
 incoming data) any time a transfer was in progress.
 If any data were to come into the device during a transfer, its timestamp
 would be delayed and therefore inaccurate.
-Instead, we opted to use a similar protocol, Serial Perhipheral Interface
-(SPI).
-The advantage of SPI is that data can be placed into a separate physical
+Instead, we opted to use a similar protocol, \gls{spi}
+The advantage of \gls{spi} is that data can be placed into a separate physical
 bus on the device when it is ready, and the other machine can pull data out
 of that bus without affecting the detection and timestamp code.
 
 The second device, which runs calculations and displays results to the user,
 is a slightly more powerful machine.
 We opted to use a Raspberry Pi Model 3B for this task, as these machines are
-inexpensive, reasonably powerful, SPI-compatible, and more.
+inexpensive, reasonably powerful, \gls{spi}-compatible, and more.
 We also purchased a 7-inch touchscreen for use in the field.
-The Pi is directly wired to the Arduino for SPI.
+The Pi is directly wired to the Arduino for \gls{spi}.
 See Figure \ref{fig:component-diagram} for an illustration of these components.
 
 \begin{figure}[h]
@@ -195,8 +214,8 @@ etc.).
 
 Each transmitter is attached to a small printed circuit board designed
 specifically for the project.
-The PCB can power the transducer by feeding it a current, effectively turning
-it off or on as needed.
+The \gls{pcb} can power the transducer by feeding it a current, effectively
+turning it off or on as needed.
 Each board will be programmed with a unique identifier (a numeric value).
 The ID determines the patter of pulses that the transmitter should emit.
 For more details on this, see the iCRAB Transmission Protocol document.
@@ -257,7 +276,7 @@ recorder detailed in section \ref{sec:ts-rec}.
 
 Signals detected through the receiving hardware described in
 Section \ref{sec:ee-hardware} are delivered to more advanced microcontrollers
-and computers using common GPIO pins.
+and computers using common \gls{gpio} pins.
 Two separate devices are used for the signal processing.
 The first,
 referred to in this document as the Timestamp Recorder (\ref{sec:ts-rec}),
@@ -272,8 +291,8 @@ direction to the user.
 
 \subsection{Timestamp Recorder}\label{sec:ts-rec}
 
-The timestamp recorder reads a digital signal on a GPIO pin and records the
-``time'' at which the signal changed from low to high or vice versa.
+The timestamp recorder reads a digital signal on a \gls{gpio} pin and records
+the ``time'' at which the signal changed from low to high or vice versa.
 In this case, the ``time'' need not be relative to wall clock time, so long
 as the timestamps have some meaning relative to each other.
 For example, the time associated with a state change could be measured in
@@ -285,13 +304,19 @@ based on the speed of sound in water, measured in meters per second.
 In addition to providing reliable timing measurements when input pin states
 change, the timestamp recorder must also be able to communicate the timestamped
 data to another device.
-Use of a non-blocking protocol such as SPI (Serial Perhipheral Interface) is
+Use of a non-blocking protocol such as \gls{spi} is
 necessary here so that the data transfers do not have a large negative impact
 on the device's ability to continuously detect changes.
 
 \subsection{Data Processor}\label{sec:data-processor}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Software}\label{sec:software}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage
+
+\printglossary
 
 \end{document}
 
