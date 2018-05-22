@@ -310,8 +310,77 @@ on the device's ability to continuously detect changes.
 
 \subsection{Data Processor}\label{sec:data-processor}
 
+The majority of the processing software exists on a separate device, referred
+to as the Data Processor.
+This machine reads timestamped data from the
+Timestamp Recorder (\ref{sec:ts-rec}) and stores it in its own local storage
+until it has enough data to run some calculations.
+This device is also the user's primary interface for interacting with the
+system in most use cases.
+Equipted with a touchscreen or other means of displaying data, the computer is
+able to display the unique identification numbers and relative locations of
+crabs as they are detected.
+
+The software written for this project assumes that the Data Processor is a
+Linux-based machine with an \gls{spi} interface.
+Specifically, it has been tested on a Raspberry Pi 3B, which is a very
+suitable device given its low cost, built-in \gls{gpio} pins, and adequate
+processing power.
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Software}\label{sec:software}
+
+Wherever possible, the software for this project was written in such a way that
+various elements may be altered or entirely replaced without requiring major
+changes to the rest of the codebase.
+The hope is that it is flexible enough to be adapted for new scenarioes and
+hardware setups in the future.
+That said, it has only been tested with the hardware detailed elsewhere in this
+document, so its portability and modularity is unproven.
+
+In this section, we will examine the software that runs on the two devices
+described in Section \ref{sec:cs-hardware}.
+
+\subsection{Timestamp Recorder Software}\label{sec:ts-rec-sw}
+
+The relevant source code can be found here:
+\texttt{src/arduino-src/arduino-src.ino}.
+
+The Timestamp Recorder (\ref{sec:ts-rec}) software has two primary functions:
+(1) record timestamps of signal changes (i.e. when a pin goes high or low) and
+(2) transfer the timestamps and pin values to the Data Processor.
+
+The \texttt{arduino-src.ino} file is heavily documented, so this document
+will step through the major sections without providing extensive detail about
+individual lines.
+Instead, we will examine in broad strokes the two primary functions,
+\texttt{setup()} and \texttt{loop()}.
+
+\subsubsection{Setup and Loop}
+
+The \texttt{setup()} function sets the \gls{gpio} pins on Port D (pins 0-7)
+as input pins, meaning that another device (in this case, a receiver, as
+described in section \ref{sec:ee-hardware}) can drive the line high or low.
+The Timestamp Recorder can detect these changes when the pins are in input
+mode.
+
+The \texttt{loop()} function runs indefinitely and on each iteration it can fill
+the \gls{spi} data register and/or detect and timestamp a change on one of the
+pins.
+We will examine both of these primary functions in more detail in the following
+two sections.
+
+\subsubsection{SPI Handling}
+
+The Arduino Nano has a built-in \gls{spi} bus that supports 8-byte data
+transfers.
+On a transfer, the Master node provides a clock pulse and on every pulse, one
+bit is shifted out of the data register (sent to the master) and one bit is
+shifted in (sent from the master).
+On the Arudino, the data register is referenced with the \texttt{SPDR}
+variable.
+
+\subsubsection{Pin Change Detection and Timestamping}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \newpage
