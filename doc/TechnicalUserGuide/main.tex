@@ -113,8 +113,8 @@ custom-made.
 However, much of the product, especially the software, has been designed
 in a ``modular'' fashion, meaning that the various components are not tightly
 coupled.
-Simply put, one should be able to change out various components with relative
-ease.
+Simply put, future researchers should be able to exchange various components
+to better fit their needs with relative ease.
 
 \subsection{Description of Components}
 
@@ -134,12 +134,11 @@ timestamp values.
 Once this is done, software must run calculations using these timestamps
 to decode the unique identifiers of the broadcasting transmitter(s) and to
 determine the direction from which the sound(s) originated.
-Because the later task requires a number of calculations, and therefore
-processing time,
+Because the later task requires a mild amount of computation time,
 and because the former task requires low-latency monitoring of the input
-devices, each task must be performed on a separate physical computer.
+devices, these two tasks are to be performed on separate physical computers.
 
-The first device in the chain, whose task is to timestamp incoming data,
+The first of the two devices, whose task is to timestamp incoming data,
 need only be a simple microcontroller.
 As of the current revision of this document,
 we have tested the system with an Arduino Nano, a small,
@@ -152,16 +151,18 @@ the device would be effectively frozen (and therefore unable to detect
 incoming data) any time a transfer was in progress.
 If any data were to come into the device during a transfer, its timestamp
 would be delayed and therefore inaccurate.
-Instead, we opted to use a similar protocol, \gls{spi}
+Instead, we opted to use a similar protocol, \gls{spi}.
 The advantage of \gls{spi} is that data can be placed into a separate physical
-bus on the device when it is ready, and the other machine can pull data out
-of that bus without affecting the detection and timestamp code.
+bus on the device when it is ready to be transmitted, and the other machine can
+fetch that data without affecting the detection and timestamp code.
 
 The second device, which runs calculations and displays results to the user,
 is a slightly more powerful machine.
 We opted to use a Raspberry Pi Model 3B for this task, as these machines are
-inexpensive, reasonably powerful, \gls{spi}-compatible, and more.
-We also purchased a 7-inch touchscreen for use in the field.
+inexpensive, reasonably powerful, well-supported, \gls{spi}-compatible,
+and easy to develop on.
+We also purchased a 7-inch touchscreen made specifically for the Pi as a means
+for the user to interact with the system in the field.
 The Pi is directly wired to the Arduino for \gls{spi}.
 See Figure \ref{fig:component-diagram} for an illustration of these components.
 
@@ -197,14 +198,14 @@ See Figure \ref{fig:component-diagram} for an illustration of these components.
 \label{fig:component-diagram}
 \end{figure}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Electronics Hardware}\label{sec:ee-hardware}
+
 While both the Arduino and the Raspberry Pi were off-the-shelf products,
 the transmitter and receiver hardware was all custom designed and fabricated
 for use in this project.
 Clearer specifications, including detailed diagrams, are detailed in other
 documents and therefore many details will not be repeated here.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Electronics Hardware}\label{sec:ee-hardware}
 
 \subsection{Transmitters}
 
@@ -214,15 +215,15 @@ In our work, this frequency has been in the 40-60kHz range, depending on the
 resonant frequency of the transducer itself.
 Though we have not established bounds on our range of potential frequencies,
 the actual frequency shouldn't matter so long as the receiving hardware is
-appropriately tuned to pick up this frequency (through filtering, hardware,
-etc.).
+appropriately tuned to pick up this frequency (through filtering,
+hardware characteristics, and so on).
 
-Each transmitter is attached to a small printed circuit board designed
+Each transmitter is attached to a small \gls{pcb} designed
 specifically for the project.
 The \gls{pcb} can power the transducer by feeding it a current, effectively
 turning it off or on as needed.
 Each board will be programmed with a unique identifier (a numeric value).
-The ID determines the patter of pulses that the transmitter should emit.
+The ID determines the pattern of pulses that the transmitter should emit.
 For more details on this, see the \gls{iCRAB} document.
 
 \subsection{Receivers}
@@ -243,9 +244,6 @@ Finally, the Schmitt Trigger acts as a variable threshold, preventing the
 rising or falling edge from being interpreted as a series of short rising and
 falling edges.
 See Figure \ref{fig:rx-detail} for details on this pipeline.
-
-The resulting digital signal is sent over a wire to the timestamp
-recorder detailed in section \ref{sec:ts-rec}.
 
 \begin{figure}[h]
 \begin{center}
@@ -276,6 +274,9 @@ recorder detailed in section \ref{sec:ts-rec}.
 \label{fig:rx-detail}
 \end{figure}
 
+The resulting digital signal is sent over a wire to the timestamp
+recorder detailed in section \ref{sec:ts-rec}.
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Computer Hardware}\label{sec:cs-hardware}
 
@@ -288,7 +289,7 @@ referred to in this document as the Timestamp Recorder (\ref{sec:ts-rec}),
 provides a
 low-latency means of detecting the time of an incoming signal.
 This device must be able to reliably detect when a signal arrives with
-microsecond precision.
+sub-millisecond precision.
 Once timestamped, the data can be transferred to the
 Data Processor (\ref{sec:data-processor}).
 This device decodes the ID from each transmission and displays the crab's
@@ -298,10 +299,13 @@ direction to the user.
 
 The timestamp recorder reads a digital signal on a \gls{gpio} pin and records
 the ``time'' at which the signal changed from low to high or vice versa.
-In this case, the ``time'' need not be relative to wall clock time, so long
+In this case, the ``time'' need not have any meaningful relationship to
+``wall clock'' time, so long
 as the timestamps have some meaning relative to each other.
 For example, the time associated with a state change could be measured in
 microseconds since the board reset.
+Since the software (described in Section \ref{sec:sw-data-proc}) is primarily
+concerned with the time separation between events, the epoch is irrelevant.
 It is important, however, that the Timestamp Recorder and the Data Processor
 computers agree on the units used, because some of the later processing will be
 based on the speed of sound in water, measured in meters per second.
@@ -332,6 +336,12 @@ Specifically, it has been tested on a Raspberry Pi 3B, which is a very
 suitable device given its low cost, built-in \gls{gpio} pins, and adequate
 processing power.
 
+\subsection{Wiring Diagrams}\label{sec:wiring}
+
+This section is currently blank.
+A diagram illustrating the connections between the receivers,
+Arduino, and Pi will be inserted here in future revisions of this document.
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Software}\label{sec:software}
 
@@ -358,8 +368,8 @@ The Timestamp Recorder (\ref{sec:ts-rec}) software has two primary functions:
 The \texttt{arduino-src.ino} file is heavily documented, so this document
 will step through the major sections without providing extensive detail about
 individual lines.
-Instead, we will examine in broad strokes the two primary functions,
-\texttt{setup()} and \texttt{loop()}.
+Instead, we will examine in broad strokes the data formatting, data
+transfer, and input pin change detection.
 
 \subsubsection{Storage, Setup and Loop}
 
@@ -399,7 +409,7 @@ variable.
 
 On each iteration of the loop, the Arduino checks to see if the ``End of
 Transmission'' flag is set, which indicates that a transfer has completed.
-At this point, the board can fill the Data Register with the next byte to be
+If it is set, the board can fill the Data Register with the next byte to be
 sent.
 The next time the master requests data, the newly-loaded byte will be shifted
 out to that device.
@@ -429,7 +439,7 @@ For example, the \texttt{SPI\_ECHO\_REQUEST} flag, when sent, will cause the
 slave to send the \texttt{SPI\_ECHO\_RESPONSE} value on the next transfer.
 This is used when the master's program starts up in order to ensure that the
 two devices are correctly connected.
-The \texttt{SPI\_RESET} flag will cause the transfer state machine to reset,
+The \texttt{SPI\_RESET} flag will re-position the de-facto ``read heads'',
 meaning that it will send a new state starting with the pin values on the next
 transfer.
 This functionality is utilized to ensure that the two devices stay in sync when
@@ -468,6 +478,7 @@ If the two states differ, this indicates that at least one pin changed from
 low to high or vice versa.
 When this is the case, the device stores the new state in the global bounded
 buffer, along with the current time.
+
 As of the current revision of the document, the timestamp is generated from
 the \texttt{TCNT0} clock, which increments every four milliseconds.
 This is an inadequate granularity for the purposes of this project, so future
@@ -477,9 +488,9 @@ increment every few microseconds).
 
 Note that no matter the units used, we should expect to store no more than 32
 bits of information for any given timestamp.
-Recall that $2^{32} \approx 4.3$ million.
-This means that a source that increments frequently will overflow more rapidly
-than a slower source, which leads to an important trade-off.
+Therefore, $2^{32} \approx 4.3$ million is the highest value we can represent.
+Limited precision means that a source that increments frequently will overflow
+more rapidly than a slower source, which leads to an important trade-off.
 A 4-millisecond timer will overflow every $4\times (4.3\times 10^6)$
 milliseconds, or roughly once every 4,772 hours.
 However, a timer that increments once per microsecond will overflow every 1.1
@@ -492,21 +503,24 @@ low (near-0) values, that transmission will be ignored.
 No attempt is made to account for the overflow, though to do so is well within
 the realm of possibility for future work.
 
-\subsection{Data Procesesor Software}
+\subsection{Data Procesesor Software}\label{sec:sw-data-proc}
 
 The relevant source code can be found in multiple files in
 \texttt{src/pi-src/}.
 
+\subsubsection{Overview of Files}
+
 The primary functions of the various files are as follows:
 \begin{itemize}
 \item \texttt{main.cpp} --
-	The main loop of the program. This file periodically polls SPI and
-	then runs routines to process any data that comes in from SPI.
+	The main loop of the program. This file periodically polls the
+	\gls{spi} slave device and then runs routines to process any data that
+	is fetched.
 \item \texttt{data\_collection.cpp} --
 	When SPI data is read, the functions in this file parse and store the
 	data in more meaningful structures.
 	For example, when a rising and subsequent falling edge are detected on a
-	given pin, a \texttt{ping} is stored to represent this.
+	given pin, a \texttt{ping} object is stored containing these timestamps.
 	The data collection code also steps through the collected data to determine
 	if enough pings have been collected for the direction algorithm to run.
 \item \texttt{direction.cpp} --
@@ -515,10 +529,13 @@ The primary functions of the various files are as follows:
 	of its pings.
 	That is, it performs a type of Time Difference On Arrival calculation
 	based on ping times.
+	It returns a direction relative to the front of the boat in polar
+	coordinates in the form $(r, \theta, z)$.
 \item \texttt{spi.cpp} --
-	This file facilitates and abstracts away the communicate with the
+	This file facilitates and abstracts away the communication with the
 	\gls{spi} slave device.
-	Routines in this file ensure that the master and slave devices are in
+	Routines in this file can determine if the devices are properly connected
+	and will also ensure that the master and slave devices are in
 	sync with each other.
 \item \texttt{uid.cpp} --
 	Each transmitter broadcasts in a specific pattern based on its unique
@@ -529,7 +546,10 @@ The primary functions of the various files are as follows:
 	Various helper methods are located here.
 \end{itemize}
 
-Each file contains extensive documentation, so the finer details will not be
+\subsubsection{Processing and Structure}
+
+Each file contains extensive documentation, so the finer details about
+various functions and variable will not be
 duplicated in this document. Instead, we'll take a broad look at how these
 pieces fit together.
 
