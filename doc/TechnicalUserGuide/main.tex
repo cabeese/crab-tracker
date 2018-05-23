@@ -208,7 +208,7 @@ documents and therefore many details will not be repeated here.
 
 \subsection{Transmitters}
 
-The transmitters are small piezoelectric transducers that oscilate at an
+The transmitters are small piezoelectric transducers that oscillate at an
 ultrasonic frequency.
 In our work, this frequency has been in the 40-60kHz range, depending on the
 resonant frequency of the transducer itself.
@@ -227,11 +227,11 @@ For more details on this, see the \gls{iCRAB} document.
 
 \subsection{Receivers}
 
-The receivers include small piezeoelectric transducers that are able to detect
+The receivers include small piezoelectric transducers that are able to detect
 vibrations in the same range as the transmitters.
 A preamplifier steps up the signal from the transducer before sending this
-signal along to a bandpass filter.
-The bandpass filter restricts the frequencies that the hardware ``listens''
+signal along to a band-pass filter.
+The band-pass filter restricts the frequencies that the hardware ``listens''
 to, meaning that a lot of irrelevant noise can be discarded.
 After being filtered, the signal is then amplified.
 A potentiometer on the board allows for variable amplification.
@@ -322,7 +322,7 @@ Timestamp Recorder (\ref{sec:ts-rec}) and stores it in its own local storage
 until it has enough data to run some calculations.
 This device is also the user's primary interface for interacting with the
 system in most use cases.
-Equipted with a touchscreen or other means of displaying data, the computer is
+Equipped with a touchscreen or other means of displaying data, the computer is
 able to display the unique identification numbers and relative locations of
 crabs as they are detected.
 
@@ -338,7 +338,7 @@ processing power.
 Wherever possible, the software for this project was written in such a way that
 various elements may be altered or entirely replaced without requiring major
 changes to the rest of the codebase.
-The hope is that it is flexible enough to be adapted for new scenarioes and
+The hope is that it is flexible enough to be adapted for new scenarios and
 hardware setups in the future.
 That said, it has only been tested with the hardware detailed elsewhere in this
 document, so its portability and modularity is unproven.
@@ -501,7 +501,7 @@ The primary functions of the various files are as follows:
 \begin{itemize}
 \item \texttt{main.cpp} --
 	The main loop of the program. This file periodically polls SPI and
-	then runs routines to proceses any data that comes in from SPI.
+	then runs routines to process any data that comes in from SPI.
 \item \texttt{data\_collection.cpp} --
 	When SPI data is read, the functions in this file parse and store the
 	data in more meaningful structures.
@@ -548,7 +548,7 @@ When enough pings have been amassed and a single crab's pings have been
 detected twice on each input line, the software can then run the direction
 algorithm with these values.
 If the direction algorithm is able to determine an approximate location for
-the signal$^*$, the direction and assocated ID can be reported to the user.
+the signal$^*$, the direction and associated ID can be reported to the user.
 
 $^*$ Note that the direction algorithm will intentionally fail if it is given
 impossible data.
