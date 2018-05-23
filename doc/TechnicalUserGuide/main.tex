@@ -18,10 +18,10 @@
 \usepackage{tikz}
 \usetikzlibrary{shapes.geometric, arrows, positioning, automata}
 \tikzstyle{device} = [rectangle, rounded corners, minimum width=3cm,
-	minimum height=1cm,text centered, draw=black] % fill=red!30
+	minimum height=1cm,text centered, draw=black]
 \tikzstyle{arrow} = [thick,->,>=stealth]
 \tikzstyle{transducer} = [draw,circle,minimum size=1cm,inner sep=0pt]
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 %%%%%%%%%%%%%%%%%%% GLOSSARY
@@ -37,11 +37,17 @@
 	description={An underwater microphone}
 }
 
+\newglossaryentry{iCRAB}
+{
+	name={iCRAB Transmission Protocol},
+	description={Our custom encoding protocol for transmitters}
+}
+
 \newacronym{spi}{SPI}{Serial Peripheral Interface}
 \newacronym{i2c}{I$^2$C}{Inter-Integrated Circuit}
 \newacronym{gpio}{GPIO}{General Purpose Input Output}
 \newacronym{pcb}{PCB}{Printed Circuit Board}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -217,7 +223,7 @@ The \gls{pcb} can power the transducer by feeding it a current, effectively
 turning it off or on as needed.
 Each board will be programmed with a unique identifier (a numeric value).
 The ID determines the patter of pulses that the transmitter should emit.
-For more details on this, see the iCRAB Transmission Protocol document.
+For more details on this, see the \gls{iCRAB} document.
 
 \subsection{Receivers}
 
@@ -535,7 +541,7 @@ As pings are collected, the software looks to see if it has enough pings to
 run calculations.
 Specifically, it looks to see two pings on every hydrophone before it attempts
 to locate and report a crab.
-Recall from the requirements of the iCRAB Protocol that every transmission by
+Recall from the requirements of the \gls{iCRAB} that every transmission by
 a transmitter should be made up of two pings.
 
 When enough pings have been amassed and a single crab's pings have been
