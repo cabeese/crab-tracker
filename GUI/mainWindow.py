@@ -2,7 +2,7 @@ import sys
 from PyQt4 import QtGui, QtCore
 from db import create
 from radar import RadarWindow
-from listenForCrabs import ListenForCrabs 
+from listenForCrabs import ListenForCrabs
 
 class MainWindow(QtGui.QMainWindow):
 
