@@ -515,8 +515,40 @@ The primary functions of the various files are as follows:
 	Routines in this file ensure that the master and slave devices are in
 	sync with each other.
 \item \texttt{uid.cpp} --
+	Each transmitter broadcasts in a specific pattern based on its unique
+	identifier. The code in this file examines the duration of and delay
+	between two pings in order to determine which transmitter created a
+	given broadcast.
 \item \texttt{util.cpp} --
+	Various helper methods are located here.
 \end{itemize}
+
+Each file contains extensive documentation, so the finer details will not be
+duplicated in this document. Instead, we'll take a broad look at how these
+pieces fit together.
+
+When data is read from the Timestamp Recorder, it is translated from raw pin
+states into something more meaningful, such as a ``ping'' (that is, a single
+broadcast as measured by the rising and falling edges of a signal on a single
+pin).
+As pings are collected, the software looks to see if it has enough pings to
+run calculations.
+Specifically, it looks to see two pings on every hydrophone before it attempts
+to locate and report a crab.
+Recall from the requirements of the iCRAB Protocol that every transmission by
+a transmitter should be made up of two pings.
+
+When enough pings have been amassed and a single crab's pings have been
+detected twice on each input line, the software can then run the direction
+algorithm with these values.
+If the direction algorithm is able to determine an approximate location for
+the signal$^*$, the direction and assocated ID can be reported to the user.
+
+$^*$ Note that the direction algorithm will intentionally fail if it is given
+impossible data.
+That is, if the timestamps are too wildly separated temporally, it will assume
+that the measurements are not from the same transmission and will therefore
+cease to calculate a direction.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \newpage
