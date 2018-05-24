@@ -144,7 +144,45 @@ int initialize_dc(){
     return get_param((char*)"DISPLAY_PINGS", &DISPLAY_PINGS);
 }
 
-int find_match_on_pin(int pin, int *first, int *second){
+/**
+ * Determines if two pings are from the same transmission; that is, checks to
+ * see that they both encode the same ID and that the delay between them
+ * matches that ID. (Order doesn't matter - checks both ways)
+ */
+int pingsMatch(ping a, ping b){
+    int id = id_decode_ping(a);
+    return id == id_decode_ping(b) &&
+           (id_decode_delay(a, b) == id || id_decode_delay(b,a) == id);
+}
+
+/**
+ * Finds two matching pins on a given pin where both pings encode a given ID.
+ */
+int find_match_on_pin_with_id(int pin, int id, ping **first, ping **second){
+    ping *fst;
+    ping *snd;
+    for(int i=0; i<PING_BUF_LEN; i++){
+        fst = &(ping_collectors[pin].pings[i]);
+        if(id_decode_ping(*fst) == id){
+            /* First ping matches given ID. Find a second */
+            for(int j=i+1; j<PING_BUF_LEN; j++){
+                snd = &(ping_collectors[pin].pings[j]);
+                /* Pings may be in reverse order, so need to check
+                   delay with each in front */
+                if(pingsMatch(*fst, *snd)){
+                    /* Pings found! Return in chronological order */
+                    int in_order = fst->start < snd->start;
+                    *first  = in_order ? fst : snd;
+                    *second = in_order ? snd : fst;
+                    return 1;
+                }
+            }
+        }
+    }
+    return 0; /* failure */
+}
+
+int find_match_on_pin(int pin, ping **first, ping **second){
     ping *fst;
     ping *snd;
     int candidate_id = -1;
@@ -153,20 +191,17 @@ int find_match_on_pin(int pin, int *first, int *second){
         /* Check each ping, one at a time */
         fst = &(ping_collectors[pin].pings[i]);
         candidate_id = id_decode_ping(*fst);
-        printf("candidate id: %d\n", candidate_id);
 
         /* Compare this ping with one that comes afterwards */
         for(int j=i+1; j<PING_BUF_LEN; j++){
             snd = &(ping_collectors[pin].pings[j]);
             int t_id = id_decode_ping(*snd);
-            printf("\tsecond id: %d", t_id);
-            printf("\tdelay id: %d\n", id_decode_delay(*fst, *snd));
 
             /* If pings have same ID and delay is correct, we found a match! */
-            if(t_id == candidate_id && t_id == id_decode_delay(*fst, *snd)){
-                printf("Found a match!!!\n");
-                *first = i;
-                *second = j;
+            if(pingsMatch(*fst, *snd)){
+                int in_order = fst->start < snd->start;
+                *first  = in_order ? fst : snd;
+                *second = in_order ? snd : fst;
                 return 1;
             }
         }
@@ -186,6 +221,20 @@ int find_match_on_pin(int pin, int *first, int *second){
                         */
 }
 
+/**
+ * When a ping has been used, zero it out so that it is not used twice.
+ */
+int clear_ping(ping *p){
+    int pin = p->pin;
+    int i = 0;
+    while(i<PING_BUF_LEN && &(ping_collectors[pin].pings[i]) != p){ i++; }
+    if(i<PING_BUF_LEN){
+        memset(p, 0, sizeof(ping));
+        return 1;
+    }
+    return 0;
+}
+
 int main(void){
     spi_rawblock d;
     initialize_dc();
@@ -202,8 +251,25 @@ int main(void){
 
     disp_buffers();
 
-    int f = -1, s = -1;
-    int found = find_match_on_pin(1, &f, &s);
-    printf("Match found? %d\n", found);
-    printf("f=%d; s=%d\n", f, s);
+    ping *f;
+    ping *s;
+    int found;
+    found = find_match_on_pin(1, &f, &s);
+    printf("(1) Match found? %d\n", found);
+    printf("f=0x%x; s=0x%x\n", f, s);
+    disp_ping(*f);
+    disp_ping(*s);
+
+    found = find_match_on_pin_with_id(1, 22, &f, &s);
+    printf("(2) Match found? %d\n", found);
+    printf("f=0x%x; s=0x%x\n", f, s);
+    disp_ping(*f);
+    disp_ping(*s);
+
+    printf("clearing...");
+    printf(" %s\n", clear_ping(f) ? "success" : "failed");
+    disp_ping(*f);
+
+    found = find_match_on_pin(1, &f, &s);
+    printf("(3) Match found? %d\n", found);
 }
