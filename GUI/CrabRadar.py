@@ -22,8 +22,14 @@ import matplotlib.transforms as mtransforms
 import numpy as np
 
 from matplotlib.transforms import offset_copy
+import csv
 
 class CrabRadar(FigureCanvas):
+    #decisions we need to make
+    #f = open("data.txt", "w")
+    xcoord = [0, 0, 0, 0]
+    ycoord = [0, 0, 0, 0]
+
     def __init__(self, parent=None, width=5, height=4, dpi=100,linewidth=1.0):
         fig = Figure(figsize=(width, height), dpi=dpi,linewidth=1.0)
         self.axes = fig.add_subplot(111, projection= 'polar')
@@ -54,7 +60,11 @@ class CrabRadar(FigureCanvas):
         l = [random.randint(0, 10) for i in range(4)]
         #following line clears the dots
         self.axes.cla()
-        self.axes.plot([0, 0, 0, 0], l, 'ro')
+        self.axes.plot([0, 1, 2, 3], l, 'ro')
         self.axes.set_theta_zero_location('N')
         self.axes.set_xticklabels(['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'])
         self.draw()
+
+    #def get_coordinates(self):
+        #somehow has to be listening for crabs
+        #when it gets a crab, it gets the coordinates
