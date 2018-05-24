@@ -16,13 +16,17 @@ where each `timestamp_part` is only 8 of the 32 bits in the integer. The low-ord
 (least significant) bits are sent first, followed by the next 8 bits, and then
 eventually the highest order bits.
 *******************************************************************************/
+// Noah timing code
+volatile unsigned tmr1_overflow = 0;
+volatile unsigned long timestamp;
+
 
 struct state {
   byte pinvals;
   unsigned long timestamp;
 } state;
 
-const int  BB_LEN = 8; /* number of items in the bounded buffer */
+const int  BB_LEN = 64; /* number of items in the bounded buffer */
 const byte SPI_RESET = 0x1;
 const byte SPI_ECHO_REQUEST = 0x2;   /* Send response next time */
 const byte SPI_ECHO_RESPONSE = 0x77; /* Response to send */
@@ -31,7 +35,7 @@ const byte SPI_ECHO_RESPONSE = 0x77; /* Response to send */
 /* ======================= PIN_D Variables ======================= */
 // Masks off digital pins 0, 1, and 2.
 // Most significant bit of register corresponds to digital pin 7
-uint8_t bitMask = B00001000;
+uint8_t bitMask = B11111000;
 
 /*
  * Pin values and corresponding timestamps are stored in this 2D array,
@@ -46,7 +50,7 @@ uint8_t bitMask = B00001000;
  * available.
  */
 struct state output[BB_LEN];
-int bb_beg = 0; /* Start of bounded buffer. SPI reads here */
+volatile int bb_beg = 0; /* Start of bounded buffer. SPI reads here */
 /* TODO - currently, the first block of data will be sent via SPI
  *  before it's actually valid (immediately, in fact).
  *  Figure out some clean way to prevent this until output[0]
@@ -55,25 +59,44 @@ int bb_beg = 0; /* Start of bounded buffer. SPI reads here */
  *  get overwritten (perhaps simultaneously - race condition!)
  *  when first data blip comes in.
  */
-int bb_end = 0; /*   End of bounded buffer. PIN_D code writes here*/
+volatile int bb_end = 0; /*   End of bounded buffer. PIN_D code writes here*/
 
 
-uint8_t prevpinval = PIND & bitMask;
-uint8_t pinval;
-uint8_t xorpins;
-extern volatile unsigned long timer0_overflow_count;
-unsigned long time_elapsed;
+volatile uint8_t prevpinval = PIND & bitMask;
+volatile uint8_t pinval;
+volatile uint8_t xorpins;
+//extern volatile unsigned long timer0_overflow_count;
+volatile unsigned long time_elapsed;
 
 /* ======================== SPI Variables ======================== */
-byte marker = 0; /* Index into `long` timestamp in output array */
-byte send_pinvals = 1; /* Send 'pinvals' first, so initialize to 1 */
-byte flag; /* For Pi -> Arduino messages, such as 'reset' */
+volatile byte marker = 0; /* Index into `long` timestamp in output array */
+volatile byte send_pinvals = 1; /* Send 'pinvals' first, so initialize to 1 */
+volatile byte flag; /* For Pi -> Arduino messages, such as 'reset' */
+
+/**
+ * Called when TIMER1 overflows
+ */
+ISR(TIMER1_OVF_vec){
+  tmr1_overflow++;
+}
 
 /**
  * This function runs once when the board boots.
  * Initial configuration is done here.
+ * 
  */
 void setup (void) {
+
+  TCCR1A = 0;// set registers to 0  
+  TCCR1B = 0;  
+  TCCR1C = 0;  
+
+  // Noah timing
+  /* Timer 1 is a 16-bit timer. */
+  TIMSK1 |= _BV(TOIE1); /* Enable overflow interrupt */
+  
+   TCCR1B = 1;// start timer 1 
+   
   /* SPI Setup */
   pinMode(MISO, OUTPUT); /* Set "Master In/Slave Out" pin as output */
   SPCR |= _BV(SPE); /* Set 'enable' bit of SPI config register */
@@ -131,7 +154,7 @@ void loop (void){
       if(send_pinvals){
         /* Send the pin values */
         SPDR = output[bb_beg].pinvals;
-        output[bb_beg].pinvals = (1 << 7) | output[bb_beg].pinvals;
+        output[bb_beg].pinvals |= (1 << 7);
         send_pinvals = 0;
       } else {
         /* Send the timestamp, 8 bits at a time */
@@ -149,10 +172,6 @@ void loop (void){
             /* Otherwise, we can increment a little more */
             bb_beg++;
             if(bb_beg >= BB_LEN) bb_beg = 0;
-            if(bb_beg == BB_LEN){
-              /* If bb_end is at 0, we still can't move */
-              bb_beg = bb_end == 0 ? BB_LEN - 1 : 0;
-            }
           }
           /* ================== End bb_advance_beg() ================== */
         }
@@ -169,10 +188,18 @@ void loop (void){
   pinval = PIND & bitMask;
   xorpins = (prevpinval ^ pinval);
 
-  if (xorpins != 0) {
+  if (xorpins) {
     // recreates the functionality of the micors() function
     // without the overhead of a function call
-    time_elapsed = ((timer0_overflow_count << 8) + TCNT0) * 4;
+//    time_elapsed = ((timer0_overflow_count << 8) + TCNT0) * 4;
+     TCCR1B = 0; //stop timer
+     volatile unsigned long temp_timer = TCNT1; // get value of timer
+     TCCR1B = 1;// start timer 1 again
+     
+    //Noah timing code, don't we need to stop the timer before reading from it?
+    //time_elapsed = (tmr1_overflow << 16) | TCNT1;
+    time_elapsed = (tmr1_overflow << 16) | temp_timer;
+
 
     // stores high pins and timestamp
     output[bb_end].pinvals = (pinval >> 3) & 0b00011111;
