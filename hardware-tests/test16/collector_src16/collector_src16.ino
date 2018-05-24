@@ -3,8 +3,7 @@
 * 
 * Hydrophones a,b,c, d will correspond to pins 3,4,5,6, respectively.
 *  Digital pin 7 corresponds to the duration indicator. 
-*  test file for pulse collector to test accuracy of time stamps for very small deltas
-*  only tests for changes on two pins
+* test file created by Noah and Margot we used an osocpe to measure how long the teensy took to make one pin go high after recieving input on a different pin
 *  tTEENSY collected pulses
 *  
 *  
@@ -74,7 +73,7 @@ void setup() {
 //   Serial.begin(38400);
   
  
-  // sets  D pins 3 and 4 to input,
+  // sets  D pins 3  to input,
 
   DDRD = 0B11110111;
   DDRB |= 0xf;
