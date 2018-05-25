@@ -149,7 +149,7 @@ int initialize_dc(){
  * see that they both encode the same ID and that the delay between them
  * matches that ID. (Order doesn't matter - checks both ways)
  */
-int pingsMatch(ping a, ping b){
+int pings_match(ping a, ping b){
     int id = id_decode_ping(a);
     return id == id_decode_ping(b) &&
            (id_decode_delay(a, b) == id || id_decode_delay(b,a) == id);
@@ -157,6 +157,11 @@ int pingsMatch(ping a, ping b){
 
 /**
  * Finds two matching pins on a given pin where both pings encode a given ID.
+ * @param pin    - The pin [0..3] to read from
+ * @param id     - The ID to search for
+ * @param first  - The chronologically-first ping will be pointed at by first
+ * @param second - The chronologically-second ping will be pointed at by second
+ * @returns      - The ID of the pings, if found, or -1 if no match found
  */
 int find_match_on_pin_with_id(int pin, int id, ping **first, ping **second){
     ping *fst;
@@ -169,19 +174,26 @@ int find_match_on_pin_with_id(int pin, int id, ping **first, ping **second){
                 snd = &(ping_collectors[pin].pings[j]);
                 /* Pings may be in reverse order, so need to check
                    delay with each in front */
-                if(pingsMatch(*fst, *snd)){
+                if(pings_match(*fst, *snd)){
                     /* Pings found! Return in chronological order */
                     int in_order = fst->start < snd->start;
                     *first  = in_order ? fst : snd;
                     *second = in_order ? snd : fst;
-                    return 1;
+                    return id;
                 }
             }
         }
     }
-    return 0; /* failure */
+    return -1; /* failure */
 }
 
+/**
+ * Finds two matching pins on a given pin where both pings encode some ID.
+ * @param pin    - The pin [0..3] to read from
+ * @param first  - The chronologically-first ping will be pointed at by first
+ * @param second - The chronologically-second ping will be pointed at by second
+ * @returns      - The ID of the pings, if found, or -1 if no match found
+ */
 int find_match_on_pin(int pin, ping **first, ping **second){
     ping *fst;
     ping *snd;
@@ -195,18 +207,17 @@ int find_match_on_pin(int pin, ping **first, ping **second){
         /* Compare this ping with one that comes afterwards */
         for(int j=i+1; j<PING_BUF_LEN; j++){
             snd = &(ping_collectors[pin].pings[j]);
-            int t_id = id_decode_ping(*snd);
 
             /* If pings have same ID and delay is correct, we found a match! */
-            if(pingsMatch(*fst, *snd)){
+            if(pings_match(*fst, *snd)){
                 int in_order = fst->start < snd->start;
                 *first  = in_order ? fst : snd;
                 *second = in_order ? snd : fst;
-                return 1;
+                return candidate_id;
             }
         }
     }
-    return 0;
+    return -1;
     /*
     for each ping on pin 0:
         if duration != 0:
@@ -219,6 +230,28 @@ int find_match_on_pin(int pin, ping **first, ping **second){
                         add it
                         ............ ehh........?
                         */
+}
+
+int get_set(full_set *set){
+    ping *f, *s;
+    int id;
+    /* Find pings on pin A */
+    if((id = find_match_on_pin(0, &f, &s)) < 0) return -1;
+    set->pings_a[0] = f;
+    set->pings_a[1] = s;
+    /* Find pings on pin B */
+    if(find_match_on_pin_with_id(1, id, &f, &s) != id) return -1;
+    set->pings_b[0] = f;
+    set->pings_b[1] = s;
+    /* Find pings on pin C */
+    if(find_match_on_pin_with_id(2, id, &f, &s) != id) return -1;
+    set->pings_c[0] = f;
+    set->pings_c[1] = s;
+    /* Find pings on pin D */
+    if(find_match_on_pin_with_id(3, id, &f, &s) != id) return -1;
+    set->pings_d[0] = f;
+    set->pings_d[1] = s;
+    return id;
 }
 
 /**
@@ -239,12 +272,12 @@ int main(void){
     spi_rawblock d;
     initialize_dc();
 
-    d = {0, 0x2};
+    d = {0, 0xf};
     proc_block(d);
     d = {3200, 0x0};
     proc_block(d);
 
-    d = {15400, 0x2};
+    d = {15400, 0xf};
     proc_block(d);
     d = {18600, 0x0};
     proc_block(d);
@@ -254,21 +287,14 @@ int main(void){
     ping *f;
     ping *s;
     int found;
-    found = find_match_on_pin(1, &f, &s);
-    printf("(1) Match found? %d\n", found);
-    printf("f=0x%x; s=0x%x\n", f, s);
-    disp_ping(*f);
-    disp_ping(*s);
-
-    found = find_match_on_pin_with_id(1, 22, &f, &s);
-    printf("(2) Match found? %d\n", found);
-    printf("f=0x%x; s=0x%x\n", f, s);
-    disp_ping(*f);
-    disp_ping(*s);
+    full_set set = {0,0}; /* Hrm. One too many levels of indirection in function? */
+    int id;
+    id = get_set(&set);
+    printf("id = %d\n", id);
+    printf("pings_b[0] 0x%x\n", set.pings_a[0]);
 
     printf("clearing...");
-    printf(" %s\n", clear_ping(f) ? "success" : "failed");
-    disp_ping(*f);
+    printf(" %s\n", clear_ping(set.pings_b[0]) ? "success" : "failed");
 
     found = find_match_on_pin(1, &f, &s);
     printf("(3) Match found? %d\n", found);

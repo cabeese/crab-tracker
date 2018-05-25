@@ -22,6 +22,13 @@ struct ping {
     unsigned long duration;
 };
 
+struct full_set {
+    ping *pings_a[2];
+    ping *pings_b[2];
+    ping *pings_c[2];
+    ping *pings_d[2];
+};
+
 int initialize_dc();
 int proc_block(spi_rawblock);
 void disp_ping(ping);
