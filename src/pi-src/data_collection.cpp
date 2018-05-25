@@ -148,6 +148,9 @@ int initialize_dc(){
  * Determines if two pings are from the same transmission; that is, checks to
  * see that they both encode the same ID and that the delay between them
  * matches that ID. (Order doesn't matter - checks both ways)
+ * @param a - One ping
+ * @param b - The other ping
+ * @returns - 1 if 'a' and 'b' are from the same transmission; 0 otherwise
  */
 int pings_match(ping a, ping b){
     int id = id_decode_ping(a);
@@ -232,6 +235,11 @@ int find_match_on_pin(int pin, ping **first, ping **second){
                         */
 }
 
+/**
+ * Look for a total of 8 pings that can be matched to a single iCRAB broadcast
+ * @param set - Pointers to the appropriate pings will be stored here
+ * @returns   - The ID of the crab, if enough pings found, else -1
+ */
 int get_set(full_set *set){
     ping *f, *s;
     int id;
