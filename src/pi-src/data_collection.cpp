@@ -136,8 +136,10 @@ void disp_buffers(){
  */
 int poll(){
     spi_rawblock raw_data;
-    spi_getblock(&raw_data);
-    return proc_block(raw_data) > 0;
+    if(spi_getblock(&raw_data)){
+        return proc_block(raw_data) > 0;
+    }
+    return 0;
 }
 
 /**
