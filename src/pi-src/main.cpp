@@ -41,18 +41,23 @@ int initialize(){
  * @return  (unused)
  */
 int main (void) {
+    int id;
     // int n_unused_pings = 0;
     initialize();
 
     while (1){
         if(poll()){
-            disp_buffers();
-            printf("----------------------\n");
-            // if(get_set(&active)){
-            //     /* At least one new "ping" created */
-            // } else {
-            //     /* nop */
-            // }
+            if((id = get_set(&active)) > -1){
+                /* We have a set of 8 pings */
+                disp_buffers();
+                printf("----------------------\n");
+                printf("Got a full set. Direction = ...\n");
+                // TODO: call direction algorithm
+                // TODO: update GUI
+                clear_set(&active);
+            } else {
+                /* nop */
+            }
         } else {
             sleep(0.5);
         }
