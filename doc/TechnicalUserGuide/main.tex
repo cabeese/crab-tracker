@@ -33,6 +33,10 @@
                             row sep=2mm,
                             nodes={anchor=center}
                             },
+        rx/.style={column 1/.style={nodes={left}},
+                                       column 3/.style={nodes={above right}},
+                                       column 2/.style={font=\bfseries}
+                                       },
         pi/.style={column 1/.style={nodes={left}},
                                        column 3/.style={nodes={above right}},
                                        column 2/.style={font=\bfseries}
@@ -218,6 +222,8 @@ See Figure \ref{fig:component-diagram} for an illustration of these components.
 \label{fig:component-diagram}
 \end{figure}
 
+For a more detailed wiring diagram, see Section \ref{sec:wiring}.
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Electronics Hardware}\label{sec:ee-hardware}
 
@@ -356,28 +362,36 @@ Specifically, it has been tested on a Raspberry Pi 3B, which is a very
 suitable device given its low cost, built-in \gls{gpio} pins, and adequate
 processing power.
 
-\subsection{Wiring Diagrams}\label{sec:wiring}
+\subsection{Wiring Diagram}\label{sec:wiring}
 
-This section details the wiring for the following devices:
-\begin{itemize}
-\item Raspberry Pi 3B
-\item AdaFruit RaspberryPi 7" Touch Screen
-\item Arduino Nano
-\item Receiver hardware
-\end{itemize}
-
-% Pinout diagram based on:
-% https://tex.stackexchange.com/questions/241357/wiring-diagrams-with-pinout
+This section demonstrates in greater detail how the various components are
+connected to each other.
+Note that though we use a 7" touchscreen from AdaFruit built specifically
+for projects with the Pi,
+wiring for the screen is not included in the following diagram.
+In Figure \ref{fig:wiring}, the Pi, Arduino, and a receiver are shown.
+Note that each of the other receivers could be connected in the same way
+that Receiver 1 is connected; that is, they need to be tied to the common
+ground and they need their signal pin attached to the appropriate input pin
+on the Arduino.
 
 \begin{figure}[h]
 \begin{center}
 \begin{tikzpicture}
 
+% Pinout diagram based on:
+% https://tex.stackexchange.com/questions/241357/wiring-diagrams-with-pinout
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Pins and labels on devices
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\matrix[wire board,pi](Pi){
+\matrix[wire board,rx](Rx1){
+	SIG   & S & Signal  \\
+	GND   & G & Ground  \\
+};
+
+\matrix[wire board,pi, matrix anchor=north, below = 2cm of Rx1.south](Pi){
 	MOSI  & 19 & MOSI  \\
 	MISO  & 21 & MISO  \\
 	SCLK  & 23 & SCLK  \\
@@ -385,12 +399,12 @@ This section details the wiring for the following devices:
 	GND   & 25 & GND  \\
 };
 
-\matrix[wire board,arduino, matrix anchor=north, right = 9cm of Pi.north] (Arduino){
+\matrix[wire board,arduino, matrix anchor=north, right = 9cm of Rx1.north] (Arduino){
 	D02 &  2 & GND           \\
-	D03 &  3 & Hydrophone    \\
-	D04 &  4 & Hydrophone    \\
-	D05 &  5 & Hydrophone    \\
-	D06 &  6 & Hydrophone    \\
+	D03 &  3 & Receiver 1    \\
+	D04 &  4 & Receiver 2    \\
+	D05 &  5 & Receiver 3    \\
+	D06 &  6 & Receiver 4    \\
 	D10 & 10 & SS    \\
 	D11 & 11 & MOSI  \\
 	D12 & 12 & MISO  \\
@@ -400,6 +414,14 @@ This section details the wiring for the following devices:
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Boxes around devices
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Add boxes around Rx1
+\draw (Rx1-1-2.north east) rectangle (Rx1-2-2.south west);
+\draw (Rx1-1-2.north west)+(-3cm,0.5cm)
+	node[above right, font=\bfseries]
+	{Receiver 1}
+	rectangle
+	($(Rx1-2-2.south west)+(0,-0.5cm)$);
 
 % Add boxes around Pi
 \draw (Pi-1-2.north east) rectangle (Pi-5-2.south west);
@@ -421,66 +443,43 @@ This section details the wiring for the following devices:
 % Wires between devices
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\draw[color=red] % SPI connections
+% SPI connections
+\draw[color=red]
 	(Pi-1-2) -- +(2.60cm,0) |- (Arduino-7-2) % MOSI
 	(Pi-2-2) -- +(2.40cm,0) |- (Arduino-8-2) % MISO
 	(Pi-3-2) -- +(2.20cm,0) |- (Arduino-9-2) % SCLK
 	(Pi-4-2) -- +(2.00cm,0) |- (Arduino-6-2) % SS
 ;
+
+% Shared Ground
 \draw
-	(Pi-5-2) -- +(3cm, 0)   |- (Arduino-1-2) % GND
+	(Arduino-1-2) -- +(-3cm,0) |- (Pi-5-2)
+	(Arduino-1-2) -- +(-3cm,0) |- (Rx1-2-2)
 ;
 
-%\draw
-%	(Pi-1-2) -- +(2cm, 1cm) -| (Arduino-7-2)
-%;
-
-%\draw
-%	node at (0,0) []          {\Large $\circ$}
-%	node at (0,1) [fill=red]  {\Large $\circ$}
-%	node at (1,1) [fill=blue] {\Large $\circ$}
-%;
-%\draw[help lines] (0,0) grid (8,-8);
-%
-%\draw (-1,0) rectangle (2,-4); % box for the Pi
-%
-%\foreach \x in {1,...,24}
-%	\node at (\intcalcMod{\x}{2}, \intcalcDiv{\x+1}{2}) (pi-\x) [pin] {\x};
-
-% Draw SPI pins
-%\foreach \x in {19,21,23}
-%	\node at (0, \x/2 - 12.5) (pi-\x) [pin] {\x};
-%\foreach \x in {20,22,24}
-%	\node at (1, \x/2 - 13) (pi-\x) [pin] {\x};
-
-
-%\node at (-1,0)   (pi-23)  [pin] {23};
-%\node at ( 0,0)   (pi-24)  [pin] {24};
-%\node at (-1,-1)  (pi-25)  [pin] {25};
-%\node at ( 0,-1)  (pi-26)  [pin] {26};
-%\node at (-1,-2)  (pi-5) [pin] { 5};
-%\node at ( 0,-2)  (pi-6) [pin] { 6};
-%\node at (-1,-3)  (pi-7) [pin] { 7};
-%\node at ( 0,-3)  (pi-8) [pin] { 8};
-%\node at (-1,-4)  (pi-9) [pin] { 9};
-%\node at ( 0,-4)  (pi-p10)  [pin] {10};
-%\node at (-1,-5)  (pi-p11)  [pin] {11};
-%\node at ( 0,-5)  (pi-p12)  [pin] {12};
-%\node at (-1,-6)  (pi-p13)  [pin] {13};
-%\node at ( 0,-6)  (pi-p14)  [pin] {14};
-
-%\node at (3,0)    (ard-ss)  [pin] {SS};
-
-%\draw[->,red] (pi-p10) -| node[near start,below] {foo} (ard-ss);
-%\draw[->,red] (pi-p10) .. controls +(up:1cm) and +(left:1cm) .. node[above, sloped] {label} (ard-ss);
-%\draw[->,red,thick] (pi-p10) .. controls (1,1) and (2,1) .. (ard-ss);
-
+\draw[color=blue]
+	(Rx1-1-2) -- + (3cm,0) |- (Arduino-2-2)
+;
 
 \end{tikzpicture}
 \end{center}
-\caption{A wiring diagram for the computer hardware.}
+\caption{A wiring diagram for the devices at the receiving station.}
 \label{fig:wiring}
 \end{figure}
+
+\gls{spi} uses four shared wires. Briefly, the purpose of each is:
+\begin{itemize}
+\item \texttt{MOSI} Master-In-Slave-Out -- data from the slave to the
+	master (such as timestamps and pin values).
+\item \texttt{MISO} Master-Out-Slave-In -- data from the master to the
+	slave (used for flags, in our case).
+\item \texttt{SCLK} The clock. Driven by the master node.
+\item \texttt{SS} or \texttt{CE} is the Slave Select or Chip Enable line.
+	\gls{spi} supports multiple slave devices, so the master node uses
+	the Chip Enable line to turn on one slave at a time to communicate.
+	In our case, since there is only one slave device, we know that the
+	\texttt{CE0} line will always be active during a transfer.
+\end{itemize}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
