@@ -18,7 +18,7 @@ Created: 2018-02-10
 #include "spi.h"
 #include "util.h"
 
-#define NUM_PINS 5 /* TODO: Define this elsewhere, globally */
+#define NUM_PINS 4 /* TODO: Define this elsewhere, globally */
 #define PING_BUF_LEN 16 /* TODO: Define as config param */
 // extern int DISPLAY_PINGS;
 
@@ -110,6 +110,9 @@ void disp_ping(ping p){
     fflush(stdout);
 }
 
+/**
+ * Print the duration of every pin in all buffers
+ */
 void disp_buffers(){
     for(int p=0; p<NUM_PINS; p++){
         printf("Pings on pin %d:", p);
@@ -221,18 +224,20 @@ int find_match_on_pin(int pin, ping **first, ping **second){
         }
     }
     return -1;
-    /*
-    for each ping on pin 0:
-        if duration != 0:
-            look for match in remainder of pings
-            if no match, return 0;
-            else
-                add two matches from pin 0 to return
-                for each of the other pins 1..NUM_PINS:
-                    if duration matches current duration within threshold
-                        add it
-                        ............ ehh........?
-                        */
+}
+
+/**
+ * When a ping has been used, zero it out so that it is not used twice.
+ */
+int clear_ping(ping *p){
+    int pin = p->pin;
+    int i = 0;
+    while(i<PING_BUF_LEN && &(ping_collectors[pin].pings[i]) != p){ i++; }
+    if(i<PING_BUF_LEN){
+        memset(p, 0, sizeof(ping));
+        return 1;
+    }
+    return 0;
 }
 
 /**
@@ -263,17 +268,17 @@ int get_set(full_set *set){
 }
 
 /**
- * When a ping has been used, zero it out so that it is not used twice.
+ * Deletes ping entries for their buffers.
+ * Call once direction algorithm completes.
+ * @param set - The set of pings to delete
  */
-int clear_ping(ping *p){
-    int pin = p->pin;
-    int i = 0;
-    while(i<PING_BUF_LEN && &(ping_collectors[pin].pings[i]) != p){ i++; }
-    if(i<PING_BUF_LEN){
-        memset(p, 0, sizeof(ping));
-        return 1;
+void clear_set(full_set *set){
+    for(int i=0; i<2; i++){
+        clear_ping(set->pings_a[i]);
+        clear_ping(set->pings_b[i]);
+        clear_ping(set->pings_c[i]);
+        clear_ping(set->pings_d[i]);
     }
-    return 0;
 }
 
 int main(void){
@@ -284,6 +289,21 @@ int main(void){
     proc_block(d);
     d = {3200, 0x0};
     proc_block(d);
+
+    /* Insert some junk */
+    d = {5000, 0x2};
+    proc_block(d);
+    d = {5200, 0x0};
+    proc_block(d);
+    d = {6000, 0x2};
+    proc_block(d);
+    d = {9200, 0x0};
+    proc_block(d);
+    d = {15000, 0x2};
+    proc_block(d);
+    d = {15200, 0x0};
+    proc_block(d);
+
 
     d = {15400, 0xf};
     proc_block(d);
@@ -301,9 +321,7 @@ int main(void){
     printf("id = %d\n", id);
     printf("pings_b[0] 0x%x\n", set.pings_a[0]);
 
-    printf("clearing...");
-    printf(" %s\n", clear_ping(set.pings_b[0]) ? "success" : "failed");
-
-    found = find_match_on_pin(1, &f, &s);
-    printf("(3) Match found? %d\n", found);
+    printf("clearing...\n");
+    clear_set(&set);
+    disp_buffers();
 }
