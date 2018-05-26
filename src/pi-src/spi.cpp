@@ -21,6 +21,7 @@ using namespace std;
 
 int spifd;
 int _INITIALIZED = 0;
+int DISPLAY_RAW_SPI;
 
 /**
  * Grabs one byte via SPI.
@@ -77,6 +78,7 @@ int spi_getblock(spi_rawblock *data){
     }
     data->pinvals = pinvals;
     data->timestamp = timestamp;
+    if(DISPLAY_RAW_SPI) spi_dispblock(*data);
     return 1;
 }
 
@@ -129,6 +131,8 @@ void initialize_spi(){
             std::cout << "SPI test FAILED!!!!" << '\n';
             exit(1);
         }
+
+        get_param((char*)"DISPLAY_RAW_SPI", &DISPLAY_RAW_SPI);
 
         _INITIALIZED = 1;
     }

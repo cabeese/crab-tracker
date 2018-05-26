@@ -17,10 +17,9 @@ Project: Crab Tracker
 
 #define STORAGE_SIZE 32
 
-int DISPLAY_RAW_SPI;
+// int DISPLAY_RAW_SPI;
 unsigned int result;
-spi_rawblock RAW = {0, 0};
-ping storage[STORAGE_SIZE];
+full_set active = {0,0,0,0,0,0,0};
 
 /**
  * Initialize all 'modules' in the program.
@@ -30,9 +29,9 @@ int initialize(){
     initialize_util();
     initialize_spi();
     initialize_dc();
-    get_param((char*)"DISPLAY_RAW_SPI", &DISPLAY_RAW_SPI);
+    // get_param((char*)"DISPLAY_RAW_SPI", &DISPLAY_RAW_SPI);
 
-    for(int i=0; i<STORAGE_SIZE; i++){ storage[i] = {0, 0, 0}; }
+    // for(int i=0; i<STORAGE_SIZE; i++){ storage[i] = {0, 0, 0}; }
 
     return 1;
 }
@@ -42,21 +41,18 @@ int initialize(){
  * @return  (unused)
  */
 int main (void) {
-    int n_unused_pings = 0;
+    // int n_unused_pings = 0;
     initialize();
 
     while (1){
-        if(spi_getblock(&RAW)){
-            /* Got new block from SPI transfer. Process it */
-            if(DISPLAY_RAW_SPI) spi_dispblock(RAW);
-
-            result = proc_block(RAW, &(*storage));
-            n_unused_pings += result;
-            if(result){
-                /* At least one new "ping" created */
-            } else {
-                /* nop */
-            }
+        if(poll()){
+            disp_buffers();
+            printf("----------------------\n");
+            // if(get_set(&active)){
+            //     /* At least one new "ping" created */
+            // } else {
+            //     /* nop */
+            // }
         } else {
             sleep(0.5);
         }

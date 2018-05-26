@@ -84,7 +84,6 @@ int proc_block(spi_rawblock data){
                 idx = ping_collectors[i].index;
 
                 // Do we need to do this?
-                // memcpy(&storage[count], &tmp, sizeof(ping));
                 memcpy(&(ping_collectors[i].pings[idx]), &tmp, sizeof(ping));
                 ping_collectors[i].index = (idx + 1) % PING_BUF_LEN;
                 count++;
@@ -105,8 +104,9 @@ int proc_block(spi_rawblock data){
  * @param p The ping to print
  */
 void disp_ping(ping p){
-    printf("== PING == pin: %d\tstart: %lu (0x%lx)\tduration: %lu (0x%lx)\n",
-        p.pin, p.start, p.start, p.duration, p.duration);
+    int id = id_decode_ping(p);
+    printf("== PING == pin: %d\tduration: %lu\tID: %d\n",
+           p.pin, p.duration, id);
     fflush(stdout);
 }
 
@@ -117,7 +117,7 @@ void disp_buffers(){
     for(int p=0; p<NUM_PINS; p++){
         printf("Pings on pin %d:", p);
         for(int i=0; i<PING_BUF_LEN; i++){
-            printf(" %d;", ping_collectors[p].pings[i].duration);
+            printf(" %lu;", ping_collectors[p].pings[i].duration);
         }
         printf("\n");
     }
@@ -132,19 +132,12 @@ void disp_buffers(){
  *
  * @param storage - Where the processed `ping`s should be stored. Ensure that
  *     there is enough space to store up to 5 pings in this array.
- * @returns The number of `ping`s stored after the data is processed. Will be no
- *     more than 5.
+ * @returns 1 if new pings were stored, else 0
  */
-int poll(ping *storage){
+int poll(){
+    spi_rawblock raw_data;
     spi_getblock(&raw_data);
-    return proc_block(raw_data);
-}
-
-int initialize_dc(){
-    for(int i=0; i<NUM_PINS; i++){
-        ping_collectors[i] = { {0, 0, 0}, 0};
-    }
-    return get_param((char*)"DISPLAY_PINGS", &DISPLAY_PINGS);
+    return proc_block(raw_data) > 0;
 }
 
 /**
@@ -281,47 +274,9 @@ void clear_set(full_set *set){
     }
 }
 
-int main(void){
-    spi_rawblock d;
-    initialize_dc();
-
-    d = {0, 0xf};
-    proc_block(d);
-    d = {3200, 0x0};
-    proc_block(d);
-
-    /* Insert some junk */
-    d = {5000, 0x2};
-    proc_block(d);
-    d = {5200, 0x0};
-    proc_block(d);
-    d = {6000, 0x2};
-    proc_block(d);
-    d = {9200, 0x0};
-    proc_block(d);
-    d = {15000, 0x2};
-    proc_block(d);
-    d = {15200, 0x0};
-    proc_block(d);
-
-
-    d = {15400, 0xf};
-    proc_block(d);
-    d = {18600, 0x0};
-    proc_block(d);
-
-    disp_buffers();
-
-    ping *f;
-    ping *s;
-    int found;
-    full_set set = {0,0}; /* Hrm. One too many levels of indirection in function? */
-    int id;
-    id = get_set(&set);
-    printf("id = %d\n", id);
-    printf("pings_b[0] 0x%x\n", set.pings_a[0]);
-
-    printf("clearing...\n");
-    clear_set(&set);
-    disp_buffers();
+int initialize_dc(){
+    for(int i=0; i<NUM_PINS; i++){
+        ping_collectors[i] = { {0, 0, 0}, 0};
+    }
+    return get_param((char*)"DISPLAY_PINGS", &DISPLAY_PINGS);
 }
