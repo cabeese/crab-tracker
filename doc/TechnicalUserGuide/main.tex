@@ -22,6 +22,7 @@
 \usetikzlibrary{calc}
 \usetikzlibrary{matrix}
 \usetikzlibrary{topaths}
+\usetikzlibrary{intersections}
 \tikzstyle{device} = [rectangle, rounded corners, minimum width=3cm,
 	minimum height=1cm,text centered, draw=black]
 \tikzstyle{arrow} = [thick,->,>=stealth]
@@ -372,6 +373,10 @@ This section details the wiring for the following devices:
 \begin{center}
 \begin{tikzpicture}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Pins and labels on devices
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \matrix[wire board,pi](Pi){
 	MOSI  & 19 & MOSI  \\
 	MISO  & 21 & MISO  \\
@@ -392,7 +397,9 @@ This section details the wiring for the following devices:
 	D13 & 13 & SCK   \\
 };
 
-%\draw (Pi-1-2) -- (Arduino-1-2);
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Boxes around devices
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Add boxes around Pi
 \draw (Pi-1-2.north east) rectangle (Pi-5-2.south west);
@@ -402,12 +409,31 @@ This section details the wiring for the following devices:
 	rectangle
 	($(Pi-5-2.south west)+(0,-0.5cm)$);
 
+% Add boxes around Arduino
 \draw (Arduino-1-2.north east) rectangle (Arduino-9-2.south west);
 \draw (Arduino-1-2.north east)+(0cm,0.5cm)
 	node[above right, align=center, font=\bfseries]
 	{Arduino Nano}
 	rectangle
-	($(Arduino-9-2.south east)+(5cm,-0.5cm)$);
+	($(Arduino-9-2.south east)+(4cm,-0.5cm)$);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Wires between devices
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\draw[color=red] % SPI connections
+	(Pi-1-2) -- +(2.60cm,0) |- (Arduino-7-2) % MOSI
+	(Pi-2-2) -- +(2.40cm,0) |- (Arduino-8-2) % MISO
+	(Pi-3-2) -- +(2.20cm,0) |- (Arduino-9-2) % SCLK
+	(Pi-4-2) -- +(2.00cm,0) |- (Arduino-6-2) % SS
+;
+\draw
+	(Pi-5-2) -- +(3cm, 0)   |- (Arduino-1-2) % GND
+;
+
+%\draw
+%	(Pi-1-2) -- +(2cm, 1cm) -| (Arduino-7-2)
+%;
 
 %\draw
 %	node at (0,0) []          {\Large $\circ$}
