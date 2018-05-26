@@ -210,25 +210,24 @@ int find_match_on_pin(int pin, ping **first, ping **second){
     ping *snd;
     int candidate_id = -1;
     for(int i=0; i<PING_BUF_LEN; i++){
-        // TODO: skip if id < 0?
         /* Check each ping, one at a time */
         fst = &(ping_collectors[pin].pings[i]);
         candidate_id = id_decode_ping(*fst);
 
-        /* Compare this ping with one that comes afterwards */
-        for(int j=i+1; j<PING_BUF_LEN; j++){
-            snd = &(ping_collectors[pin].pings[j]);
-
-            /* If pings have same ID and delay is correct, we found a match! */
-            if(pings_match(*fst, *snd)){
-                int in_order = fst->start < snd->start;
-                *first  = in_order ? fst : snd;
-                *second = in_order ? snd : fst;
-                return candidate_id;
+        /* Find a matching ping in the remainder of the buffer */
+        if(candidate_id >= 0){
+            for(int j=i+1; j<PING_BUF_LEN; j++){
+                snd = &(ping_collectors[pin].pings[j]);
+                if(pings_match(*fst, *snd)){
+                    int in_order = fst->start < snd->start;
+                    *first  = in_order ? fst : snd;
+                    *second = in_order ? snd : fst;
+                    return candidate_id;
+                }
             }
         }
     }
-    return -1;
+    return -1; /* No match found */
 }
 
 /**
@@ -273,7 +272,7 @@ int get_set(full_set *set){
 }
 
 /**
- * Deletes ping entries for their buffers.
+ * Deletes ping entries from their buffers.
  * Call once direction algorithm completes.
  * @param set - The set of pings to delete
  */
