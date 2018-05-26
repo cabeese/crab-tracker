@@ -68,7 +68,7 @@ int spi_getblock(spi_rawblock *data){
 
     /* Get timestamp (in 4 parts) */
     for(int i=0; i<4; i++){
-        usleep(10);
+        usleep(15);
         timestamp |= spi_getbyte(SPI_NO_FLAGS) << (i * 8);
     }
 
@@ -89,7 +89,7 @@ int spi_getblock(spi_rawblock *data){
 void spi_dispblock(spi_rawblock data){
     printf("[[ SPI Raw Data Block ]] pinvals: ");
     print_bin_8(data.pinvals);
-    printf("\ttimestamp: %ld\n", data.timestamp);
+    printf("\ttimestamp: %lu\n", data.timestamp);
 }
 
 /**

@@ -1,6 +1,14 @@
 /******************************************************************************
-Project: Crab Tracker
+Main Crab Tracker loop.
+This file continuously checks for new data over SPI, and then processes batches
+of data when they become available. The `full_set` object, `active`, will
+contain 8 related pings when a single transmission is received. These pings can
+be used to calculate the direction of the given crab, which will then be
+displayed to the user.
 
+Author:  Noah Strong
+Project: Crab Tracker
+Created: 2018-02-03
 ******************************************************************************/
 
 #include <sys/ioctl.h>
@@ -15,10 +23,6 @@ Project: Crab Tracker
 #include "spi.h"
 #include "data_collection.h"
 
-#define STORAGE_SIZE 32
-
-// int DISPLAY_RAW_SPI;
-unsigned int result;
 full_set active = {0,0,0,0,0,0,0};
 
 /**
@@ -29,10 +33,6 @@ int initialize(){
     initialize_util();
     initialize_spi();
     initialize_dc();
-    // get_param((char*)"DISPLAY_RAW_SPI", &DISPLAY_RAW_SPI);
-
-    // for(int i=0; i<STORAGE_SIZE; i++){ storage[i] = {0, 0, 0}; }
-
     return 1;
 }
 
@@ -42,16 +42,16 @@ int initialize(){
  */
 int main (void) {
     int id;
-    // int n_unused_pings = 0;
     initialize();
 
     while (1){
         if(poll()){
             if((id = get_set(&active)) > -1){
                 /* We have a set of 8 pings */
+                printf("---------------------- ");
+                printf("Got a full set for crab %d\n", id);
                 disp_buffers();
-                printf("----------------------\n");
-                printf("Got a full set. Direction = ...\n");
+                printf("---------------------- %d\n", id);
                 // TODO: call direction algorithm
                 // TODO: update GUI
                 clear_set(&active);
