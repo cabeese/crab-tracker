@@ -22,9 +22,19 @@ struct ping {
     unsigned long duration;
 };
 
+struct full_set {
+    ping *pings_a[2];
+    ping *pings_b[2];
+    ping *pings_c[2];
+    ping *pings_d[2];
+};
+
 int initialize_dc();
-int proc_block(spi_rawblock, ping*);
+int proc_block(spi_rawblock);
 void disp_ping(ping);
-int poll(ping*);
+void disp_buffers();
+int poll();
+int get_set(full_set*);
+void clear_set(full_set*);
 
 #endif /* __DATA_COLLECTION_H */

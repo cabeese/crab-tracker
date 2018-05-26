@@ -21,6 +21,7 @@ using namespace std;
 
 int spifd;
 int _INITIALIZED = 0;
+int DISPLAY_RAW_SPI;
 
 /**
  * Grabs one byte via SPI.
@@ -67,7 +68,7 @@ int spi_getblock(spi_rawblock *data){
 
     /* Get timestamp (in 4 parts) */
     for(int i=0; i<4; i++){
-        usleep(10);
+        usleep(15);
         timestamp |= spi_getbyte(SPI_NO_FLAGS) << (i * 8);
     }
 
@@ -77,6 +78,7 @@ int spi_getblock(spi_rawblock *data){
     }
     data->pinvals = pinvals;
     data->timestamp = timestamp;
+    if(DISPLAY_RAW_SPI) spi_dispblock(*data);
     return 1;
 }
 
@@ -87,7 +89,7 @@ int spi_getblock(spi_rawblock *data){
 void spi_dispblock(spi_rawblock data){
     printf("[[ SPI Raw Data Block ]] pinvals: ");
     print_bin_8(data.pinvals);
-    printf("\ttimestamp: %ld\n", data.timestamp);
+    printf("\ttimestamp: %lu\n", data.timestamp);
 }
 
 /**
@@ -129,6 +131,8 @@ void initialize_spi(){
             std::cout << "SPI test FAILED!!!!" << '\n';
             exit(1);
         }
+
+        get_param((char*)"DISPLAY_RAW_SPI", &DISPLAY_RAW_SPI);
 
         _INITIALIZED = 1;
     }
