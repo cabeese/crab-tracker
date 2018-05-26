@@ -158,17 +158,19 @@ timestamp values.
 Once this is done, software must run calculations using these timestamps
 to decode the unique identifiers of the broadcasting transmitter(s) and to
 determine the direction from which the sound(s) originated.
-Because the later task requires a mild amount of computation time,
+Because the latter task requires a mild amount of computation time,
 and because the former task requires low-latency monitoring of the input
 devices, these two tasks are to be performed on separate physical computers.
 
-The first of the two devices, whose task is to timestamp incoming data,
-need only be a simple microcontroller.
+The first of the two devices, referred to as the Timestamp Recorder
+(\ref{sec:ts-rec},
+has the simple but important task of timestamp incoming data.
 As of the current revision of this document,
 we have tested the system with an Arduino Nano, a small,
-inexpensive device with a clock speed of 16MHz.
+inexpensive microcontroller with a clock speed of 16MHz.
 Once broadcasts are detected and labeled with a timestamp, the device can
-send this data to the main computer that will run the calculations.
+send this data to the Data Processor (\ref{sec:data-processor})
+that will run the calculations.
 We originally investigated using the popular \gls{i2c} protocol for this, but
 unfortunately \gls{i2c} can't be interrupted during a transfer, and therefore
 the device would be effectively frozen (and therefore unable to detect
@@ -180,8 +182,9 @@ The advantage of \gls{spi} is that data can be placed into a separate physical
 bus on the device when it is ready to be transmitted, and the other machine can
 fetch that data without affecting the detection and timestamp code.
 
-The second device, which runs calculations and displays results to the user,
-is a slightly more powerful machine.
+The Data Processor (\ref{sec:data-processor}),
+which runs calculations and displays results to the user,
+is a slightly more powerful computer.
 We opted to use a Raspberry Pi Model 3B for this task, as these machines are
 inexpensive, reasonably powerful, well-supported, \gls{spi}-compatible,
 and easy to develop on.
@@ -218,11 +221,13 @@ See Figure \ref{fig:component-diagram} for an illustration of these components.
 
 \end{tikzpicture}
 \end{center}
-\caption{A simple diagram detailing the main components.}
+\caption{A simple diagram detailing the main components.
+	Each circle labeled Rx is a receiver.}
 \label{fig:component-diagram}
 \end{figure}
 
-For a more detailed wiring diagram, see Section \ref{sec:wiring}.
+For a more detailed version of this figure, see the
+Wiring Diagram (\ref{fig:wiring}) in Section \ref{sec:wiring}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Electronics Hardware}\label{sec:ee-hardware}
@@ -243,6 +248,9 @@ Though we have not established bounds on our range of potential frequencies,
 the actual frequency shouldn't matter so long as the receiving hardware is
 appropriately tuned to pick up this frequency (through filtering,
 hardware characteristics, and so on).
+For example, our hardware was limited to roughtly 150kHz, because the
+microcontrollers we used don't have a high enough clock speed to drive
+the receivers at that rate.
 
 Each transmitter is attached to a small \gls{pcb} designed
 specifically for the project.
@@ -258,8 +266,8 @@ The receivers include small piezoelectric transducers that are able to detect
 vibrations in the same range as the transmitters.
 A preamplifier steps up the signal from the transducer before sending this
 signal along to a band-pass filter.
-The band-pass filter restricts the frequencies that the hardware ``listens''
-to, meaning that a lot of irrelevant noise can be discarded.
+The band-pass filter restricts the frequencies that the hardware will
+detect, meaning that a lot of irrelevant noise can be discarded.
 After being filtered, the signal is then amplified.
 A potentiometer on the board allows for variable amplification.
 Next, the signal is
@@ -499,7 +507,10 @@ described in Section \ref{sec:cs-hardware}.
 \subsection{Timestamp Recorder Software}\label{sec:ts-rec-sw}
 
 The relevant source code can be found here:
-\texttt{src/arduino-src/arduino-src.ino}.
+\texttt{src/arduino-src/arduino-src.ino} in the project source or on
+\href{https://github.com/cabeese/crab-tracker/tree/master/src/arduino-src}
+{GitHub}.
+
 
 The Timestamp Recorder (\ref{sec:ts-rec}) software has two primary functions:
 (1) record timestamps of signal changes (i.e. when a pin goes high or low) and
@@ -539,13 +550,19 @@ two sections.
 
 \subsubsection{SPI Handling}
 
+\gls{spi} is a synchronous serial communication interface that is natively
+supported by both the Arduino and the Raspberry Pi.
+It supports a single ``master'' node and multiple ``slave'' nodes.
+When the master node is ready to transfer data, it selects one of the
+slave devices by making its Chip Enable/Slave Select line active and then
+begins pulsing the clock.
+More details about the \gls{spi} protocol can be found online.
+
 The Arduino Nano has a built-in \gls{spi} bus that supports 8-bit data
 transfers.
-On a transfer, the Master node provides a clock pulse and on every pulse, one
+On a transfer, the master node provides a clock pulse and on every pulse, one
 bit is shifted out of the data register (sent to the master) and one bit is
 shifted in (sent from the master).
-On the Arudino, the data register is referenced with the \texttt{SPDR}
-variable.
 
 On each iteration of the loop, the Arduino checks to see if the ``End of
 Transmission'' flag is set, which indicates that a transfer has completed.
@@ -616,8 +633,8 @@ Each time the loop runs, the current state of the relevant pins (D3..D6) is
 compared with the state recorded from the previous iteration.
 If the two states differ, this indicates that at least one pin changed from
 low to high or vice versa.
-When this is the case, the device stores the new state in the global bounded
-buffer, along with the current time.
+When this is the case, the device stores the new state in a circular
+buffer along with the current time.
 
 As of the current revision of the document, the timestamp is generated from
 the \texttt{TCNT0} clock, which increments every four milliseconds.
@@ -646,7 +663,8 @@ the realm of possibility for future work.
 \subsection{Data Procesesor Software}\label{sec:sw-data-proc}
 
 The relevant source code can be found in multiple files in
-\texttt{src/pi-src/}.
+\texttt{src/pi-src/} in the project source or on
+\href{https://github.com/cabeese/crab-tracker/tree/master/src/pi-src}{GitHub}.
 
 \subsubsection{Overview of Files}
 
@@ -663,14 +681,23 @@ The primary functions of the various files are as follows:
 	given pin, a \texttt{ping} object is stored containing these timestamps.
 	The data collection code also steps through the collected data to determine
 	if enough pings have been collected for the direction algorithm to run.
+	For more details, see Section \ref{sec:proc-and-structure}.
 \item \texttt{direction.cpp} --
 	Using an algorithm developed by one of the team's developers, Chloe Yugawa,
 	this code determines the relative direction of a crab given the timestamps
 	of its pings.
 	That is, it performs a type of Time Difference On Arrival calculation
 	based on ping times.
-	It returns a direction relative to the front of the boat in polar
+	It returns a direction relative to the front of the boat in cylindrical
 	coordinates in the form $(r, \theta, z)$.
+	For more information, see the following document:
+	%
+	%
+	%
+	{\bf TODO:} link to document when it is pushed to master
+	%
+	%
+	%
 \item \texttt{spi.cpp} --
 	This file facilitates and abstracts away the communication with the
 	\gls{spi} slave device.
@@ -686,10 +713,12 @@ The primary functions of the various files are as follows:
 	Various helper methods are located here.
 \end{itemize}
 
-\subsubsection{Processing and Structure}
+\subsubsection{Processing and Structure}\label{sec:proc-and-structure}
+
+%%%%%%%%%% TODO : insert information about data_collection.cpp
 
 Each file contains extensive documentation, so the finer details about
-various functions and variable will not be
+various functions and variables will not be
 duplicated in this document. Instead, we'll take a broad look at how these
 pieces fit together.
 
@@ -697,16 +726,16 @@ When data is read from the Timestamp Recorder, it is translated from raw pin
 states into something more meaningful, such as a ``ping'' (that is, a single
 broadcast as measured by the rising and falling edges of a signal on a single
 pin).
-As pings are collected, the software looks to see if it has enough pings to
-run calculations.
-Specifically, it looks to see two pings on every hydrophone before it attempts
-to locate and report a crab.
-Recall from the requirements of the \gls{iCRAB} that every transmission by
-a transmitter should be made up of two pings.
-
-When enough pings have been amassed and a single crab's pings have been
-detected twice on each input line, the software can then run the direction
-algorithm with these values.
+Pings are collected in a set of buffers, with one buffer for each pin.
+These buffers are managed by the \texttt{data\_collection.cpp} code.
+Since the \gls{iCRAB} protocol mandates that every transmission consists
+of two pings, no calculations are performed until a pair of pings is detected
+by all four hydrophones.
+Each time a new ping is detected, these arrays are searched for matching pairs.
+If there are two pings in every buffer, and they all share the same ID
+and are spaced apart correctly (temporally, based on \gls{iCRAB}
+specifications), they are all returned as a set of 8 pings to the main loop of
+the program, which then runs the direction calculation algorithm.
 If the direction algorithm is able to determine an approximate location for
 the signal$^*$, the direction and associated ID can be reported to the user.
 
