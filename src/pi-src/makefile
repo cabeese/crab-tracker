@@ -9,9 +9,6 @@ TESTFILES=test_*.cpp
 all: ${OFILES}
 	$(CXX) -o crab-tracker ${OFILES}
 
-temp:
-	$(CXX) -g -o test data_collection.cpp util.cpp spi.cpp data_collection.h util.h spi.h uid.h uid.cpp
-
 install:
 	@mkdir -p include
 	@wget https://raw.githubusercontent.com/CatchOrg/Catch2/master/single_include/catch.hpp -P include/

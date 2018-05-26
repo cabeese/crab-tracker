@@ -3,8 +3,9 @@ Data collection and initial processing
 
 Polls the SPI slave for new data. The data comes in as raw "blocks" containing
 a timestamp and a set of pin values. As these raw blocks are collected, they
-are turned into "ping" structs that can be consumed by the higher-level
-functions that will determine location and UID.
+are turned into "ping" structs and stored for future use. Once there are enough
+pings (8, specifically) to run a direction calculation, a set of all 8 can be
+returned and then later cleared.
 
 Author:  Noah Strong
 Project: Crab Tracker
@@ -20,15 +21,26 @@ Created: 2018-02-10
 
 #define NUM_PINS 4 /* TODO: Define this elsewhere, globally */
 #define PING_BUF_LEN 16 /* TODO: Define as config param */
-// extern int DISPLAY_PINGS;
+int DISPLAY_PINGS = 0;
 
+/**
+ * As pings come in, we need to store them. We need at least 2 pings per pin
+ * to run the direction algorithm, but we also need to account for the fact
+ * that we may get some noise between two pings. Thus we have a small buffer
+ * of size PING_BUF_LEN for each pin. As pings come in, they are stored in the
+ * appropriate buffer. Later, we search through all these buffers to find
+ * matching pings that we can run triangulation on.
+ * We insert at the "end" of this circular buffer every time and erase pings
+ * once they have been used. If a ping becomes "stale," meaning that it has
+ * been in the buffer for a while without being used in a calculation, it will
+ * eventually be overwritten with fresh data as the insert head of the buffer
+ * wraps back around to it.
+ */
 struct ping_collector_t {
     ping pings[PING_BUF_LEN]; /* Recent pings on this hydrophone */
     int index;                /* Insert new pings here */
 };
-
 struct ping_collector_t ping_collectors[NUM_PINS];
-int DISPLAY_PINGS = 0;
 
 /* The previous raw data block. We only need the 1 most recent. */
 spi_rawblock prev = {
@@ -65,8 +77,7 @@ int proc_block(spi_rawblock data){
         idx,
         mask,
         count = 0;
-    /* Ignore high-order 4 bits. May need to adjust if NUM_PINS increased */
-    uint8_t changed = (data.pinvals ^ prev.pinvals) & 0xf;
+    uint8_t changed = data.pinvals ^ prev.pinvals;
     ping tmp = {0, 0, 0};
 
     for(i=0; i<5; i++){
@@ -83,7 +94,6 @@ int proc_block(spi_rawblock data){
                 tmp.duration = data.timestamp - partials[i];
                 idx = ping_collectors[i].index;
 
-                // Do we need to do this?
                 memcpy(&(ping_collectors[i].pings[idx]), &tmp, sizeof(ping));
                 ping_collectors[i].index = (idx + 1) % PING_BUF_LEN;
                 count++;
@@ -169,12 +179,12 @@ int find_match_on_pin_with_id(int pin, int id, ping **first, ping **second){
     ping *snd;
     for(int i=0; i<PING_BUF_LEN; i++){
         fst = &(ping_collectors[pin].pings[i]);
+
         if(id_decode_ping(*fst) == id){
             /* First ping matches given ID. Find a second */
             for(int j=i+1; j<PING_BUF_LEN; j++){
                 snd = &(ping_collectors[pin].pings[j]);
-                /* Pings may be in reverse order, so need to check
-                   delay with each in front */
+
                 if(pings_match(*fst, *snd)){
                     /* Pings found! Return in chronological order */
                     int in_order = fst->start < snd->start;
@@ -200,7 +210,7 @@ int find_match_on_pin(int pin, ping **first, ping **second){
     ping *snd;
     int candidate_id = -1;
     for(int i=0; i<PING_BUF_LEN; i++){
-        // TODO: skip if id < 0
+        // TODO: skip if id < 0?
         /* Check each ping, one at a time */
         fst = &(ping_collectors[pin].pings[i]);
         candidate_id = id_decode_ping(*fst);
