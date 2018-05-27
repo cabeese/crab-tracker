@@ -15,6 +15,8 @@ Author:  Noah Strong
 Project: Crab Tracker
 Created: 2018-02-28
 ******************************************************************************/
+#include <stdio.h>
+#include <string.h>
 #include <math.h>
 #include "uid.h"
 
@@ -29,7 +31,18 @@ Created: 2018-02-28
  * @returns The ID encoded in 'p'
  */
 int id_decode_ping(ping p){
-    float duration_ms = (float)p.duration / 1000; /* convert us->ms */
+    
+    printf("\n \n");
+    
+    float period_us = 1.0/16.0; // this can be made more architecture indendent, also make this a constant later
+    float period_ns = period_us * 1000;
+    float duration_ns = (float)p.duration*period_ns;
+    float duration_us = duration_ns / 1000;
+    float duration_ms = duration_us / 1000;
+    printf("p.duration %lu duration_ns %f duration_us %f \n", p.duration, duration_ns, duration_us);
+
+    
+    //float duration_ms = (float)p.duration / 1000; /* convert us->ms */
     float raw_id = (duration_ms - MIN_PING_DUR_MS) / STEP_SIZE_MS;
 
     return (int)roundf(raw_id);
