@@ -58,22 +58,42 @@ int bb_beg = 0; /* Start of bounded buffer. SPI reads here */
 int bb_end = 0; /*   End of bounded buffer. PIN_D code writes here*/
 
 
-uint8_t prevpinval = PIND & bitMask;
-uint8_t pinval;
-uint8_t xorpins;
-extern volatile unsigned long timer0_overflow_count;
-unsigned long time_elapsed;
+volatile uint8_t prevpinval = PIND & bitMask;
+volatile uint8_t pinval;
+volatile uint8_t xorpins;
+//extern volatile unsigned long timer0_overflow_count;
+
+// Noah timing code
+volatile unsigned long tmr1_overflow = 0;
+volatile unsigned long time_elapsed;
 
 /* ======================== SPI Variables ======================== */
 byte marker = 0; /* Index into `long` timestamp in output array */
 byte send_pinvals = 1; /* Send 'pinvals' first, so initialize to 1 */
 byte flag; /* For Pi -> Arduino messages, such as 'reset' */
 
+ISR(TIMER1_OVF_vec){
+      tmr1_overflow++;
+}
+
+
 /**
  * This function runs once when the board boots.
  * Initial configuration is done here.
  */
 void setup (void) {
+
+  TCCR1A = 0;// set registers to 0  
+  TCCR1B = 0;  
+  TCCR1C = 0;  
+  
+//  TCNT1 = 0; 
+
+  /* Timer 1 is a 16-bit timer. */
+   TIMSK1 |= _BV(TOIE1); /* Enable overflow interrupt */
+
+   TCCR1B = 1;// start timer 1 , this may not be the best place to start the timer
+
   /* SPI Setup */
   pinMode(MISO, OUTPUT); /* Set "Master In/Slave Out" pin as output */
   SPCR |= _BV(SPE); /* Set 'enable' bit of SPI config register */
@@ -172,7 +192,20 @@ void loop (void){
   if (xorpins != 0) {
     // recreates the functionality of the micors() function
     // without the overhead of a function call
-    time_elapsed = ((timer0_overflow_count << 8) + TCNT0) * 4;
+//    time_elapsed = ((timer0_overflow_count << 8) + TCNT0) * 4;
+
+    TCCR1B = 0;    //stop the timer 
+    unsigned int temp_timer = TCNT1;  //store passed ticks  
+    TCCR1B = 1; // restart the timer
+    
+    unsigned long ticks = (((tmr1_overflow - 1) << 16) | (unsigned long)temp_timer);  
+    
+    
+//    unsigned long ticks = ((((unsigned long)tmr1_overflow - 1) << 16) | (unsigned long)temp_timer) - 4;  
+//    
+
+//    timestamp = (tmr1_overflow << 16) | TCNT1;
+    time_elapsed = ticks;
 
     // stores high pins and timestamp
     output[bb_end].pinvals = (pinval >> 3) & 0b00011111;
