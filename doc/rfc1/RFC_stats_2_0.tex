@@ -1,0 +1,97 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+
+\title{RFC stats}
+\author{Chloe Yugawa}
+\date{November 2017}
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+Signals that collide are problematic with the current proposed solution to this problem. In this section, we will explore the probability that signals will collide in a few different cases. Assumptions for this section are as follows:
+\begin{itemize}
+\item The number of crabs transmitting in the entire study is 500
+\item The target listening radius is $50$ meters with an area of $7853.98m^2$
+\item The estimated density of tagged crabs is 0.00012 tagged crabs/m2 (that's 1 tagged crab per 8500 square meters)
+\item The conservative estimate of tagged crabs is 0.001 crabs/m2 (1 tagged crab per 1000 square meters).  The average distance between crabs will be about 32 meters if they're all evenly spaced.
+\item For the sake of simplicity, a signal is defined as the total time between the beginning of a signal and the end of the signal, including the encoded silence. The time for this is estimated to be 11ms to 212ms, or 0.0011s to .212s.
+\item The signal space is defined as the time between the end of one signal and the start of the next. This will be between 10 and 15 seconds.
+\item The total signal time will then be between 10.0011 and 15.212 seconds (signal + signal space). On average, that's 5 signals per minute.
+\item A conservative estimate for the percentage of crabs tagged is $.5\% $
+\item The probability of finding more than one crab within a meter (tagged or untagged) during the season when research will occur is $3-5\%$
+
+\end{itemize}
+
+
+
+The number of crabs within the detection radius is shown in table 1. The low estimate is assuming 1 crab per $8500m^2$, while the high estimate is 1 crab per $1000m^2$.
+
+Looking at periods of 0.5 seconds as a conservative estimate and dividing 60 seconds into 5 12 second sections, assume that each signal is contained within one of those 0.5 second periods. Within a 12 second section, each crab will on average signal once. Dividing that section into 24 0.5 second parts, by the pidgin hole principle, at least two crabs must signal within the same 0.5 second period when the number of signaling crabs is greater than 24. See table 3 for probability of collisions. Table 2 shows the same reasoning for a period of 0.2 seconds and 60 intervals.
+
+\section{Conclusion}
+If average signal is 4 per minute, 9 crabs gives a 30\% chance of collision for 0.2 second periods. When determining factors such as detection radius and length of signal space, it is advised to look at 3 different tagged crab densities: the conservative 1 crab per 1000$m^2$; the more likely 1 crab per 8500$m^2$; and the midpoint of the two estimates of 1 crab per 4750$m^2$. For each estimate, calculate the number of crabs within the detection radius. Calculate probabilities based on signal time and space. If the number of crabs in the detection radius for the middle estimate has a probability of collision over 30\%, variables should be adjusted. 
+\newpage
+\section{Tables}
+
+\begin{table}[ht]
+\centering
+\caption{Number of tagged crabs based on detection radius}
+%\label{my-label}
+\begin{tabular}{|c|c|c|c|}
+\hline
+\textbf{Radius (meters)} & \textbf{Area (meters squared)} & \textbf{\# of crabs - low} & \textbf{\# of crabs - high} \\ \hline
+50                       & 7854                           & 1                          & 8                           \\ \hline
+100                      & 31,416                         & 4                          & 31                          \\ \hline
+150                      & 70,686                         & 8                          & 71                          \\ \hline
+200                      & 125,664                        & 15                         & 126                         \\ \hline
+250                      & 196,350                        & 23                         & 196                         \\ \hline
+\end{tabular}
+\end{table}
+
+
+\begin{table}[ht]
+\centering
+\caption{Crab Collision Probability with 0.2 second periods}
+%\label{my-label}
+\begin{tabular}{|c|c|}
+\hline
+Number of crabs & Probability of collision \\ \hline
+1               & 0                        \\ \hline
+2               & .017                     \\ \hline
+3               & .05                      \\ \hline
+4               & .096                      \\ \hline
+5               & .15                      \\ \hline
+6               & .22                      \\ \hline
+7               & .30                      \\ \hline
+8               & .38                      \\ \hline
+9               & .45                      \\ \hline
+10              & .53                      \\ \hline
+11              & .60                      \\ \hline
+12              & .67                        \\ \hline
+\end{tabular}
+\end{table}
+\begin{table}[ht]
+\centering
+\caption{Crab Collision Probability with 0.5 second periods}
+%\label{my-label}
+\begin{tabular}{|c|c|}
+\hline
+Number of crabs & Probability of collision \\ \hline
+1               & 0                        \\ \hline
+2               & .042                     \\ \hline
+3               & .12                      \\ \hline
+4               & .23                      \\ \hline
+5               & .35                      \\ \hline
+6               & .47                      \\ \hline
+7               & .59                      \\ \hline
+8               & .70                      \\ \hline
+9               & .78                      \\ \hline
+10              & .85                      \\ \hline
+11              & .90                      \\ \hline
+12              & .94                        \\ \hline
+\end{tabular}
+\end{table}
+
+\end{document}

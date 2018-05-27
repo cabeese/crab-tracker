@@ -59,8 +59,8 @@ void loop() {
   PORTD = 0B01000000;
   delayMicroseconds(signal_length);
   PORTD = 0B00000000;
- // delay(wait);
+  delay(wait);
 
-  delay(20000);
+  delay(500);
 
 }
