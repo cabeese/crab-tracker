@@ -34,7 +34,7 @@ const double S_USER = 0.0015;
  *                   |     |     |
  *                  c*-----+-----*d
  *
- *                   |---  L  ---|
+ *                   |- r -|
  *
  *
  */
@@ -197,6 +197,10 @@ void printResult(crab_event *result){
   fprintf(stderr, "r = %lf\n", result->r_m);
   fprintf(stderr, "theta = %lf\n", result->theta);
   fprintf(stderr, "z = %lf\n", result->z_m);
+}
+
+void disp_direction(crab_event r){
+  printf("direction: (%lfm, %lf, %lfm)\n", r.r_m, r.theta, r.z_m);
 }
 
 double calcSpeedOfSound(double temp, double salinity, double depth) {

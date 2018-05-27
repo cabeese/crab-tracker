@@ -20,6 +20,7 @@ int triangulation_helper(unsigned long ts_a, unsigned long ts_b, unsigned long t
  * Helper functions calculate various calculations
 */
 void printResult(crab_event *result);
+void disp_direction(crab_event);
 double calcN(double delta_1, double delta_2, double delta_3);
 double calcX(double delta_1, double N);
 double calcY(double delta_3, double N);
