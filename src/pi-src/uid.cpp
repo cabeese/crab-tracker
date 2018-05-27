@@ -30,6 +30,7 @@ Created: 2018-02-28
  * @param p - The ping to decode
  * @returns The ID encoded in 'p'
  */
+int counter = 0;
 int id_decode_ping(ping p){
     
     printf("\n \n");
@@ -39,12 +40,12 @@ int id_decode_ping(ping p){
     float duration_ns = (float)p.duration*period_ns;
     float duration_us = duration_ns / 1000;
     float duration_ms = duration_us / 1000;
-    printf("p.duration %lu duration_ns %f duration_us %f \n", p.duration, duration_ns, duration_us);
+    printf("p.duration %lu duration_ns %f duration_us %f counter %d\n", p.duration, duration_ns, duration_us, counter%64);
 
     
     //float duration_ms = (float)p.duration / 1000; /* convert us->ms */
     float raw_id = (duration_ms - MIN_PING_DUR_MS) / STEP_SIZE_MS;
-
+    counter++;
     return (int)roundf(raw_id);
 }
 

@@ -69,6 +69,7 @@ int proc_block(spi_rawblock data, ping *storage){
                 /* Pin `i` changed HIGH to LOW */
                 tmp.pin = i;
                 tmp.start = partials[i];
+                printf("start: %lu end: %lu \n", tmp.start, data.timestamp);
                 tmp.duration = data.timestamp - partials[i];
 
                 if(DISPLAY_PINGS) disp_ping(tmp);
