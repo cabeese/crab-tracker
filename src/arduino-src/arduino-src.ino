@@ -31,7 +31,7 @@ const byte SPI_ECHO_RESPONSE = 0x77; /* Response to send */
 /* ======================= PIN_D Variables ======================= */
 // Masks off digital pins 0, 1, and 2.
 // Most significant bit of register corresponds to digital pin 7
-uint8_t bitMask = B00001000;
+uint8_t bitMask = B01111000;
 
 /*
  * Pin values and corresponding timestamps are stored in this 2D array,
@@ -72,9 +72,6 @@ byte marker = 0; /* Index into `long` timestamp in output array */
 byte send_pinvals = 1; /* Send 'pinvals' first, so initialize to 1 */
 byte flag; /* For Pi -> Arduino messages, such as 'reset' */
 
-ISR(TIMER1_OVF_vec){
-      tmr1_overflow++;
-}
 
 
 /**
@@ -86,11 +83,15 @@ void setup (void) {
   TCCR1A = 0;// set registers to 0  
   TCCR1B = 0;  
   TCCR1C = 0;  
+
+  //TIMSK0 = 0; Disables timer0, I think
+  TCCR0A = 0;
+  TCCR0B = 0;
   
 //  TCNT1 = 0; 
 
   /* Timer 1 is a 16-bit timer. */
-   TIMSK1 |= _BV(TOIE1); /* Enable overflow interrupt */
+//   TIMSK1 |= _BV(TOIE1); /* Enable overflow interrupt */
 
    TCCR1B = 1;// start timer 1 , this may not be the best place to start the timer
 
@@ -108,6 +109,7 @@ void setup (void) {
     output[i].pinvals = 0B11111111;
     output[i].timestamp = 0;
   }
+//   TCCR1B = 1;// start timer 1 , this may not be the best place to start the timer
 
 }
 
@@ -117,6 +119,7 @@ void setup (void) {
  * reading/change detection.
  */
 void loop (void){
+  while(1){
   /* ================= SPI TRANSFER =================
    * SPSR = SPI Status Register
    * SPDR = SPI Data Register
@@ -198,7 +201,7 @@ void loop (void){
     unsigned int temp_timer = TCNT1;  //store passed ticks  
     TCCR1B = 1; // restart the timer
     
-    unsigned long ticks = (((tmr1_overflow - 1) << 16) | (unsigned long)temp_timer);  
+    unsigned long ticks = (((tmr1_overflow+1) << 16) | (unsigned long)temp_timer);  
     
     
 //    unsigned long ticks = ((((unsigned long)tmr1_overflow - 1) << 16) | (unsigned long)temp_timer) - 4;  
@@ -218,5 +221,11 @@ void loop (void){
   }
   prevpinval = pinval;
 
+  }
+
 }
+ISR(TIMER1_OVF_vec){
+      tmr1_overflow++;
+}
+
 
