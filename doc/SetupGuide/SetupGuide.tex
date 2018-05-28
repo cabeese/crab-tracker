@@ -10,11 +10,19 @@
 \usepackage{graphicx}
 \graphicspath{ {graphics/} }
 \usepackage{amssymb}
-\usepackage[hidelinks]{hyperref}
+\usepackage{hyperref}
 \usepackage{wrapfig}
 \usepackage[margin=1.2cm]{caption}
 \usepackage{intcalc}
-
+\usepackage{xcolor}
+\usepackage{listings}
+\lstset{
+%	basicstyle=\ttfamily,
+	basicstyle=\footnotesize,
+  showstringspaces=false,
+  commentstyle=\color{red},
+  keywordstyle=\color{blue}
+}
 
 %%%%%%%%%%%%%%%%%%% TIKZ CUSTOM SHAPES AND SETTINGS
 \usepackage{tikz}
@@ -173,7 +181,111 @@ Note that the side lengths shown are 1 meter, but this is only an example.
 
 \subsection{Loading Software}
 
+It may at some point be necessary to add or replace code on one of the devices,
+such as when new hardware is acquired or the software is updated.
+To do this, the first step is to download (``clone'') the most recent copy
+of the \texttt{master} branch from the
+\href{https://github.com/cabeese/crab-tracker/}
+{Crab Tracker GitHub repository}.
+It is possible to download a ZIP file containing the contents of the repository
+from the GitHub website.
+Another option, however, is to use the \texttt{git} command-line utility to
+make a clone.
+To see if you have Git installed, open a shell/terminal and type \texttt{git}.
+A usage page should be displayed.
+If not, look online for instructions on how to install Git on your operating
+system.
+
+The steps shown in the remainder of this section are meant to be run on a
+UNIX-like operating system (such as Linux, MacOS, or BSD).
+However, equivalent commands exist for other systems, such as Windows.
+
+\subsubsection{Downloading the source code}\label{sec:git}
+
+The following applies to both personal computers, which may be attached to
+the Aruidno, and to the Raspberry Pi to be used in the field.
+
+\textbf{If you have not cloned the repository} on your computer before, run:
+
+\begin{lstlisting}[language=bash]
+$ git clone https://github.com/cabeese/crab-tracker.git
+$ cd crab-tracker
+\end{lstlisting}
+
+\textbf{If you have already cloned the repository} at some point previously,
+\texttt{cd} into the project's directory and run \texttt{git pull}.
+
+\subsubsection{Flashing code to the Arduino}
+
+In order to upload binaries to the Arduino, you will need the Arduino software
+from \href{https://www.arduino.cc/en/Main/Software}{their website}.
+
+With the software downloaded, plug the Arduino into your computer.
+
+Next, open the
+\texttt{src/arduino-src/arduino-src.ino} file in the Arduino
+editor.
+Under the Tools menu, set the \textsl{Board} to \textit{Arduino Nano}
+and set the \textsl{Port} to the port you plugged the Nano in to.
+
+Now click the \textsc{Upload} button.
+The compile and upload process should finish in a few seconds.
+
+That's it!
+
+\subsubsection{Updating code on the Pi}
+
+To update the source code on the Raspberry Pi, connect the Pi to power and
+your network (via an Ethernet cable).
+Using an external keyboard is highly recommended as well, though it is possible
+to use the on-screen keyboard if you do not have access to a physical one.
+
+With the Pi connected, open up the Terminal app and use the commands listed
+in Section \ref{sec:git} to download a copy of the source code.
+
+Next, run the following commands to make the executable file.
+
+\begin{lstlisting}[language=bash]
+$ cd crab-tracker
+$ cd src/pi-src
+$ make
+\end{lstlisting}
+
+The output of the \texttt{g++} commands will be shown.
+When the shell prompt reappears, you can start the program like so:
+
+\begin{lstlisting}[language=bash]
+$ ./crab-tracker
+\end{lstlisting}
+
 \subsection{Configuring Settings}
+
+The main program on the Raspberry Pi has a few configuration options that can
+be loaded at runtime (i.e. when the program starts up, as opposed to when the
+source code is compiled into an executable file).
+The configuration options are located in the \texttt{/etc/crab-tracker.conf}
+file.
+Use your favorite text editor to make changes to this file as needed.
+The format for this file is simply a set of line-delimited key/value pairs,
+where each key is an alphanumeric string and each value is an integer.
+A single space character separates the key and value.
+Lines beginning with a hash (\texttt{\#}) character are comments and will be
+ignored by the program.
+A sample version of the configuration file is located at
+\href
+{https://github.com/cabeese/crab-tracker/blob/master/src/crab-tracker.conf.example}
+{\texttt{src/crab-tracker.conf.example}}.
+An updated list of possible configuration parameters can be found in the
+\href
+{https://github.com/cabeese/crab-tracker/blob/master/src/pi-src/README.md}
+{\texttt{src/pi-src/README.md}} file.
+
+\subsection{Configuring a new Raspberry Pi}
+
+If starting with a brand-new Raspberry Pi or simply a new Micro-SD Card,
+follow the instructions found in
+\href{https://github.com/cabeese/crab-tracker/blob/master/doc/model-B-config.md}
+{doc/model-B-config.md}.
 
 \end{document}
 
