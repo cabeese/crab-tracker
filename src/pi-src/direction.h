@@ -1,5 +1,5 @@
 /******************************************************************************
-Finds the direciton.
+Finds the direciton of a crab using Time Difference On Arrival (TDOA).
 
 Author:  Lizzy Schoen
 Project: Crab Tracker

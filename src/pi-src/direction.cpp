@@ -1,9 +1,10 @@
-/**
- *  Triangulation Algorithm Implementation
- *  Elizabeth Schoen February 2018
- *  February 2018
- *
- */
+/******************************************************************************
+Finds the direciton of a crab using Time Difference On Arrival (TDOA).
+
+Author:  Lizzy Schoen
+Project: Crab Tracker
+Created: 2018-03-1
+******************************************************************************/
 #include <stdlib.h>
 #include <math.h>
 #include <algorithm>
