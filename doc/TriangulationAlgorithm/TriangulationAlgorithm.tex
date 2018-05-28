@@ -1,0 +1,110 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{ragged2e}
+\usepackage{changepage}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage[margin=1in]{geometry}
+\title{Triangulation Algorithm}
+\author{Chloe Yugawa}
+\date{February 2018}
+
+\begin{document}
+
+\maketitle
+\paragraph{}
+This algorithm is designed to calculate the location of a signal received by four hydrophones, all of which are equally spaced from each other in a square that is parallel to the surface of the water. To calculate the location of the signal origin, we will use the time stamps from each hydrophone (the time at which the signal was received), the speed of sound in the given environment, and some basic algebra and trigonometry. First, we write equations for the time it takes the signal to reach each hydrophone (labelled a,b,c, and d) using the formula for the distance between two points times the speed of sound in water ($s$). The origin is defined as the center of the hydrophone square, and $l$ is defined as both the $x$ and $y$ distances from the origin to each hydrophone.\\
+% One of your diagrams might be nice here to illustrate L, x, and y. Also, I thought that you said L was the distance between adjacent hydrophones, not their distance from the origin. Am I miss-remembering? -Noah 4/28
+% Perhaps add a brief note that 's' is a function of the conditions in the water? -Noah 4/28
+$s$ = speed of sound through water \\
+$l$ = $x$ and $y$ distance from origin to each hydrophone\\
+$a$ = hydrophone at location $(l,l)$\\
+$b$ = hydrophone at location $(-l,l)$\\
+$c$ = hydrophone at location $(-l,-l)$\\
+$d$ = hydrophone at location $(l,-l)$\\
+$t_a$ = time stamp of signal for hydrophone a\\
+$t_b$ = time stamp of signal for hydrophone b\\
+$t_c$ = time stamp of signal for hydrophone c\\
+$t_d$ = time stamp of signal for hydrophone d\\
+\begin{gather*}
+t_a = \frac{1}{s}*\sqrt{(x-l)^2+(y-l)^2+z^2}\\
+t_b = \frac{1}{s}*\sqrt{(x+l)^2+(y-l)^2+z^2}\\
+t_c = \frac{1}{s}*\sqrt{(x+l)^2+(y+l)^2+z^2}\\
+t_d = \frac{1}{s}*\sqrt{(x-l)^2+(y+l)^2+z^2}
+\end{gather*}
+Now, we define the deltas, or time differences. For this algorithm, hydrophone $a$ has been chosen to be the reference. Calculating in terms of a different hydrophone would work equivalently. 
+\begin{gather*}
+    delta_1 = t_b-t_a = \frac{1}{s}*\sqrt{(x+l)^2+(y-l)^2+z^2} - s*\sqrt{(x-l)^2+(y-l)^2+z^2}\\
+    delta_2 = t_c-t_a = \frac{1}{s}*\sqrt{(x+l)^2+(y+l)^2+z^2} - s*\sqrt{(x-l)^2+(y-l)^2+z^2}\\
+    delta_3 = t_d-t_a = \frac{1}{s}*\sqrt{(x-l)^2+(y+l)^2+z^2} - s*\sqrt{(x-l)^2+(y-l)^2+z^2}
+\end{gather*}
+These equations rewritten for clarity and for future steps:
+\begin{gather*}
+    delta_1 = \frac{1}{s}(\sqrt{(x+l)^2+(y-l)^2+z^2} - \sqrt{(x-l)^2+(y-l)^2+z^2})\\
+    delta_2 = \frac{1}{s}(\sqrt{(x+l)^2+(y+l)^2+z^2} - \sqrt{(x-l)^2+(y-l)^2+z^2})\\
+    delta_3 = \frac{1}{s}(\sqrt{(x-l)^2+(y+l)^2+z^2} - \sqrt{(x-l)^2+(y-l)^2+z^2})
+\end{gather*}
+With $2$s factored out and the distance to hydrophone $a$ moved to the other side of the equations, we get:
+\begin{gather*}
+    delta_1*s +\sqrt{(x-l)^2+(y-l)^2+z^2} = \sqrt{(x+l)^2+(y-l)^2+z^2}\\
+    delta_2*s + \sqrt{(x-l)^2+(y-l)^2+z^2} = \sqrt{(x+l)^2+(y+l)^2+z^2}\\
+    delta_3*s + \sqrt{(x-l)^2+(y-l)^2+z^2} = \sqrt{(x-l)^2+(y+l)^2+z^2}
+\end{gather*}
+Squaring both sides and simplifying yields
+\begin{gather*}
+    (delta_1*s)^2 +(x-l)^2+(y-l)^2+z^2 + delta_1*s*\sqrt{(x-l)^2+(y-l)^2+z^2}= (x+l)^2+(y-l)^2+z^2\\
+    (delta_2*s)^2 + (x-l)^2+(y-l)^2+z^2 + delta_2*s*\sqrt{(x-l)^2+(y-l)^2+z^2} = (x+l)^2+(y+l)^2+z^2\\
+    (delta_3*s)^2 + (x-l)^2+(y-l)^2+z^2 + delta_3*s*\sqrt{(x-l)^2+(y-l)^2+z^2} = (x-l)^2+(y+l)^2+z^2
+\end{gather*}
+
+Note that the only known values are the $s$ and time stamps and thus the value of the deltas. Further simplification: 
+\begin{equation}
+\label{equ:d1}
+    (delta_1*s)^2  + delta_1*s*\sqrt{(x-l)^2+(y-l)^2+z^2}= 4lx
+\end{equation}
+\begin{equation}
+\label{equ:d2}
+     (delta_2*s)^2 + delta_2*s*\sqrt{(x-l)^2+(y-l)^2+z^2} = 4lx+4ly
+\end{equation}
+\begin{equation}
+\label{equ:d3}
+     (delta_3*s)^2 + delta_3*s*\sqrt{(x-l)^2+(y-l)^2+z^2} = 4ly
+\end{equation}
+
+Here, we see \eqref{equ:d2} is a linear combination of \eqref{equ:d1} and \eqref{equ:d3}, and that the term $\sqrt{(x-l)^2+(y-l)^2+z^2}$ shows up in all three equations. To solve this equation, set $\sqrt{(x-l)^2+(y-l)^2+z^2} = N$.
+\begin{equation}
+\label{equ:n1}
+    (delta_1*s)^2  + delta_1*s*N= 4lx
+\end{equation}
+\begin{equation}
+\label{equ:n2}
+     (delta_2*s)^2 + delta_2*s*N = 4lx+4ly
+\end{equation}
+\begin{equation}
+\label{equ:n3}
+     (delta_3*s)^2 + delta_3*s*N = 4ly
+\end{equation}
+
+Now, using the fact that the equations are linear combinations, we get \eqref{equ:n1} + \eqref{equ:n3} = \eqref{equ:n2}:
+\begin{equation*}
+    (delta_1*s)^2  + delta_1*s*N + (delta_3*s)^2 + delta_3*s*N = (delta_2*s)^2 + delta_2*s*N
+\end{equation*}
+Solving for $N$:
+\[N = \frac{s(delta_2^2-delta_1^2-delta_3^2)}{2(delta_1+delta_3-delta_2)}\]
+
+Solving \eqref{equ:n1} for $x$ and \eqref{equ:n3} for $y$ and using $N$ which is now in terms of known values, we get
+\begin{equation*}
+    x = \frac{(s*delta_1)^2 + 2s*delta_1*N}{4l}
+\end{equation*}
+\begin{equation*}
+    y = \frac{(s*delta_3)^2 + 2s*delta_3*N}{4l}
+\end{equation*}
+To find $z$, we go back to $N = \sqrt{(x-l)^2+(y-l)^2+z^2}$. We now have equations for $N$, $x$, and $y$, so we just need to solve this for $z$:
+\[ z = \sqrt{N^2-(x-l)^2-(y-l)^2}\]
+The last calculations to do are translating the Cartesian coordinates into polar coordinates. Per the software requirements, angle measurements will be in degrees. $z$ is the same in both coordinate systems, so the only values to find are radius $r$ and angle $\theta$. 
+\begin{gather*}
+    r = \sqrt{x^2+y^2}\\
+    \theta = \tanh{(\frac{y}{x})}*\frac{180}{\pi}
+\end{gather*}
+
+\end{document}
