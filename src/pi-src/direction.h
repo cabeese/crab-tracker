@@ -13,7 +13,7 @@ Created: 2018-03-1
 
 double calcSpeedOfSound(double temp, double salinity, double depth);
 
-int triangulation(unsigned long ts_a, unsigned long ts_b, unsigned long ts_c, unsigned long ts_d, crab_event *result);
+int triangulation(struct ping a, struct ping b, struct ping c, struct ping d, crab_event *result);
 int triangulation_helper(unsigned long ts_a, unsigned long ts_b, unsigned long ts_c, unsigned long ts_d, crab_event *result);
 
 /*
@@ -27,6 +27,6 @@ double calcY(double delta_3, double N);
 double calcZ(double N, double x, double y);
 double calcR(double x, double y);
 double calcAngle(double x, double y);
-
+int initialize_dir();
 
 #endif /* __DIRECTION_H */

@@ -38,7 +38,8 @@ struct config_entry{
 /* An exhaustive set of all configuration options. Default values given here */
 config_entry entries[] = { {"DISPLAY_PINGS", 1, 0},
                            {"DISPLAY_RAW_SPI", 0, 0},
-                           {"HPHONE_ADJ_DIST_CM", 300, 0}};
+                           {"R_USER", 1, 0},
+                           {"HPHONE_DIST_CM", 300, 0}};
 
 int num_entries = sizeof(entries) / sizeof(config_entry);
 
