@@ -51,8 +51,8 @@ int main (void) {
         if(poll()){
             if((id = get_set(&active)) > -1){
                 /* We have a set of 8 pings */
-                printf("---------------------- ");
-                printf("Got a full set for crab %d\n", id);
+                printf("----------------------\n");
+                printf("Crab ID: %d\n", id);
                 // disp_buffers();
                 // printf("---------------------- %d\n", id);
                 n = triangulation(
@@ -66,6 +66,7 @@ int main (void) {
                 } else {
                     printf("Unable to determine direction\n");
                 }
+                printf("\n");
 
                 // TODO: update GUI
                 clear_set(&active);
