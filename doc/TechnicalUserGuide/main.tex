@@ -61,10 +61,11 @@
 	description={An underwater microphone}
 }
 
-\newglossaryentry{iCRAB}
+\newglossaryentry{iCRAB-proto}
 {
 	name={iCRAB Transmission Protocol},
-	description={Our custom encoding protocol for transmitters}
+	description={Our custom encoding protocol for transmitters.
+		See Reference \ref{ref-icrab-proto} for complete documentation}
 }
 
 \newacronym{spi}{SPI}{Serial Peripheral Interface}
@@ -150,9 +151,10 @@ each crab to a central receiving station (likely mounted on a kayak or similar
 water vessel).
 Each transmitter has a unique identifier (an integer value) that determines
 the duration and pattern of its broadcasts.
-See the \gls{iCRAB} definition for further details.
-At the receiving station we have four piezoelectric receivers, or
-``hydrophones,'' which are tuned to detect the signals that the crabs'
+See the \gls{iCRAB-proto} definition for further details.
+At the receiving station we have four underwater microphones
+(known as hydrophones) built using piezoelectric receivers
+which are tuned to detect the signals that the crabs'
 transmitters broadcast.
 These hydrophones are arranged in a square shape with equidistant side
 lengths, and all are to be submerged an equal depth into the water.
@@ -169,14 +171,14 @@ and because the former task requires low-latency monitoring of the input
 devices, these two tasks are to be performed on separate physical computers.
 
 The first of the two devices, referred to as the Timestamp Recorder
-(\ref{sec:ts-rec},
-has the simple but important task of timestamp incoming data.
+(\ref{sec:ts-rec}), has the simple but important task of applying
+timestamp labels to incoming data.
 As of the current revision of this document,
 we have tested the system with an Arduino Nano, a small,
 inexpensive microcontroller with a clock speed of 16MHz.
 Once broadcasts are detected and labeled with a timestamp, the device can
 send this data to the Data Processor (\ref{sec:data-processor})
-that will run the calculations.
+that will run various calculations and display crab locations to the user.
 We originally investigated using the popular \gls{i2c} protocol for this, but
 unfortunately \gls{i2c} can't be interrupted during a transfer, and therefore
 the device would be effectively frozen (and therefore unable to detect
@@ -185,8 +187,8 @@ If any data were to come into the device during a transfer, its timestamp
 would be delayed and therefore inaccurate.
 Instead, we opted to use a similar protocol, \gls{spi}.
 The advantage of \gls{spi} is that data can be placed into a separate physical
-bus on the device when it is ready to be transmitted, and the other machine can
-fetch that data without affecting the detection and timestamp code.
+bus on the device when it is ready to be transmitted, and the Data Processor
+can fetch that data without affecting the detection and timestamp code.
 
 The Data Processor (\ref{sec:data-processor}),
 which runs calculations and displays results to the user,
@@ -228,7 +230,8 @@ See Figure \ref{fig:component-diagram} for an illustration of these components.
 \end{tikzpicture}
 \end{center}
 \caption{A simple diagram detailing the main components.
-	Each circle labeled Rx is a receiver.}
+	Each circle labeled Rx is a receiver, consisting of a piezoelectric
+	transducer and some processing circuitry.}
 \label{fig:component-diagram}
 \end{figure}
 
@@ -254,8 +257,8 @@ Though we have not established bounds on our range of potential frequencies,
 the actual frequency shouldn't matter so long as the receiving hardware is
 appropriately tuned to pick up this frequency (through filtering,
 hardware characteristics, and so on).
-For example, our hardware was limited to roughly 150kHz, because the
-microcontrollers we used don't have a high enough clock speed to drive
+For example, some hardware may limited to roughly 150kHz because the
+microcontrollers won't have a high enough clock speed to drive
 the receivers at that rate.
 
 Each transmitter is attached to a small \gls{pcb} designed
@@ -264,7 +267,7 @@ The \gls{pcb} can power the transducer by feeding it a current, effectively
 turning it off or on as needed.
 Each board will be programmed with a unique identifier (a numeric value).
 The ID determines the pattern of pulses that the transmitter should emit.
-For more details on this, see the \gls{iCRAB} document.
+For more details on this, see the \gls{iCRAB-proto} document.
 
 \subsection{Receivers}
 
@@ -380,10 +383,10 @@ processing power.
 
 This section demonstrates in greater detail how the various components are
 connected to each other.
-Note that though we use a 7" touchscreen from AdaFruit built specifically
-for projects with the Pi,
+Note that though we use the official 7" touchscreen built for the Pi,
 wiring for the screen is not included in the following diagram.
-In Figure \ref{fig:wiring}, the Pi, Arduino, and a receiver are shown.
+In Figure \ref{fig:wiring}, the Pi (the SPI master node),
+Arduino (SPI slave node), and a receiver are shown.
 Note that each of the other receivers could be connected in the same way
 that Receiver 1 is connected; that is, they need to be tied to the common
 ground and they need their signal pin attached to the appropriate input pin
@@ -689,10 +692,10 @@ The primary functions of the various files are as follows:
 	if enough pings have been collected for the direction algorithm to run.
 	For more details, see Section \ref{sec:proc-and-structure}.
 \item \texttt{direction.cpp} --
-	Using an algorithm developed by one of the team's developers, Chloe Yugawa,
+	Using an algorithm written by one of the team's developers, Chloe Yugawa,
 	this code determines the relative direction of a crab given the timestamps
 	of its pings.
-	That is, it performs a type of Time Difference On Arrival calculation
+	That is, it performs a Time Difference On Arrival calculation
 	based on ping times.
 	It returns a direction relative to the front of the boat in cylindrical
 	coordinates in the form $(r, \theta, z)$.
@@ -727,8 +730,6 @@ The primary functions of the various files are as follows:
 
 \subsubsection{Processing and Structure}\label{sec:proc-and-structure}
 
-%%%%%%%%%% TODO : insert information about data_collection.cpp
-
 Each file contains extensive documentation, so the finer details about
 various functions and variables will not be
 duplicated in this document. Instead, we'll take a broad look at how these
@@ -740,17 +741,18 @@ broadcast as measured by the rising and falling edges of a signal on a single
 pin).
 Pings are collected in a set of buffers, with one buffer for each pin.
 These buffers are managed by the \texttt{data\_collection.cpp} code.
-Since the \gls{iCRAB} protocol mandates that every transmission consists
+Since the \gls{iCRAB-proto} mandates that every transmission consists
 of two pings, no calculations are performed until a pair of pings is detected
-by all four hydrophones.
+by all four receivers.
 Each time a new ping is detected, these arrays are searched for matching pairs.
 If there are two pings in every buffer, and they all share the same ID
-and are spaced apart correctly (temporally, based on \gls{iCRAB}
+and are spaced apart correctly (temporally, based on \gls{iCRAB-proto}
 specifications), they are all returned as a set of 8 pings to the main loop of
 the program, which then runs the direction calculation algorithm.
 If the direction algorithm is able to determine an approximate location for
 the signal$^*$, the direction and associated ID can be reported to the user.
 
+\vfill
 $^*$ Note that the direction algorithm will intentionally fail if it is given
 impossible data.
 That is, if the timestamps are too wildly separated temporally, it will assume
@@ -759,6 +761,36 @@ cease to calculate a direction.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \newpage
+
+\section{References} \label{references}
+
+Unless otherwise noted, the documents referenced in this section are published
+\href{https://github.com/cabeese/crab-tracker/tree/master/doc}{on GitHub},
+or else in the same location as this PDF.
+
+\begin{enumerate}
+\item \label{ref-icrab-proto}
+        Strong, N.
+        {\em Transmission Protocol -- iCRAB.}
+        2018. PDF.
+\item \label{ref-rfc1}
+        Strong, N.
+        {\em RFC 1: Collisions in Delay-Based ID Encoding Protocol.}
+        2017. PDF.
+\item \label{ref-rfc2}
+        Strong, N.
+        {\em RFC 2: Boolean Value Encoding in Transmission Protocol.}
+        2018. PDF.
+\item \label{ref-rfc-stats}
+        Yugawa, C.
+        {\em RFC Stats.}
+        2017. PDF.
+\item \label{ref-dir-alg}
+        Yugawa, C.
+        {\em Triangulation Algorithm.}
+        2017. PDF.
+\end{enumerate}
+
 
 \printglossary
 
