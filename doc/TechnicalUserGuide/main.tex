@@ -181,9 +181,9 @@ send this data to the Data Processor (\ref{sec:data-processor})
 that will run various calculations and display crab locations to the user.
 We originally investigated using the popular \gls{i2c} protocol for this, but
 unfortunately \gls{i2c} can't be interrupted during a transfer, and therefore
-the device would be effectively frozen (and therefore unable to detect
+the device would be effectively frozen (and thus unable to detect
 incoming data) any time a transfer was in progress.
-If any data were to come into the device during a transfer, its timestamp
+If any signals were to reach the device during a transfer, their timestamps
 would be delayed and therefore inaccurate.
 Instead, we opted to use a similar protocol, \gls{spi}.
 The advantage of \gls{spi} is that data can be placed into a separate physical
@@ -192,7 +192,7 @@ can fetch that data without affecting the detection and timestamp code.
 
 The Data Processor (\ref{sec:data-processor}),
 which runs calculations and displays results to the user,
-is a slightly more powerful computer.
+requires a slightly more powerful computer than the Timestamp Recorder.
 We opted to use a Raspberry Pi Model 3B for this task, as these machines are
 inexpensive, reasonably powerful, well-supported, \gls{spi}-compatible,
 and easy to develop on.
@@ -244,8 +244,9 @@ Wiring Diagram (\ref{fig:wiring}) in Section \ref{sec:wiring}.
 While both the Arduino and the Raspberry Pi were off-the-shelf products,
 the transmitter and receiver hardware was all custom designed and fabricated
 for use in this project.
-Clearer specifications, including detailed diagrams, are detailed in other
-documents and therefore many details will not be repeated here.
+Clearer specifications, including detailed diagrams, are given in other
+dedicated documents, so the information presented here will only be a
+high-level overview of the main components.
 
 \subsection{Transmitters}
 
@@ -254,8 +255,9 @@ ultrasonic frequency.
 In our work, this frequency has been in the 40-60kHz range, depending on the
 resonant frequency of the transducer itself.
 Though we have not established bounds on our range of potential frequencies,
-the actual frequency shouldn't matter so long as the receiving hardware is
-appropriately tuned to pick up this frequency (through filtering,
+the actual frequency that is selected shouldn't matter so long as all of the
+hardware is capable of operating at, and
+appropriately tuned to, the frequency (through filtering,
 hardware characteristics, and so on).
 For example, some hardware may limited to roughly 150kHz because the
 microcontrollers won't have a high enough clock speed to drive
@@ -525,10 +527,10 @@ The Timestamp Recorder (\ref{sec:ts-rec}) software has two primary functions:
 (1) record timestamps of signal changes (i.e. when a pin goes high or low) and
 (2) transfer the timestamps and pin values to the Data Processor.
 
-The \texttt{arduino-src.ino} file is heavily documented, so this document
-will step through the major sections without providing extensive detail about
+The \texttt{arduino-src.ino} file is heavily documented, so this section
+will explore the major ideas without providing extensive detail about
 individual lines.
-Instead, we will examine in broad strokes the data formatting, data
+Specifically, it will examine in broad strokes the data formatting, data
 transfer, and input pin change detection.
 
 \subsubsection{Storage, Setup and Loop}
@@ -609,7 +611,7 @@ The \texttt{SPI\_RESET} flag will re-position the de-facto ``read heads'',
 meaning that it will send a new state starting with the pin values on the next
 transfer.
 This functionality is utilized to ensure that the two devices stay in sync when
-one of them restarts while the other runs.
+one of them restarts while the other continues to run.
 
 %\begin{figure}[h]
 %\begin{center}
@@ -646,11 +648,11 @@ When this is the case, the device stores the new state in a circular
 buffer along with the current time.
 
 As of the current revision of the document, the timestamp is generated from
-the \texttt{TCNT0} clock, which increments every four milliseconds.
+the \texttt{TCNT0} clock, which increments every four microseconds.
 This is an inadequate granularity for the purposes of this project, so future
 revisions of the code will instead read from a source that can generate ticks
 at a higher rate (for example, a clock cycle counter, or a timer set up to
-increment every few microseconds).
+increment once every microsecond).
 
 Note that no matter the units used, we should expect to store no more than 32
 bits of information for any given timestamp.
@@ -685,7 +687,7 @@ The primary functions of the various files are as follows:
 	is fetched.
 \item \texttt{data\_collection.cpp} --
 	When SPI data is read, the functions in this file parse and store the
-	data in more meaningful structures.
+	data in meaningful structures.
 	For example, when a rising and subsequent falling edge are detected on a
 	given pin, a \texttt{ping} object is stored containing these timestamps.
 	The data collection code also steps through the collected data to determine
@@ -699,14 +701,8 @@ The primary functions of the various files are as follows:
 	based on ping times.
 	It returns a direction relative to the front of the boat in cylindrical
 	coordinates in the form $(r, \theta, z)$.
-	For more information, see the following document:
-	%
-	%
-	%
-	{\bf TODO:} link to document when it is pushed to master
-	%
-	%
-	%
+	For more information, see the
+	Triangulation Algorithm$^{\ref{ref-dir-alg}}$ document.
 \item \texttt{spi.cpp} --
 	This file facilitates and abstracts away the communication with the
 	\gls{spi} slave device.
@@ -716,8 +712,8 @@ The primary functions of the various files are as follows:
 \item \texttt{uid.cpp} --
 	Each transmitter broadcasts in a specific pattern based on its unique
 	identifier. The code in this file examines the duration of and delay
-	between two pings in order to determine which transmitter created a
-	given broadcast.
+	between two pings and determines the UID(s) that these time values
+	encode.
 \item \texttt{util.cpp} --
 	Various helper methods are located here, including binary printing
 	functions and configuration setting loading.
@@ -755,9 +751,9 @@ the signal$^*$, the direction and associated ID can be reported to the user.
 \vfill
 $^*$ Note that the direction algorithm will intentionally fail if it is given
 impossible data.
-That is, if the timestamps are too wildly separated temporally, it will assume
-that the measurements are not from the same transmission and will therefore
-cease to calculate a direction.
+That is, if the timestamps are too widely separated temporally, it will assume
+that the measurements are not from the same transmission or are otherwise
+incorrect and will therefore abort the direction calculation.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \newpage
