@@ -104,9 +104,7 @@ formalized.
 In order to use the Crab Tracker product, it is necessary to fabricate
 receiver and transmitter microcontrollers per the specifications detailed
 in those documents.
-Additionally, parts of these components, as well as the piezoelectric
-transducers they are paired with, must be coated entirely in epoxy for
-waterproofing.
+Some of the components must be coated entirely in epoxy for waterproofing.
 
 \subsection{Hydrophone Array}
 
@@ -117,10 +115,11 @@ configuration of the hydrophone array will lead to incorrect triangulation
 results.
 The hydrophone array may be attached to a personal watercraft, such as a kayak.
 
-Hydrophones must be placed in a square, with all sides equidistant.
-The exact side lengths may vary, but are expected to be roughly 1 meter
-each.
-Once put in place, the exact side lengths need to be communicated to the
+Hydrophones must be placed on a square frame with one hydrophone at each
+corner.
+The exact side lengths of the square may vary, but are expected to be roughly
+1 meter each.
+Once put in place, the measurements must be communicated to the
 software to ensure accuracy of readings.
 See Figure \ref{fig:array} for an example of the hydrophone configuration.
 Note that the side lengths shown are 1 meter, but this is only an example.
@@ -201,10 +200,11 @@ However, equivalent commands exist for other systems, such as Windows.
 
 \subsubsection{Downloading the source code}\label{sec:git}
 
-The following applies to both personal computers, which may be attached to
-the Aruidno, and to the Raspberry Pi to be used in the field.
+The following instructions apply to both personal computers (which may be
+used to upload code to the Arduino), and to the Raspberry Pi that is to be used
+in the  field.
 
-\textbf{If you have not cloned the repository} on your computer before, run:
+\textbf{If you have not cloned the repository} on this computer before, run:
 
 \begin{lstlisting}[language=bash]
 $ git clone https://github.com/cabeese/crab-tracker.git
@@ -234,9 +234,10 @@ That's it!
 
 \subsubsection{Updating code on the Pi}
 
-To update the source code on the Raspberry Pi, connect the Pi to power and
-your network (via an Ethernet cable).
-Using an external keyboard is highly recommended as well, though it is possible
+To update the source code on the Raspberry Pi, connect the Pi to a power source
+and to your network (e.g. via an Ethernet cable).
+Attaching an external keyboard is highly recommended as well, though it is
+possible
 to use the on-screen keyboard if you do not have access to a physical one.
 
 With the Pi connected, open up the Terminal app and use the commands listed
