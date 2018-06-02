@@ -1,3 +1,5 @@
+
+
 /*******************************************************************************
 Crab Tracker - Arduino Code
 
@@ -72,35 +74,52 @@ byte marker = 0; /* Index into `long` timestamp in output array */
 byte send_pinvals = 1; /* Send 'pinvals' first, so initialize to 1 */
 byte flag; /* For Pi -> Arduino messages, such as 'reset' */
 
-
+//void timer1_init()
+//{
+//    // set up timer with prescaler = 8
+////    TCCR1B |= (1 << CS11);
+//     
+//    TCCR1B = 1;
+//    // initialize counter
+//    TCNT1 = 0;
+// 
+//    // enable overflow interrupt
+//    TIMSK1 |= (1 << TOIE1);
+// 
+//    // enable global interrupts
+//    sei();
+// 
+//    // initialize overflow counter variable
+//    tmr1_overflow = 0;
+//}
 
 /**
  * This function runs once when the board boots.
  * Initial configuration is done here.
  */
 void setup (void) {
+//  pinMode(13, OUTPUT);
 
-  TCCR1A = 0;// set registers to 0  
-  TCCR1B = 0;  
-  TCCR1C = 0;  
+  TCCR1B = 1;// start timer 1 , this may not be the best place to start the timer
 
-  //TIMSK0 = 0; Disables timer0, I think
-  TCCR0A = 0;
-  TCCR0B = 0;
-  
-//  TCNT1 = 0; 
+  TCNT1 = 0; 
+
 
   /* Timer 1 is a 16-bit timer. */
-//   TIMSK1 |= _BV(TOIE1); /* Enable overflow interrupt */
+  // enabling this damages SPI
+   TIMSK1 |= _BV(TOIE1); /* Enable overflow interrupt */
 
-   TCCR1B = 1;// start timer 1 , this may not be the best place to start the timer
+
+
+
+   
 
   /* SPI Setup */
   pinMode(MISO, OUTPUT); /* Set "Master In/Slave Out" pin as output */
-  SPCR |= _BV(SPE); /* Set 'enable' bit of SPI config register */
+   SPCR |= _BV(SPE); /* Set 'enable' bit of SPI config register */
   
   /* PIN_D Setup - Sets all D pins to input */
-  DDRD = 0b00000000;
+  DDRD = 0b10000111;
 
   /* Initialize all entries in the buffer to something we can notice.
    * Idealy/eventually, we will not need to do this.
@@ -109,7 +128,6 @@ void setup (void) {
     output[i].pinvals = 0B11111111;
     output[i].timestamp = 0;
   }
-//   TCCR1B = 1;// start timer 1 , this may not be the best place to start the timer
 
 }
 
@@ -193,14 +211,19 @@ void loop (void){
   xorpins = (prevpinval ^ pinval);
 
   if (xorpins != 0) {
+
     // recreates the functionality of the micors() function
     // without the overhead of a function call
+
+
+    
 //    time_elapsed = ((timer0_overflow_count << 8) + TCNT0) * 4;
 
     TCCR1B = 0;    //stop the timer 
-    unsigned int temp_timer = TCNT1;  //store passed ticks  
+    unsigned long temp_timer = TCNT1;  //store passed ticks  
     TCCR1B = 1; // restart the timer
-    
+
+//    unsigned long ticks = ((tmr1_overflow << 8) + temp_timer) * 4;
     unsigned long ticks = (((tmr1_overflow+1) << 16) | (unsigned long)temp_timer);  
     
     
@@ -224,8 +247,11 @@ void loop (void){
   }
 
 }
-ISR(TIMER1_OVF_vec){
-      tmr1_overflow++;
+
+ISR(TIMER1_OVF_vect){
+
+  tmr1_overflow++;
+
 }
 
 
