@@ -2,4 +2,4 @@
 # Crab Tracker Config file
 #
 DISPLAY_RAW_SPI 1
-DISPLAY_PINGS 1
+DISPLAY_PINGS 12

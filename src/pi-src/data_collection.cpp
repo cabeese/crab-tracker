@@ -115,10 +115,19 @@ int proc_block(spi_rawblock data){
  * @param p The ping to print
  */
 void disp_ping(ping p){
+    int D_START    = 1;
+    int D_DURATION = 2;
+    int D_UID      = 4;
+    int D_PIN_LET  = 8;
     int id = id_decode_ping(p);
-    printf("== PING == pin: %d\tduration: %lu\tID: %d\n",
-           p.pin, p.duration, id);
-    fflush(stdout);
+
+    printf("== PING == pin: ");
+    if(DISPLAY_PINGS & D_PIN_LET) printf("%c", 'A' + p.pin);
+    else printf("%d", p.pin);
+    if(DISPLAY_PINGS & D_START) printf("\tstart: %lu", p.start);
+    if(DISPLAY_PINGS & D_DURATION) printf("\tduration: %lu", p.duration);
+    if(DISPLAY_PINGS & D_UID) printf("\tid: %d", id);
+    printf("\n");
 }
 
 /**

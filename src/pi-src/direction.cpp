@@ -1,9 +1,10 @@
-/**
- *  Triangulation Algorithm Implementation
- *  Elizabeth Schoen February 2018
- *  February 2018
- *
- */
+/******************************************************************************
+Finds the direciton of a crab using Time Difference On Arrival (TDOA).
+
+Author:  Lizzy Schoen
+Project: Crab Tracker
+Created: 2018-03-1
+******************************************************************************/
 #include <stdlib.h>
 #include <math.h>
 #include <algorithm>
@@ -11,8 +12,10 @@
 #include <stdio.h>
 #include <iostream>
 #include "common.h"
+#include "util.h"
 #include "direction.h"
-#define R_USER 1 /*  "r"  half the length of the hydrophone square          */
+// #define R_USER 1 /*  "r"  half the length of the hydrophone square          */
+int R_USER = 100;
 const double S_USER = 0.0015;
 
 /**
@@ -204,8 +207,13 @@ void disp_direction(crab_event r){
 }
 
 double calcSpeedOfSound(double temp, double salinity, double depth) {
-    return 1449.2 + (4.6*temp)
-                  - (5.5 * pow(10.0,-2.0)) * pow(temp, 2.0)
-                  + (1.34 - (pow(10,-2.0)*temp)) * (salinity-35)
-                  + 1.6 * pow(10.0,-2.0) * depth;
+  return 1520;
+    // return 1449.2 + (4.6*temp)
+    //               - (5.5 * pow(10.0,-2.0)) * pow(temp, 2.0)
+    //               + (1.34 - (pow(10,-2.0)*temp)) * (salinity-35)
+    //               + 1.6 * pow(10.0,-2.0) * depth;
+}
+
+int initialize_dir(){
+  return get_param((char*)"R_USER", &R_USER);
 }
