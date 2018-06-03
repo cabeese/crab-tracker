@@ -33,14 +33,15 @@ Created: 2018-02-28
 int counter = 0;
 int id_decode_ping(ping p){
     
-    printf("\n \n");
+//    printf("\n \n");
     
     float period_us = 1.0/16.0; // this can be made more architecture indendent, also make this a constant later
     float period_ns = period_us * 1000;
     float duration_ns = (float)p.duration*period_ns;
+    //float duration_ns = (float)p.duration * 62.5;
     float duration_us = duration_ns / 1000;
     float duration_ms = duration_us / 1000;
-    printf("p.duration %lu duration_ns %f duration_us %f counter %d\n", p.duration, duration_ns, duration_us, counter%64);
+    printf("p.duration %lu duration_ns %f duration_us %f duration_ms %f counter %d\n", p.duration, duration_ns, duration_us, duration_ms, counter%64);
 
     
     //float duration_ms = (float)p.duration / 1000; /* convert us->ms */
@@ -61,6 +62,10 @@ int id_decode_ping(ping p){
  * returns The ID encoded by the time between 'a' and 'b'.
  */
 int id_decode_delay(ping a, ping b){
+    
+    //float delta = (float)b.start - (float)a.start;
+    //printf("delta %f ", delta);
+    //fflush(stdout);
     float delay_ms = ((float)(b.start - (a.start + a.duration))) / 1000; /* us->ms */
     float raw_id = (delay_ms - MIN_DELAY_DUR_MS) / STEP_SIZE_MS;
 

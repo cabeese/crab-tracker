@@ -67,7 +67,7 @@ int spi_getblock(spi_rawblock *data){
 
     /* Get timestamp (in 4 parts) */
     for(int i=0; i<4; i++){
-        usleep(50);
+        usleep(10);
         timestamp |= spi_getbyte(SPI_NO_FLAGS) << (i * 8);
     }
 
