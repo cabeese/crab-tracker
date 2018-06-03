@@ -33,7 +33,10 @@ const byte SPI_ECHO_RESPONSE = 0x77; /* Response to send */
 /* ======================= PIN_D Variables ======================= */
 // Masks off digital pins 0, 1, and 2.
 // Most significant bit of register corresponds to digital pin 7
-uint8_t bitMask = B01111000;
+//uint8_t bitMask = B01111000;
+
+// this is the bitmask that corresponds to the suimulator code
+uint8_t bitMask = B01111100;
 
 /*
  * Pin values and corresponding timestamps are stored in this 2D array,
@@ -74,31 +77,18 @@ byte marker = 0; /* Index into `long` timestamp in output array */
 byte send_pinvals = 1; /* Send 'pinvals' first, so initialize to 1 */
 byte flag; /* For Pi -> Arduino messages, such as 'reset' */
 
-//void timer1_init()
-//{
-//    // set up timer with prescaler = 8
-////    TCCR1B |= (1 << CS11);
-//     
-//    TCCR1B = 1;
-//    // initialize counter
-//    TCNT1 = 0;
-// 
-//    // enable overflow interrupt
-//    TIMSK1 |= (1 << TOIE1);
-// 
-//    // enable global interrupts
-//    sei();
-// 
-//    // initialize overflow counter variable
-//    tmr1_overflow = 0;
-//}
 
 /**
  * This function runs once when the board boots.
  * Initial configuration is done here.
  */
 void setup (void) {
-//  pinMode(13, OUTPUT);
+//   Serial.begin(9600);
+
+
+// settting TCCR1A = 0 is critical, ticks will be off by a factor of 100 without it
+// this turns off wave form generation mode
+  TCCR1A = 0;// set registers to 0  
 
   TCCR1B = 1;// start timer 1 , this may not be the best place to start the timer
 
@@ -119,7 +109,10 @@ void setup (void) {
    SPCR |= _BV(SPE); /* Set 'enable' bit of SPI config register */
   
   /* PIN_D Setup - Sets all D pins to input */
-  DDRD = 0b10000111;
+//  DDRD = 0b10000111;
+
+  // for simulator code sets pins 2,3,4,5,6 to input
+  DDRD = 0b10000011;
 
   /* Initialize all entries in the buffer to something we can notice.
    * Idealy/eventually, we will not need to do this.
@@ -212,30 +205,24 @@ void loop (void){
 
   if (xorpins != 0) {
 
-    // recreates the functionality of the micors() function
-    // without the overhead of a function call
-
-
-    
-//    time_elapsed = ((timer0_overflow_count << 8) + TCNT0) * 4;
 
     TCCR1B = 0;    //stop the timer 
-    unsigned long temp_timer = TCNT1;  //store passed ticks  
+    volatile  uint16_t temp_timer = TCNT1;  //store passed ticks  
+//    TCNT1 = 0;
     TCCR1B = 1; // restart the timer
 
-//    unsigned long ticks = ((tmr1_overflow << 8) + temp_timer) * 4;
-    unsigned long ticks = (((tmr1_overflow+1) << 16) | (unsigned long)temp_timer);  
-    
-    
-//    unsigned long ticks = ((((unsigned long)tmr1_overflow - 1) << 16) | (unsigned long)temp_timer) - 4;  
-//    
+    unsigned long ticks = ((((unsigned long)tmr1_overflow ) << 16) + ((unsigned long)temp_timer) - 4);  
 
-//    timestamp = (tmr1_overflow << 16) | TCNT1;
     time_elapsed = ticks;
 
+
     // stores high pins and timestamp
-    output[bb_end].pinvals = (pinval >> 3) & 0b00011111;
+//    output[bb_end].pinvals = (pinval >> 3) & 0b00011111;
+
+    // for simulator code
+    output[bb_end].pinvals = (pinval >> 2) & 0b00011111;
     output[bb_end].timestamp = time_elapsed;
+
     
     /* ================ Body of bb_advance_end() ================ */
     bb_end++;
@@ -249,9 +236,7 @@ void loop (void){
 }
 
 ISR(TIMER1_OVF_vect){
-
   tmr1_overflow++;
-
 }
 
 
