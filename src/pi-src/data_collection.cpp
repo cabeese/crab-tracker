@@ -69,17 +69,34 @@ int proc_block(spi_rawblock data, ping *storage){
                 /* Pin `i` changed HIGH to LOW */
                 tmp.pin = i;
                 tmp.start = partials[i];
-                printf("start: %lu end: %lu \n", tmp.start, data.timestamp);
+                printf("start: %lu end: %lu duration: %d \n", tmp.start, data.timestamp, (int)data.timestamp - (int)tmp.start);
+    //            printf("delta: %lu\n", data.timestamp - prev.timestamp);
                 tmp.duration = data.timestamp - partials[i];
-
+                
+                // @Noah: you assign tmp.start to partials[i],
+                // but don't use it. Is the above linesupposed to 
+                // look like this instead:
+                // tmp.duration = data.timestamp - tmp.start;
+                
+                
                 if(DISPLAY_PINGS) disp_ping(tmp);
 
+                // remove later
+                // prints delta between two rising edges
+                // added to test timing accuracy and used with Professor Clauson's timing tool
+                if (tmp.start > storage[count-1].start) {
+
+                  unsigned long delta = tmp.start - storage[count-1].start;
+                  printf("delta: %lu\n", delta);
+                }
                 // Do we need to do this?
                 memcpy(&storage[count], &tmp, sizeof(ping));
                 count++;
             }
         }
     }
+
+
     /* Is memcpy necessary? Just use assignment? */
     memcpy(&prev, &data, sizeof(spi_rawblock));
     return count;
@@ -90,8 +107,10 @@ int proc_block(spi_rawblock data, ping *storage){
  * @param p The ping to print
  */
 void disp_ping(ping p){
+//void disp_ping(ping p){
     int id = id_decode_ping(p);
-    printf("== PING == pin: %d\tduration: %lu\tID: %d\n",
+    //unsigned long delta = p.duration - q.duration;
+    printf("== PING == pin: %d\tduration: %lu\tID: %d \n\n",
            p.pin, p.duration, id);
     fflush(stdout);
 }
