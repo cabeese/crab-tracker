@@ -69,26 +69,18 @@ int proc_block(spi_rawblock data, ping *storage){
                 /* Pin `i` changed HIGH to LOW */
                 tmp.pin = i;
                 tmp.start = partials[i];
-                printf("start: %lu end: %lu duration: %d \n", tmp.start, data.timestamp, (int)data.timestamp - (int)tmp.start);
-    //            printf("delta: %lu\n", data.timestamp - prev.timestamp);
+
+                //printf("start: %lu end: %lu duration: %d \n", tmp.start, data.timestamp, (int)data.timestamp - (int)tmp.start);
                 tmp.duration = data.timestamp - partials[i];
-                
-                // @Noah: you assign tmp.start to partials[i],
-                // but don't use it. Is the above linesupposed to 
-                // look like this instead:
-                // tmp.duration = data.timestamp - tmp.start;
-                
                 
                 if(DISPLAY_PINGS) disp_ping(tmp);
 
-                // remove later
                 // prints delta between two rising edges
-                // added to test timing accuracy and used with Professor Clauson's timing tool
-                if (tmp.start > storage[count-1].start) {
+                //if (tmp.start > storage[count-1].start) {
 
-                  unsigned long delta = tmp.start - storage[count-1].start;
-                  printf("delta: %lu\n", delta);
-                }
+                //  unsigned long delta = tmp.start - storage[count-1].start;
+                //  printf("delta: %lu\n", delta);
+                //}
                 // Do we need to do this?
                 memcpy(&storage[count], &tmp, sizeof(ping));
                 count++;
