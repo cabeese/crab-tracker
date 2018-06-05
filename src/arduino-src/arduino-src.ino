@@ -31,7 +31,11 @@ const byte SPI_ECHO_RESPONSE = 0x77; /* Response to send */
 /* ======================= PIN_D Variables ======================= */
 // Masks off digital pins 0, 1, and 2.
 // Most significant bit of register corresponds to digital pin 7
-uint8_t bitMask = B00111100;
+//uint8_t bitMask = B01111000;
+
+// this is the bitmask that corresponds to the suimulator code    
+uint8_t bitMask = B01111100;    
+
 
 /*
  * Pin values and corresponding timestamps are stored in this 2D array,
@@ -58,11 +62,11 @@ int bb_beg = 0; /* Start of bounded buffer. SPI reads here */
 int bb_end = 0; /*   End of bounded buffer. PIN_D code writes here*/
 
 
-uint8_t prevpinval = PIND & bitMask;
-uint8_t pinval;
-uint8_t xorpins;
-extern volatile unsigned long timer0_overflow_count;
-unsigned long time_elapsed;
+volatile uint8_t prevpinval = PIND & bitMask;
+volatile uint8_t pinval;
+volatile uint8_t xorpins;
+volatile unsigned long tmr1_overflow = 0;
+volatile unsigned long time_elapsed = 0;
 
 /* ======================== SPI Variables ======================== */
 byte marker = 0; /* Index into `long` timestamp in output array */
@@ -74,12 +78,28 @@ byte flag; /* For Pi -> Arduino messages, such as 'reset' */
  * Initial configuration is done here.
  */
 void setup (void) {
+  
+  // still need to turn of wgm, compare to other code to find this
+  TCCR1A = 0;  //will disable outputs  on pins 9 and 10
+
+  TCCR1B = 1;// start timer 1 , this may not be the best place to start the timer
+
+//  TCCR1C = 0;  // does adding this make a difference? I don't think so.  Don't force compare, whatever that means?
+
+  TCNT1 = 0; 
+
+  TIMSK1 |= _BV(TOIE1); /* Enable overflow interrupt */
+   
   /* SPI Setup */
   pinMode(MISO, OUTPUT); /* Set "Master In/Slave Out" pin as output */
   SPCR |= _BV(SPE); /* Set 'enable' bit of SPI config register */
   
   /* PIN_D Setup - Sets all D pins to input */
-  DDRD = 0b11000011;
+ //  DDRD = 0b10000111;
+
+ // for simulator code sets pins 2,3,4,5,6 to input
+
+  DDRD = 0b10000011;
 
   /* Initialize all entries in the buffer to something we can notice.
    * Idealy/eventually, we will not need to do this.
@@ -97,91 +117,112 @@ void setup (void) {
  * reading/change detection.
  */
 void loop (void){
-  /* ================= SPI TRANSFER =================
-   * SPSR = SPI Status Register
-   * SPDR = SPI Data Register
-   * SPIF = SPI End of Transmission Flag
-   * 
-   * When the SPIF flag is set, this indicates that a byte has
-   * been received. At this point, we can load a new value into
-   * the data register. This will be sent to the master.
-   * 
-   * We send the timestamp in 4 chunks, as it is 32 bytes and
-   * we only send 8 bytes at a time.
-   */
-	if((SPSR & (1 << SPIF)) != 0){
-    flag = SPDR;
-    if( (flag & SPI_ECHO_REQUEST) == flag){
-      /* Next time, send echo request. This is a connection test */
-      SPDR = SPI_ECHO_RESPONSE;
-    } else {
-      if( (flag & SPI_RESET) == flag){
-        /* In case the devices get out of sync, we can send the 'RESET'
-         * flag, causing us to send the 5-transmission sequence starting
-         * at the beginning (with the pinvals). Could be useful if the Pi
-         * is restarted without the Arduino resetting its counters.
-         * NOTE: this is received while the current data is simultaneously
-         * transmitted, meaning that the effects of this flag won't take
-         * place until the next byte is transmitted.
-         */
-        marker = 0;
-        send_pinvals = 1;
-      }
-
-      if(send_pinvals){
-        /* Send the pin values */
-        SPDR = output[bb_beg].pinvals;
-        output[bb_beg].pinvals |= (1 << 7);
-        send_pinvals = 0;
+  while(1){
+    /* ================= SPI TRANSFER =================
+     * SPSR = SPI Status Register
+     * SPDR = SPI Data Register
+     * SPIF = SPI End of Transmission Flag
+     * 
+     * When the SPIF flag is set, this indicates that a byte has
+     * been received. At this point, we can load a new value into
+     * the data register. This will be sent to the master.
+     * 
+     * We send the timestamp in 4 chunks, as it is 32 bytes and
+     * we only send 8 bytes at a time.
+     */
+  	if((SPSR & (1 << SPIF)) != 0){
+      flag = SPDR;
+      if( (flag & SPI_ECHO_REQUEST) == flag){
+        /* Next time, send echo request. This is a connection test */
+        SPDR = SPI_ECHO_RESPONSE;
       } else {
-        /* Send the timestamp, 8 bits at a time */
-        SPDR = output[bb_beg].timestamp >> (8 * marker);
-        marker++;
-
-        if(marker > 3){
+        if( (flag & SPI_RESET) == flag){
+          /* In case the devices get out of sync, we can send the 'RESET'
+           * flag, causing us to send the 5-transmission sequence starting
+           * at the beginning (with the pinvals). Could be useful if the Pi
+           * is restarted without the Arduino resetting its counters.
+           * NOTE: this is received while the current data is simultaneously
+           * transmitted, meaning that the effects of this flag won't take
+           * place until the next byte is transmitted.
+           */
           marker = 0;
           send_pinvals = 1;
-
-          /* ================ Body of bb_advance_beg() ================ */
-          /* The next entry isn't ready for us - don't move our pointer */
-          if(bb_beg == bb_end || bb_beg == bb_end-1 || (bb_beg+1==BB_LEN && bb_end == 0)){}
-          else {
-            /* Otherwise, we can increment a little more */
-            bb_beg++;
-            if(bb_beg >= BB_LEN) bb_beg = 0;
-          }
-          /* ================== End bb_advance_beg() ================== */
         }
+  
+        if(send_pinvals){
+          /* Send the pin values */
+          SPDR = output[bb_beg].pinvals;
+  //        output[bb_beg].pinvals |= (1 << 7);
+          output[bb_beg].pinvals = (1 << 7) | output[bb_beg].pinvals;
+          send_pinvals = 0;
+        } else {
+          /* Send the timestamp, 8 bits at a time */
+          SPDR = output[bb_beg].timestamp >> (8 * marker);
+          marker++;
+  
+          if(marker > 3){
+            marker = 0;
+            send_pinvals = 1;
+  
+            /* ================ Body of bb_advance_beg() ================ */
+            /* The next entry isn't ready for us - don't move our pointer */
+            if(bb_beg == bb_end || bb_beg == bb_end-1 || (bb_beg+1==BB_LEN && bb_end == 0)){}
+            else {
+              /* Otherwise, we can increment a little more */
+              bb_beg++;
+              if(bb_beg >= BB_LEN) bb_beg = 0;
+              if(bb_beg == BB_LEN){
+                /* If bb_end is at 0, we still can't move */
+                bb_beg = bb_end == 0 ? BB_LEN - 1 : 0;    
+               }  
+             }
+            }
+            /* ================== End bb_advance_beg() ================== */
+          }
+//        }
       }
+  	}
+  
+  
+    /* Read PIN_D values
+     * reads high or low value of register at once
+     * Hydrophones a,b,c,d will correspond to pins 3,4,5,6, respectively.
+     * Digital pin 7 corresponds to the duration indicator.
+     */
+    pinval = PIND & bitMask;
+    xorpins = (prevpinval ^ pinval);
+  
+    if (xorpins) {
+  
+      TCCR1B = 0;    //stop the timer 
+  //    volatile unsigned long temp_timer = TCNT1;  //store passed ticks  
+      volatile  uint16_t temp_timer = TCNT1;  //store passed ticks  
+      TCCR1B = 1; // restart the timer
+  
+      volatile unsigned long ticks = ((tmr1_overflow << 16) + (unsigned long)temp_timer);  
+      
+      time_elapsed = ticks;
+  
+      // stores high pins and timestamp
+  //    output[bb_end].pinvals = (pinval >> 3) & 0b00011111;
+  
+      output[bb_end].pinvals = (pinval >> 2) & 0b00001111;
+      output[bb_end].timestamp = time_elapsed;
+      
+      /* ================ Body of bb_advance_end() ================ */
+      bb_end++;
+      if(bb_end >= BB_LEN) bb_end = 0;
+      /* ================== End bb_advance_end() ================== */
     }
-	}
-
-
-  /* Read PIN_D values
-   * reads high or low value of register at once
-   * Hydrophones a,b,c,d will correspond to pins 3,4,5,6, respectively.
-   * Digital pin 7 corresponds to the duration indicator.
-   */
-  pinval = PIND & bitMask;
-  xorpins = (prevpinval ^ pinval);
-
-  if (xorpins != 0) {
-    // recreates the functionality of the micors() function
-    // without the overhead of a function call
-    time_elapsed = ((timer0_overflow_count << 8) + TCNT0) * 4;
-
-    // stores high pins and timestamp
-//    output[bb_end].pinvals = (pinval >> 3) & 0b00011111;
-
-    output[bb_end].pinvals = (pinval >> 2) & 0b00001111;
-    output[bb_end].timestamp = time_elapsed;
-    
-    /* ================ Body of bb_advance_end() ================ */
-    bb_end++;
-    if(bb_end >= BB_LEN) bb_end = 0;
-    /* ================== End bb_advance_end() ================== */
+    prevpinval = pinval;
   }
-  prevpinval = pinval;
 
 }
+
+ISR(TIMER1_OVF_vect){
+
+  tmr1_overflow++;
+
+}
+
 
