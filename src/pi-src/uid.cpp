@@ -15,8 +15,12 @@ Author:  Noah Strong
 Project: Crab Tracker
 Created: 2018-02-28
 ******************************************************************************/
+#include <stdio.h>
+#include <string.h>
 #include <math.h>
 #include "uid.h"
+
+#define period_us 1.0/16.0
 
 /**
  * Determines the ID encoded in a single ping's duration.
@@ -28,10 +32,17 @@ Created: 2018-02-28
  * @param p - The ping to decode
  * @returns The ID encoded in 'p'
  */
+int counter = 0;
 int id_decode_ping(ping p){
-    float duration_ms = (float)p.duration / 1000; /* convert us->ms */
+    
+    //float period_us = 1.0/16.0; 
+    float period_ns = period_us * 1000;
+    float duration_ns = (float)p.duration * period_ns;
+    float duration_us = duration_ns / 1000;
+    float duration_ms = duration_us / 1000;
+    //printf("p.duration %lu duration_ns %f duration_us %f duration_ms %f counter %d\n", p.duration, duration_ns, duration_us, duration_ms, counter%64);
     float raw_id = (duration_ms - MIN_PING_DUR_MS) / STEP_SIZE_MS;
-
+    counter++;
     return (int)roundf(raw_id);
 }
 
@@ -47,6 +58,10 @@ int id_decode_ping(ping p){
  * returns The ID encoded by the time between 'a' and 'b'.
  */
 int id_decode_delay(ping a, ping b){
+    
+    //float delta = (float)b.start - (float)a.start;
+    //printf("delta %f ", delta);
+    //fflush(stdout);
     float delay_ms = ((float)(b.start - (a.start + a.duration))) / 1000; /* us->ms */
     float raw_id = (delay_ms - MIN_DELAY_DUR_MS) / STEP_SIZE_MS;
 

@@ -23,6 +23,7 @@ struct ping {
 };
 
 int proc_block(spi_rawblock, ping*);
+//void disp_ping(ping, ping);
 void disp_ping(ping);
 int poll(ping*);
 

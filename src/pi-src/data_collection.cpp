@@ -69,16 +69,26 @@ int proc_block(spi_rawblock data, ping *storage){
                 /* Pin `i` changed HIGH to LOW */
                 tmp.pin = i;
                 tmp.start = partials[i];
-                tmp.duration = data.timestamp - partials[i];
 
+                //printf("start: %lu end: %lu duration: %d \n", tmp.start, data.timestamp, (int)data.timestamp - (int)tmp.start);
+                tmp.duration = data.timestamp - partials[i];
+                
                 if(DISPLAY_PINGS) disp_ping(tmp);
 
+                // prints delta between two rising edges
+                //if (tmp.start > storage[count-1].start) {
+
+                //  unsigned long delta = tmp.start - storage[count-1].start;
+                //  printf("delta: %lu\n", delta);
+                //}
                 // Do we need to do this?
                 memcpy(&storage[count], &tmp, sizeof(ping));
                 count++;
             }
         }
     }
+
+
     /* Is memcpy necessary? Just use assignment? */
     memcpy(&prev, &data, sizeof(spi_rawblock));
     return count;
@@ -89,8 +99,10 @@ int proc_block(spi_rawblock data, ping *storage){
  * @param p The ping to print
  */
 void disp_ping(ping p){
+//void disp_ping(ping p){
     int id = id_decode_ping(p);
-    printf("== PING == pin: %d\tduration: %lu\tID: %d\n",
+    //unsigned long delta = p.duration - q.duration;
+    printf("== PING == pin: %d\tduration: %lu\tID: %d \n\n",
            p.pin, p.duration, id);
     fflush(stdout);
 }
