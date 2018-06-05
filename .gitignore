@@ -2,7 +2,10 @@
 *.log
 *.gz
 *.toc
+*.out
 *.o
 *~
+*.dvi
+*.glg
 src/pi-src/catch.hpp
 src/pi-src/include
