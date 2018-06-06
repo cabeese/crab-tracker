@@ -61,8 +61,6 @@ const double S_USER = 0.0015;
 int triangulation(struct ping a, struct ping b, struct ping c, struct ping d, crab_event *result){
   int ret = triangulation_helper(a.start, b.start, c.start, d.start, result);
 
-  printResult(result);
-
   return ret;
 
 }
@@ -203,15 +201,15 @@ void printResult(crab_event *result){
 }
 
 void disp_direction(crab_event r){
-  printf("direction: (%lfm, %lf, %lfm)\n", r.r_m, r.theta, r.z_m);
+  // printf("direction: (%.2lfm, %lf, %.2lfm)\n", r.r_m, r.theta, r.z_m);
+  printf("Angle: %.2lf degrees\n", r.theta);
 }
 
 double calcSpeedOfSound(double temp, double salinity, double depth) {
-  return 1520;
-    // return 1449.2 + (4.6*temp)
-    //               - (5.5 * pow(10.0,-2.0)) * pow(temp, 2.0)
-    //               + (1.34 - (pow(10,-2.0)*temp)) * (salinity-35)
-    //               + 1.6 * pow(10.0,-2.0) * depth;
+  return 1449.2 + (4.6*temp)
+                - (5.5 * pow(10.0,-2.0)) * pow(temp, 2.0)
+                + (1.34 - (pow(10,-2.0)*temp)) * (salinity-35)
+                + 1.6 * pow(10.0,-2.0) * depth;
 }
 
 int initialize_dir(){

@@ -53,8 +53,6 @@ int main (void) {
                 /* We have a set of 8 pings */
                 printf("----------------------\n");
                 printf("Crab ID: %d\n", id);
-                // disp_buffers();
-                // printf("---------------------- %d\n", id);
                 n = triangulation(
                     *active.pings_a[0],
                     *active.pings_b[0],
