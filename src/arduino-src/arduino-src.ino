@@ -79,7 +79,7 @@ void setup (void) {
   SPCR |= _BV(SPE); /* Set 'enable' bit of SPI config register */
   
   /* PIN_D Setup - Sets all D pins to input */
-  DDRD = 0b00000000;
+  DDRD = 0b000000111;
 
   /* Initialize all entries in the buffer to something we can notice.
    * Idealy/eventually, we will not need to do this.
