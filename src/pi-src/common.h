@@ -11,8 +11,8 @@ Created: 2018-04-28
 
 struct ping {
     int pin;
-    unsigned long start;
-    unsigned long duration;
+    double start_us;
+    double duration_us;
 };
 
 struct crab_event {
