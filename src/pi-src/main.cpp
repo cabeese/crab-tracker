@@ -22,6 +22,7 @@ Created: 2018-02-03
 #include "config.h"
 #include "spi.h"
 #include "data_collection.h"
+#include "direction.h"
 
 full_set active = {0,0,0,0,0,0,0};
 
@@ -33,6 +34,7 @@ int initialize(){
     initialize_util();
     initialize_spi();
     initialize_dc();
+    initialize_dir();
     return 1;
 }
 
@@ -41,18 +43,31 @@ int initialize(){
  * @return  (unused)
  */
 int main (void) {
-    int id;
+    int id, n;
+    crab_event result;
     initialize();
 
     while (1){
         if(poll()){
             if((id = get_set(&active)) > -1){
                 /* We have a set of 8 pings */
-                printf("---------------------- ");
-                printf("Got a full set for crab %d\n", id);
-                disp_buffers();
-                printf("---------------------- %d\n", id);
-                // TODO: call direction algorithm
+                printf("----------------------\n");
+                printf("Crab ID: %d\n", id);
+                // disp_buffers();
+                // printf("---------------------- %d\n", id);
+                n = triangulation(
+                    *active.pings_a[0],
+                    *active.pings_b[0],
+                    *active.pings_c[0],
+                    *active.pings_d[0],
+                    &result);
+                if(n > 0){
+                    disp_direction(result);
+                } else {
+                    printf("Unable to determine direction\n");
+                }
+                printf("\n");
+
                 // TODO: update GUI
                 clear_set(&active);
             } else {

@@ -12,15 +12,10 @@ Created: 2018-02-10
 ******************************************************************************/
 #include "spi.h"
 #include "config.h"
+#include "common.h"
 
 #ifndef __DATA_COLLECTION_H
 #define __DATA_COLLECTION_H
-
-struct ping {
-    int pin;
-    unsigned long start;
-    unsigned long duration;
-};
 
 struct full_set {
     ping *pings_a[2];
