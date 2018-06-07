@@ -53,17 +53,17 @@ int main (void) {
                 /* We have a set of 8 pings */
                 printf("----------------------\n");
                 printf("Crab ID: %d\n", id);
-                // n = triangulation(
-                //     *active.pings_a[0],
-                //     *active.pings_b[0],
-                //     *active.pings_c[0],
-                //     *active.pings_d[0],
-                //     &result);
-                // if(n > 0){
-                //     disp_direction(result);
-                // } else {
-                //     printf("Unable to determine direction\n");
-                // }
+                n = triangulation(
+                    *active.pings_a[0],
+                    *active.pings_b[0],
+                    *active.pings_c[0],
+                    *active.pings_d[0],
+                    &result);
+                if(n > 0){
+                    disp_direction(result);
+                } else {
+                    printf("Unable to determine direction\n");
+                }
                 printf("\n");
 
                 // TODO: update GUI

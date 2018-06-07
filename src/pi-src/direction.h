@@ -14,7 +14,7 @@ Created: 2018-03-1
 double calcSpeedOfSound(double temp, double salinity, double depth);
 
 int triangulation(struct ping a, struct ping b, struct ping c, struct ping d, crab_event *result);
-int triangulation_helper(unsigned long ts_a, unsigned long ts_b, unsigned long ts_c, unsigned long ts_d, crab_event *result);
+int triangulation_helper(double ts_a, double ts_b, double ts_c, double ts_d, crab_event *result);
 
 /*
  * Helper functions calculate various calculations

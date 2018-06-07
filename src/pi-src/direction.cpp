@@ -59,7 +59,7 @@ const double S_USER = 0.0015;
 */
 
 int triangulation(struct ping a, struct ping b, struct ping c, struct ping d, crab_event *result){
-  int ret = triangulation_helper(a.start, b.start, c.start, d.start, result);
+  int ret = triangulation_helper(a.start_us, b.start_us, c.start_us, d.start_us, result);
 
   return ret;
 
@@ -68,7 +68,7 @@ int triangulation(struct ping a, struct ping b, struct ping c, struct ping d, cr
  * time stamp 1 - 4 are the timestamps in order of appearance.
  * result is the structure
  */
-int triangulation_helper(unsigned long ts_a, unsigned long ts_b, unsigned long ts_c, unsigned long ts_d, crab_event *result){
+int triangulation_helper(double ts_a, double ts_b, double ts_c, double ts_d, crab_event *result){
   /* x, y, and z directions */
   double x;
   double y;
