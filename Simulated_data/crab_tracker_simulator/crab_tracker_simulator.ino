@@ -145,7 +145,7 @@ void loop() {
   //time and follow each of the corresponding pulse event behaviors with the
   //microcontroller.  All time values in microseconds.
 
-  pulse_event pulseTrain[16]; //four pulse events for each of the fours sensors plus two pulse events for the distance signal
+  pulse_event pulseTrain[18]; //four pulse events for each of the fours sensors plus two pulse events for the distance signal
 
   pulseTrain[0] = {(uint32_t)((1000000*crabDistA)/SPEED_OF_SOUND + firstPulseRise), 2, HIGH};
   pulseTrain[1] = {(uint32_t)((1000000*crabDistA)/SPEED_OF_SOUND + firstPulseFall), 2, LOW};  

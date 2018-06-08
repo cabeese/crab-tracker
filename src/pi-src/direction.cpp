@@ -59,9 +59,7 @@ const double S_USER = 0.0015;
 */
 
 int triangulation(struct ping a, struct ping b, struct ping c, struct ping d, crab_event *result){
-  int ret = triangulation_helper(a.start, b.start, c.start, d.start, result);
-
-  printResult(result);
+  int ret = triangulation_helper(a.start_us, b.start_us, c.start_us, d.start_us, result);
 
   return ret;
 
@@ -70,7 +68,7 @@ int triangulation(struct ping a, struct ping b, struct ping c, struct ping d, cr
  * time stamp 1 - 4 are the timestamps in order of appearance.
  * result is the structure
  */
-int triangulation_helper(unsigned long ts_a, unsigned long ts_b, unsigned long ts_c, unsigned long ts_d, crab_event *result){
+int triangulation_helper(double ts_a, double ts_b, double ts_c, double ts_d, crab_event *result){
   /* x, y, and z directions */
   double x;
   double y;
@@ -203,15 +201,15 @@ void printResult(crab_event *result){
 }
 
 void disp_direction(crab_event r){
-  printf("direction: (%lfm, %lf, %lfm)\n", r.r_m, r.theta, r.z_m);
+  // printf("direction: (%.2lfm, %lf, %.2lfm)\n", r.r_m, r.theta, r.z_m);
+  printf("Angle: %.2lf degrees\n", r.theta);
 }
 
 double calcSpeedOfSound(double temp, double salinity, double depth) {
-  return 1520;
-    // return 1449.2 + (4.6*temp)
-    //               - (5.5 * pow(10.0,-2.0)) * pow(temp, 2.0)
-    //               + (1.34 - (pow(10,-2.0)*temp)) * (salinity-35)
-    //               + 1.6 * pow(10.0,-2.0) * depth;
+  return 1449.2 + (4.6*temp)
+                - (5.5 * pow(10.0,-2.0)) * pow(temp, 2.0)
+                + (1.34 - (pow(10,-2.0)*temp)) * (salinity-35)
+                + 1.6 * pow(10.0,-2.0) * depth;
 }
 
 int initialize_dir(){

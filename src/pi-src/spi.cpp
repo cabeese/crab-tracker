@@ -61,7 +61,7 @@ uint8_t spi_getbyte(uint8_t flags){
  */
 int spi_getblock(spi_rawblock *data){
     uint8_t pinvals;
-    unsigned long timestamp = 0;
+    unsigned long clockcycles = 0;
 
     /* Get pinvals */
     pinvals = spi_getbyte(SPI_NO_FLAGS);
@@ -69,7 +69,7 @@ int spi_getblock(spi_rawblock *data){
     /* Get timestamp (in 4 parts) */
     for(int i=0; i<4; i++){
         usleep(15);
-        timestamp |= spi_getbyte(SPI_NO_FLAGS) << (i * 8);
+        clockcycles |= spi_getbyte(SPI_NO_FLAGS) << (i * 8);
     }
 
     if(pinvals & (1<<7)){
@@ -77,7 +77,7 @@ int spi_getblock(spi_rawblock *data){
         return 0;
     }
     data->pinvals = pinvals;
-    data->timestamp = timestamp;
+    data->timestamp_us = (float)clockcycles / CYCLE_LENGTH_US;
     if(DISPLAY_RAW_SPI) spi_dispblock(*data);
     return 1;
 }
@@ -89,7 +89,7 @@ int spi_getblock(spi_rawblock *data){
 void spi_dispblock(spi_rawblock data){
     printf("[[ SPI Raw Data Block ]] pinvals: ");
     print_bin_8(data.pinvals);
-    printf("\ttimestamp: %lu\n", data.timestamp);
+    printf("\ttimestamp: %.2f\n", data.timestamp_us);
 }
 
 /**

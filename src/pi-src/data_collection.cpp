@@ -54,7 +54,7 @@ spi_rawblock raw_data = {0, 0};
 /* Store half of a 'ping'. Specifically, store the starting timestamp of
  * a ping. The timestamp at index `i` corresponds to the timestamp of the rising
  * edge of a ping detected from pin/hydrophone `i`. */
-unsigned long partials[NUM_PINS];
+double partials[NUM_PINS];
 
 /**
  * Given a fresh, new timestamp, parse out any data we can possibly get. For
@@ -87,12 +87,12 @@ int proc_block(spi_rawblock data){
             /* Pin `i` changed states */
             if(data.pinvals & mask){
                 /* Pin `i` changed LOW to HIGH */
-                partials[i] = data.timestamp;
+                partials[i] = data.timestamp_us;
             } else {
                 /* Pin `i` changed HIGH to LOW */
                 tmp.pin = i;
-                tmp.start = partials[i];
-                tmp.duration = data.timestamp - partials[i];
+                tmp.start_us = partials[i];
+                tmp.duration_us = data.timestamp_us - partials[i];
                 idx = ping_collectors[i].index;
 
                 memcpy(&(ping_collectors[i].pings[idx]), &tmp, sizeof(ping));
@@ -124,8 +124,8 @@ void disp_ping(ping p){
     printf("== PING == pin: ");
     if(DISPLAY_PINGS & D_PIN_LET) printf("%c", 'A' + p.pin);
     else printf("%d", p.pin);
-    if(DISPLAY_PINGS & D_START) printf("\tstart: %lu", p.start);
-    if(DISPLAY_PINGS & D_DURATION) printf("\tduration: %lu", p.duration);
+    if(DISPLAY_PINGS & D_START) printf("\tstart: %.2f", p.start_us);
+    if(DISPLAY_PINGS & D_DURATION) printf("\tduration: %.2f", p.duration_us);
     if(DISPLAY_PINGS & D_UID) printf("\tid: %d", id);
     printf("\n");
 }
@@ -137,7 +137,7 @@ void disp_buffers(){
     for(int p=0; p<NUM_PINS; p++){
         printf("Pings on pin %d:", p);
         for(int i=0; i<PING_BUF_LEN; i++){
-            printf(" %lu;", ping_collectors[p].pings[i].duration);
+            printf(" %.2f;", ping_collectors[p].pings[i].duration_us);
         }
         printf("\n");
     }
@@ -197,7 +197,7 @@ int find_match_on_pin_with_id(int pin, int id, ping **first, ping **second){
 
                 if(pings_match(*fst, *snd)){
                     /* Pings found! Return in chronological order */
-                    int in_order = fst->start < snd->start;
+                    int in_order = fst->start_us < snd->start_us;
                     *first  = in_order ? fst : snd;
                     *second = in_order ? snd : fst;
                     return id;
@@ -229,7 +229,7 @@ int find_match_on_pin(int pin, ping **first, ping **second){
             for(int j=i+1; j<PING_BUF_LEN; j++){
                 snd = &(ping_collectors[pin].pings[j]);
                 if(pings_match(*fst, *snd)){
-                    int in_order = fst->start < snd->start;
+                    int in_order = fst->start_us < snd->start_us;
                     *first  = in_order ? fst : snd;
                     *second = in_order ? snd : fst;
                     return candidate_id;

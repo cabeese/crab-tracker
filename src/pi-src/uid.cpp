@@ -29,7 +29,7 @@ Created: 2018-02-28
  * @returns The ID encoded in 'p'
  */
 int id_decode_ping(ping p){
-    float duration_ms = (float)p.duration / 1000; /* convert us->ms */
+    float duration_ms = p.duration_us / 1000; /* convert us->ms */
     float raw_id = (duration_ms - MIN_PING_DUR_MS) / STEP_SIZE_MS;
 
     return (int)roundf(raw_id);
@@ -47,7 +47,7 @@ int id_decode_ping(ping p){
  * returns The ID encoded by the time between 'a' and 'b'.
  */
 int id_decode_delay(ping a, ping b){
-    float delay_ms = ((float)(b.start - (a.start + a.duration))) / 1000; /* us->ms */
+    float delay_ms = ((float)(b.start_us - (a.start_us + a.duration_us))) / 1000; /* us->ms */
     float raw_id = (delay_ms - MIN_DELAY_DUR_MS) / STEP_SIZE_MS;
 
     return (int)roundf(raw_id);
