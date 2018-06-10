@@ -1,0 +1,67 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{ragged2e}
+\usepackage{changepage}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage[margin=1in]{geometry}
+\usepackage[table,xcdraw]{xcolor}
+\usepackage{pgfplotstable}
+\pgfplotsset{compat=1.9}
+\usepackage{siunitx}
+\usepackage{tikz} % To generate the plot from csv
+\usepackage{pgfplots}
+\usepackage{float}
+
+% \pgfplotsset{compat=newest} % Allows to place the legend below plot
+% \usepgfplotslibrary{units} % Allows to enter the units nicely
+
+% \sisetup{
+%   round-mode          = places,
+%   round-precision     = 2,
+% }
+
+\title{Triangulation Error}
+\author{Chloe Yugawa}
+\date{June 2018}
+
+\begin{document}
+\maketitle
+The below graph created from the data in the table show the error for algorithm output with different levels of precision. Data points are generated from -10 to 10 meters away from the center of the system along the $x$ and $y$ coordinates and from -3 to -10 meters along the $z$ axis every half meter, generating over 25,000 data points. Time stamps are calculated in microseconds for each coordinate, and fed into the triangulation algorithm. The error graph includes percent of points where $N$, or distance from the middle of the hydrophones to the crab is off by more than 5 meters. $N$ is used because it is less precise than angle measurement theta and both $r$ and $z$ are dependent on $N$. For microsecond errors (highlighted in red in the table, and on the left side of the graph), a random number between the positive and negative error listed in the table is added to each time stamp. At 0ns, the time stamps are precise down to the microsecond without regard for nanoseconds. Past that, data is precise up to the number of nanoseconds listed.\\
+\begin{minipage}[t]{0.5\textwidth}
+    \begin{figure}[H]
+    \centering
+        \includegraphics[width=1\textwidth]{graph.png}
+        \caption{Graphed Error}
+        \label{fig:my_label}
+    \end{figure}
+\end{minipage}
+\begin{minipage}[t]{0.5\textwidth}
+\begin{table}[H]
+\centering
+\caption{Error data}
+\label{my-label}
+\begin{tabular}{|l|l|}
+\hline
+\textbf{Precision} & \textbf{Percent error N\textgreater{}5} \\ \hline
+\rowcolor[HTML]{FE0000}
+6$\mu$s error          & 0.075868                                \\ \hline
+\rowcolor[HTML]{FE0000}
+5$\mu$s error          & 0.066746                                \\ \hline
+\rowcolor[HTML]{FE0000}
+4$\mu$s error          & 0.060044                                \\ \hline
+\rowcolor[HTML]{FE0000}
+3$\mu$s error          & 0.055364                                \\ \hline
+\rowcolor[HTML]{FE0000}
+2$\mu$s error          & 0.048780                                \\ \hline
+\rowcolor[HTML]{FE0000}
+1$\mu$s error          & 0.026056                                \\ \hline
+0ns                & 0.026056                                \\ \hline
+1ns                & 0.013167                                \\ \hline
+10ns               & 0.013127                                \\ \hline
+100ns              & 0.013206                                \\ \hline
+1000ns             & 0.013246                                \\ \hline
+\end{tabular}
+\end{table}
+\end{minipage}
+\end{document}
